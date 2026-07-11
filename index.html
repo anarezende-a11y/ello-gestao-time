@@ -628,7 +628,7 @@ body {
         <div class="rp-chips" id="rp_participantes"></div>
       </div>
       <div class="tr-field">
-        <label>Vídeo da sessão (link do YouTube ou Vimeo)</label>
+        <label>Vídeo da sessão (YouTube, Vimeo, Google Drive ou link de arquivo .mp4)</label>
         <input type="text" class="tr-text-input" id="rp_video" placeholder="https://..." oninput="window.RP.atualizarPreviewVideo()">
         <div id="rp_video_preview"></div>
       </div>
@@ -677,7 +677,7 @@ body {
         <textarea class="q-input" id="tr_descricao" rows="2" placeholder="Do que se trata esse módulo..."></textarea>
       </div>
       <div class="tr-field">
-        <label>Link do vídeo (YouTube, Vimeo ou outro)</label>
+        <label>Link do vídeo (YouTube, Vimeo, Google Drive ou arquivo .mp4)</label>
         <input type="text" class="tr-text-input" id="tr_video" placeholder="https://..." oninput="window.TR.atualizarPreviewVideo()">
         <div id="tr_video_preview"></div>
       </div>
@@ -1822,6 +1822,15 @@ function extrairVimeoId(url) {
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return m ? m[1] : null;
 }
+function extrairGoogleDriveId(url) {
+  let m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+function ehArquivoVideoDireto(url) {
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
 
 function atualizarPreviewVideo() {
   const url = document.getElementById('tr_video').value.trim();
@@ -1829,10 +1838,15 @@ function atualizarPreviewVideo() {
   if (!url) { prev.innerHTML = ''; return; }
   const yt = extrairYoutubeId(url);
   const vm = extrairVimeoId(url);
+  const gd = extrairGoogleDriveId(url);
   if (yt) {
     prev.innerHTML = `<div class="tr-video-embed"><iframe src="https://www.youtube.com/embed/${yt}" allowfullscreen></iframe></div>`;
   } else if (vm) {
     prev.innerHTML = `<div class="tr-video-embed"><iframe src="https://player.vimeo.com/video/${vm}" allowfullscreen></iframe></div>`;
+  } else if (gd) {
+    prev.innerHTML = `<div class="tr-video-embed"><iframe src="https://drive.google.com/file/d/${gd}/preview" allow="autoplay" allowfullscreen></iframe></div>`;
+  } else if (ehArquivoVideoDireto(url)) {
+    prev.innerHTML = `<video controls style="width:100%;border-radius:14px;box-shadow:0 8px 20px rgba(0,67,88,0.15);"><source src="${escapeHTML(url)}"></video>`;
   } else {
     prev.innerHTML = `<a class="tr-video-link" href="${escapeHTML(url)}" target="_blank" rel="noopener">▶ Abrir link do vídeo</a>`;
   }
@@ -2067,18 +2081,32 @@ function extrairVimeoId(url) {
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return m ? m[1] : null;
 }
+function extrairGoogleDriveId(url) {
+  let m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return m[1];
+  m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+function ehArquivoVideoDireto(url) {
+  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+}
 
 function atualizarPreviewVideo() {
   const url = document.getElementById('rp_video').value.trim();
   const prev = document.getElementById('rp_video_preview');
   const yt = url ? extrairYoutubeId(url) : null;
   const vm = url ? extrairVimeoId(url) : null;
+  const gd = url ? extrairGoogleDriveId(url) : null;
   if (!url) {
     prev.innerHTML = '';
   } else if (yt) {
     prev.innerHTML = `<div class="tr-video-embed"><iframe id="rpPlayerFrame" src="https://www.youtube.com/embed/${yt}?enablejsapi=1" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
   } else if (vm) {
     prev.innerHTML = `<div class="tr-video-embed"><iframe id="rpPlayerFrame" src="https://player.vimeo.com/video/${vm}?api=1" allow="autoplay" allowfullscreen></iframe></div>`;
+  } else if (gd) {
+    prev.innerHTML = `<div class="tr-video-embed"><iframe id="rpPlayerFrame" src="https://drive.google.com/file/d/${gd}/preview" allow="autoplay" allowfullscreen></iframe></div>`;
+  } else if (ehArquivoVideoDireto(url)) {
+    prev.innerHTML = `<video id="rpNativeVideo" controls style="width:100%;border-radius:14px;box-shadow:0 8px 20px rgba(0,67,88,0.15);"><source src="${escapeHTML(url)}"></video>`;
   } else {
     prev.innerHTML = `<a class="tr-video-link" href="${escapeHTML(url)}" target="_blank" rel="noopener">▶ Abrir link do vídeo</a>`;
   }
@@ -2095,6 +2123,8 @@ document.addEventListener('visibilitychange', function() {
       frame.contentWindow.postMessage('{"method":"pause"}', '*');
     } catch(e) {}
   }
+  const nativeVideo = document.getElementById('rpNativeVideo');
+  if (nativeVideo && !nativeVideo.paused) nativeVideo.pause();
 });
 
 function fecharModal() {
