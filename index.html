@@ -2808,19 +2808,32 @@ function excluir(id) {
   setData(data);
 }
 
+function formatDataHora(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const dia = String(d.getDate()).padStart(2,'0');
+  const mes = String(d.getMonth()+1).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${dia}/${mes} às ${hh}:${mm}`;
+}
+
 function render() {
   const label = document.getElementById('pautaSemanaLabel');
   if (label) label.textContent = 'Semana ' + (semanaAtualKey || getISOWeekKey());
   const wrap = document.getElementById('pauta_lista_pessoal');
   if (!wrap) return;
   const user = window.APPAUTH.usuarioAtual;
-  const meus = getData().itens.filter(i => i.uid === (user && user.uid));
+  const meus = getData().itens.filter(i => i.uid === (user && user.uid)).sort((a,b) => (b.ts||0)-(a.ts||0));
   if (meus.length === 0) {
     wrap.innerHTML = `<div class="pauta-empty">Você ainda não adicionou nenhum assunto essa semana.</div>`;
     return;
   }
   wrap.innerHTML = meus.map(i => `<div class="pauta-item">
-    <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+    <div>
+      <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+      <div class="pauta-item-nome" style="margin-top:6px; margin-bottom:0;">${formatDataHora(i.ts)}</div>
+    </div>
     <span class="pauta-item-remove" onclick="window.PAUTA.excluir('${i.id}')">✕</span>
   </div>`).join('');
 }
@@ -2828,7 +2841,7 @@ function render() {
 function renderAdminPanel() {
   const wrap = document.getElementById('pautaAdminWrap');
   if (!wrap) return;
-  const itens = getData().itens || [];
+  const itens = (getData().itens || []).slice().sort((a,b) => (b.ts||0)-(a.ts||0));
   if (itens.length === 0) {
     wrap.innerHTML = `<div class="tr-card" style="cursor:default;">
       <div class="tr-card-title">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
@@ -2836,11 +2849,13 @@ function renderAdminPanel() {
     </div>`;
     return;
   }
+  const ultimaAtualizacao = Math.max(...itens.map(i => i.ts || 0));
   wrap.innerHTML = `<div class="tr-card" style="cursor:default;">
-    <div class="tr-card-title" style="margin-bottom:12px;">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
+    <div class="tr-card-title" style="margin-bottom:2px;">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
+    <div class="pauta-item-nome" style="margin-bottom:14px;">Última atualização: ${formatDataHora(ultimaAtualizacao)}</div>
     ${itens.map(i => `<div class="pauta-item">
       <div>
-        <div class="pauta-item-nome">${escapeHTML(i.nome)}</div>
+        <div class="pauta-item-nome">${escapeHTML(i.nome)} · ${formatDataHora(i.ts)}</div>
         <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
       </div>
     </div>`).join('')}
