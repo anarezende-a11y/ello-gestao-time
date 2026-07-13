@@ -1642,7 +1642,7 @@ popularSelect();
 window.TR = window.TR || {};
 (function(){
 const STORAGE_KEY = 'ello_treinamentos';
-const CATEGORIAS_PADRAO = ['Atendimento','CRM','Pós-Venda'];
+const CATEGORIAS_PADRAO = ['Atendimento','CRM','Pós-Venda','Desenvolvimento Pessoal'];
 let catAtiva = 'Todos';
 let modalId = null; // id do módulo em edição, null = criando novo
 let saveTimer_t;
@@ -1650,7 +1650,15 @@ let saveTimer_t;
 function getData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const data = JSON.parse(raw);
+      let mudou = false;
+      CATEGORIAS_PADRAO.forEach(c => {
+        if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; }
+      });
+      if (mudou) setData(data);
+      return data;
+    }
   } catch(e) {}
   return { categorias: CATEGORIAS_PADRAO.slice(), modulos: [] };
 }
