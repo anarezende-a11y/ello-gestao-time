@@ -104,6 +104,7 @@ body {
 .drawer-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
 .drawer-item.active { background:linear-gradient(90deg, rgba(253,116,0,0.18), rgba(253,116,0,0.03)); border-left-color:var(--laranja); color:#fff; }
 .drawer-item .di-icon { font-size:17px; width:24px; text-align:center; }
+.liderado-only { display:none; }
 .drawer-foot { margin-top:auto; padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; position:relative; z-index:1; }
 
 /* MENU PRINCIPAL (home) */
@@ -507,6 +508,14 @@ body {
 .pop-step-view-desc { font-size:12px; color:var(--muted); line-height:1.5; }
 .pop-step-view-img { margin-top:8px; max-width:100%; border-radius:10px; border:1px solid var(--border2); }
 
+/* Pauta da Reunião */
+.pauta-item { display:flex; align-items:flex-start; gap:10px; background:var(--card2); border:1px solid var(--border2); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+.pauta-item-nome { font-size:11px; font-weight:800; color:var(--azul-claro); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; }
+.pauta-item-texto { font-size:13px; color:var(--text); line-height:1.5; white-space:pre-wrap; }
+.pauta-item-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; margin-left:auto; }
+.pauta-item-remove:hover { color:#D64545; }
+.pauta-empty { font-size:13px; color:var(--muted); padding:16px 0; }
+
 /* Role Play: chips de participantes + escala de nota */
 .rp-chips { display:flex; flex-wrap:wrap; gap:8px; }
 .rp-chip { display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:100px; border:1.5px solid var(--border2); background:var(--card2); cursor:pointer; font-size:12px; font-weight:700; color:var(--muted); transition:all .15s; user-select:none; }
@@ -610,6 +619,7 @@ window.APPAUTH = window.APPAUTH || {};
         document.getElementById('appShell').style.display = 'block';
         const info = document.getElementById('drawerUserInfo');
         if (info) info.textContent = (perfil.role === 'admin' ? '👑 ' : '') + user.email;
+        if (window.aplicarPermissoes) window.aplicarPermissoes(perfil.role);
         window.dispatchEvent(new CustomEvent('userAuthed', { detail: window.APPAUTH.usuarioAtual }));
       } else {
         window.APPAUTH.usuarioAtual = null;
@@ -654,10 +664,13 @@ window.APPAUTH = window.APPAUTH || {};
     <span class="di-icon">🏠</span> Menu Principal
   </button>
   <div class="drawer-section-label">Ferramentas</div>
-  <button class="drawer-item" id="di_reuniao" onclick="mostrarTool('reuniao')">
+  <button class="drawer-item admin-only" id="di_reuniao" onclick="mostrarTool('reuniao')">
     <span class="di-icon">🤝</span> Reunião Semanal
   </button>
-  <button class="drawer-item" id="di_oneone" onclick="mostrarTool('oneone')">
+  <button class="drawer-item liderado-only" id="di_pauta" onclick="mostrarTool('pauta')">
+    <span class="di-icon">📝</span> Pauta da Reunião
+  </button>
+  <button class="drawer-item admin-only" id="di_oneone" onclick="mostrarTool('oneone')">
     <span class="di-icon">💬</span> One-on-One
   </button>
   <button class="drawer-item" id="di_treinamentos" onclick="mostrarTool('treinamentos')">
@@ -666,7 +679,7 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_roleplay" onclick="mostrarTool('roleplay')">
     <span class="di-icon">🎭</span> Role Play
   </button>
-  <button class="drawer-item" id="di_pop" onclick="mostrarTool('pop')">
+  <button class="drawer-item admin-only" id="di_pop" onclick="mostrarTool('pop')">
     <span class="di-icon">📋</span> POP
   </button>
   <div class="drawer-foot">
@@ -684,13 +697,19 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="home-desc">Suas ferramentas de liderança num só lugar: conduza a reunião semanal do time, registre one-on-ones, organize os treinamentos e acompanhe as sessões de role play — tudo com histórico salvo.</div>
     </div>
     <div class="home-cards">
-      <button class="home-card c-reuniao" onclick="mostrarTool('reuniao')">
+      <button class="home-card c-reuniao admin-only" onclick="mostrarTool('reuniao')">
         <div class="hc-icon">🤝</div>
         <div class="hc-title">Reunião Semanal</div>
         <div class="hc-desc">Rituais do time: presença, humor, conquistas, travamentos, prioridades e ações combinadas — semana a semana.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
-      <button class="home-card c-oneone" onclick="mostrarTool('oneone')">
+      <button class="home-card c-pauta liderado-only" onclick="mostrarTool('pauta')">
+        <div class="hc-icon">📝</div>
+        <div class="hc-title">Pauta da Reunião</div>
+        <div class="hc-desc">Deixa aqui os assuntos que você quer levar pra próxima reunião semanal.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-oneone admin-only" onclick="mostrarTool('oneone')">
         <div class="hc-icon">💬</div>
         <div class="hc-title">One-on-One</div>
         <div class="hc-desc">Conversas individuais com cada liderado: lado pessoal e profissional, feedback nos dois sentidos e combinados.</div>
@@ -708,7 +727,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-desc">Registro das sessões de role play: data, participantes e feedback de cada prática.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
-      <button class="home-card c-pop" onclick="mostrarTool('pop')">
+      <button class="home-card c-pop admin-only" onclick="mostrarTool('pop')">
         <div class="hc-icon">📋</div>
         <div class="hc-title">POP</div>
         <div class="hc-desc">Procedimentos Operacionais Padrão por área, com passos numerados e organizados por tema.</div>
@@ -727,8 +746,32 @@ window.APPAUTH = window.APPAUTH || {};
     <button class="btn btn-amber" onclick="window.RS.exportarPDF()">🖨️ Exportar PDF</button>
   </div>
   <div class="week-nav" id="weekNav"></div>
+  <div class="wrap" style="padding-bottom:0;" id="pautaAdminWrap"></div>
 
 <div class="wrap" id="mainWrap_r"></div>
+</div>
+
+<!-- ================= TOOL: PAUTA DA REUNIÃO (liderados) ================= -->
+<div class="tool-view tool-pauta" id="view_pauta">
+  <div class="tool-subbar">
+    <span class="sb-title">📝 Pauta da Reunião</span>
+    <span class="save-ind" id="saveInd_pauta">✓ Salvo</span>
+  </div>
+  <div class="wrap" style="max-width:640px;">
+    <div class="tr-field">
+      <label>Semana atual</label>
+      <div id="pautaSemanaLabel" style="color:var(--muted); font-size:13px;"></div>
+    </div>
+    <div class="tr-field">
+      <label>Novo assunto que você quer levar pra reunião</label>
+      <textarea class="q-input" id="pauta_texto" rows="3" placeholder="Ex: Preciso alinhar o processo de X com o time..."></textarea>
+      <button class="tr-empty-btn" style="margin-top:12px;" onclick="window.PAUTA.adicionar()">+ Adicionar assunto</button>
+    </div>
+    <div class="tr-field">
+      <label>Meus assuntos dessa semana</label>
+      <div id="pauta_lista_pessoal"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ================= TOOL: ONE-ON-ONE ================= -->
@@ -916,8 +959,13 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião' };
+  var adminOnly = ['reuniao','oneone','pop'];
+  var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
+    nome = 'home';
+  }
   Object.keys(views).forEach(function(k) {
     var v = document.getElementById(views[k]);
     v.classList.toggle('active', k === nome);
@@ -931,7 +979,21 @@ function mostrarTool(nome) {
   if (nome === 'treinamentos' && window.TR) window.TR.render();
   if (nome === 'roleplay' && window.RP) window.RP.render();
   if (nome === 'pop' && window.POP) window.POP.render();
+  if (nome === 'pauta' && window.PAUTA) window.PAUTA.render();
+  if (nome === 'reuniao' && window.PAUTA) window.PAUTA.renderAdminPanel();
   window.scrollTo(0, 0);
+}
+
+function aplicarPermissoes(role) {
+  var adminEls = document.querySelectorAll('.admin-only');
+  var lideradoEls = document.querySelectorAll('.liderado-only');
+  if (role === 'admin') {
+    adminEls.forEach(function(el){ el.style.display = ''; });
+    lideradoEls.forEach(function(el){ el.style.display = 'none'; });
+  } else {
+    adminEls.forEach(function(el){ el.style.display = 'none'; });
+    lideradoEls.forEach(function(el){ el.style.display = ''; });
+  }
 }
 </script>
 
@@ -2680,6 +2742,118 @@ render();
   window.POP.renumerarPassos = renumerarPassos;
 })();
 </script>
+
+<!-- ===== JS: PAUTA da Reunião — assuntos enviados pelos liderados (escopo isolado) ===== -->
+<script>
+window.PAUTA = window.PAUTA || {};
+(function(){
+let cachedData = null;
+let listenerAtivo = false;
+let semanaAtualKey = '';
+
+function getISOWeekKey(d) {
+  d = d || new Date();
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const week = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2,'0')}`;
+}
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function uid() { return 'pa_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+
+function docRefAtual() {
+  semanaAtualKey = getISOWeekKey();
+  return window.fb.doc(window.fb.db, 'pautas_semanais', semanaAtualKey);
+}
+
+function iniciarListener() {
+  if (listenerAtivo || !window.fb || !window.APPAUTH.usuarioAtual) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(docRefAtual(), (snap) => {
+    cachedData = snap.exists() ? snap.data() : { itens: [] };
+    if (!cachedData.itens) cachedData.itens = [];
+    render();
+    renderAdminPanel();
+  }, err => console.error('PAUTA snapshot error', err));
+}
+window.addEventListener('userAuthed', iniciarListener);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciarListener();
+
+function getData() { return cachedData || { itens: [] }; }
+function setData(d) {
+  cachedData = d;
+  if (window.fb && window.APPAUTH.usuarioAtual) {
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'pautas_semanais', semanaAtualKey || getISOWeekKey()), d).catch(e => console.error('PAUTA save error', e));
+  }
+}
+
+function adicionar() {
+  const ta = document.getElementById('pauta_texto');
+  const texto = ta.value.trim();
+  if (!texto) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const data = getData();
+  data.itens.push({ id: uid(), nome: user.nome || user.email, uid: user.uid, texto: texto, ts: Date.now() });
+  setData(data);
+  ta.value = '';
+}
+
+function excluir(id) {
+  const data = getData();
+  data.itens = data.itens.filter(i => i.id !== id);
+  setData(data);
+}
+
+function render() {
+  const label = document.getElementById('pautaSemanaLabel');
+  if (label) label.textContent = 'Semana ' + (semanaAtualKey || getISOWeekKey());
+  const wrap = document.getElementById('pauta_lista_pessoal');
+  if (!wrap) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const meus = getData().itens.filter(i => i.uid === (user && user.uid));
+  if (meus.length === 0) {
+    wrap.innerHTML = `<div class="pauta-empty">Você ainda não adicionou nenhum assunto essa semana.</div>`;
+    return;
+  }
+  wrap.innerHTML = meus.map(i => `<div class="pauta-item">
+    <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+    <span class="pauta-item-remove" onclick="window.PAUTA.excluir('${i.id}')">✕</span>
+  </div>`).join('');
+}
+
+function renderAdminPanel() {
+  const wrap = document.getElementById('pautaAdminWrap');
+  if (!wrap) return;
+  const itens = getData().itens || [];
+  if (itens.length === 0) {
+    wrap.innerHTML = `<div class="tr-card" style="cursor:default;">
+      <div class="tr-card-title">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
+      <div class="pauta-empty">Ninguém enviou assuntos ainda essa semana.</div>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="tr-card" style="cursor:default;">
+    <div class="tr-card-title" style="margin-bottom:12px;">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
+    ${itens.map(i => `<div class="pauta-item">
+      <div>
+        <div class="pauta-item-nome">${escapeHTML(i.nome)}</div>
+        <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+window.PAUTA.render = render;
+window.PAUTA.renderAdminPanel = renderAdminPanel;
+window.PAUTA.adicionar = adicionar;
+window.PAUTA.excluir = excluir;
+})();
+</script>
+
 <script>
 // restaurar última view usada
 (function(){
