@@ -603,7 +603,7 @@ window.APPAUTH = window.APPAUTH || {};
     const ref = window.fb.doc(window.fb.db, 'usuarios', user.uid);
     const snap = await window.fb.getDoc(ref);
     if (!snap.exists()) {
-      const role = user.email === ADMIN_EMAIL ? 'admin' : 'liderado';
+      const role = user.email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'liderado';
       await window.fb.setDoc(ref, { email: user.email, role: role, nome: user.email.split('@')[0] });
       return { email: user.email, role: role, nome: user.email.split('@')[0] };
     }
@@ -985,15 +985,14 @@ function mostrarTool(nome) {
 }
 
 function aplicarPermissoes(role) {
-  var adminEls = document.querySelectorAll('.admin-only');
-  var lideradoEls = document.querySelectorAll('.liderado-only');
-  if (role === 'admin') {
-    adminEls.forEach(function(el){ el.style.display = ''; });
-    lideradoEls.forEach(function(el){ el.style.display = 'none'; });
-  } else {
-    adminEls.forEach(function(el){ el.style.display = 'none'; });
-    lideradoEls.forEach(function(el){ el.style.display = ''; });
+  function mostrar(el) {
+    el.style.display = el.classList.contains('drawer-item') ? 'flex' : 'block';
   }
+  function esconder(el) {
+    el.style.display = 'none';
+  }
+  document.querySelectorAll('.admin-only').forEach(function(el){ (role === 'admin') ? mostrar(el) : esconder(el); });
+  document.querySelectorAll('.liderado-only').forEach(function(el){ (role === 'liderado') ? mostrar(el) : esconder(el); });
 }
 </script>
 
