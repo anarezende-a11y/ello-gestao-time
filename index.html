@@ -2802,9 +2802,32 @@ function adicionar() {
 }
 
 function excluir(id) {
+  if (!confirm('Excluir esse assunto?')) return;
   const data = getData();
   data.itens = data.itens.filter(i => i.id !== id);
   setData(data);
+}
+
+let editandoId = null;
+function editar(id) {
+  editandoId = id;
+  render();
+}
+function cancelarEdicao() {
+  editandoId = null;
+  render();
+}
+function salvarEdicao(id) {
+  const ta = document.getElementById('pauta_edit_' + id);
+  if (!ta) return;
+  const texto = ta.value.trim();
+  if (!texto) return;
+  const data = getData();
+  const item = data.itens.find(i => i.id === id);
+  if (item) { item.texto = texto; item.ts = Date.now(); }
+  setData(data);
+  editandoId = null;
+  render();
 }
 
 function formatDataHora(ts) {
@@ -2828,13 +2851,25 @@ function render() {
     wrap.innerHTML = `<div class="pauta-empty">Você ainda não adicionou nenhum assunto essa semana.</div>`;
     return;
   }
-  wrap.innerHTML = meus.map(i => `<div class="pauta-item">
+  wrap.innerHTML = meus.map(i => {
+    if (i.id === editandoId) {
+      return `<div class="pauta-item" style="flex-direction:column; align-items:stretch;">
+        <textarea class="q-input" id="pauta_edit_${i.id}" rows="3">${escapeHTML(i.texto)}</textarea>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="tr-empty-btn" style="padding:8px 16px; font-size:12px;" onclick="window.PAUTA.salvarEdicao('${i.id}')">💾 Salvar</button>
+          <button class="tr-btn-delete" onclick="window.PAUTA.cancelarEdicao()">Cancelar</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="pauta-item">
     <div>
       <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
       <div class="pauta-item-nome" style="margin-top:6px; margin-bottom:0;">${formatDataHora(i.ts)}</div>
     </div>
+    <span class="pauta-item-remove" style="margin-right:6px;" onclick="window.PAUTA.editar('${i.id}')">✏️</span>
     <span class="pauta-item-remove" onclick="window.PAUTA.excluir('${i.id}')">✕</span>
-  </div>`).join('');
+  </div>`;
+  }).join('');
 }
 
 function renderAdminPanel() {
@@ -2865,6 +2900,9 @@ window.PAUTA.render = render;
 window.PAUTA.renderAdminPanel = renderAdminPanel;
 window.PAUTA.adicionar = adicionar;
 window.PAUTA.excluir = excluir;
+window.PAUTA.editar = editar;
+window.PAUTA.cancelarEdicao = cancelarEdicao;
+window.PAUTA.salvarEdicao = salvarEdicao;
 })();
 </script>
 
