@@ -516,6 +516,12 @@ body {
 .pauta-item-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; margin-left:auto; }
 .pauta-item-remove:hover { color:#D64545; }
 .pauta-empty { font-size:13px; color:var(--muted); padding:16px 0; }
+.pauta-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.pauta-tag { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; padding:3px 10px; border-radius:20px; }
+.pauta-tag-sistema { background:rgba(88,175,218,0.16); color:var(--azul-claro); }
+.pauta-tag-financeiro { background:rgba(253,116,0,0.16); color:var(--laranja); }
+.pauta-tag-processo { background:rgba(190,219,57,0.18); color:var(--lima); }
+.pauta-tag-comportamento { background:rgba(31,138,112,0.18); color:#3FBFA0; }
 
 /* Role Play: chips de participantes + escala de nota */
 .rp-chips { display:flex; flex-wrap:wrap; gap:8px; }
@@ -2831,6 +2837,21 @@ function salvarEdicao(id) {
   render();
 }
 
+const CATEGORIAS_PALAVRAS = {
+  'Sistema': ['sistema','solarz','gronner','plataforma','crm','login','acesso','senha','erro','bug','travou','travando','lento','não abre','nao abre','aplicativo','app','tela','atualização','atualizacao','integração','integracao'],
+  'Financeiro': ['financeiro','pagamento','comissão','comissao','valor','custo','reembolso','nota fiscal','boleto','fatura','salário','salario','desconto','repasse','cobrança','cobranca','orçamento','orcamento','contas a pagar','contas a receber'],
+  'Processo': ['processo','procedimento','fluxo','etapa','pop','padrão','padrao','checklist','prazo','atraso','protocolo','burocracia','documentação','documentacao','contrato','homologação','homologacao','instalação','instalacao'],
+  'Comportamento': ['comportamento','atitude','conflito','colega','equipe','clima','motivação','motivacao','feedback','postura','relacionamento','falta de comunicação','falta de comunicacao','desmotivado','engajamento']
+};
+function detectarCategorias(texto) {
+  const t = (texto || '').toLowerCase();
+  const encontradas = [];
+  Object.keys(CATEGORIAS_PALAVRAS).forEach(cat => {
+    if (CATEGORIAS_PALAVRAS[cat].some(palavra => t.includes(palavra))) encontradas.push(cat);
+  });
+  return encontradas;
+}
+
 function formatDataHora(ts) {
   if (!ts) return '';
   const d = new Date(ts);
@@ -2865,12 +2886,19 @@ function render() {
     return `<div class="pauta-item">
     <div>
       <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+      ${renderTagsHTML(i.texto)}
       <div class="pauta-item-nome" style="margin-top:6px; margin-bottom:0;">${formatDataHora(i.ts)}</div>
     </div>
     <span class="pauta-item-remove" style="margin-right:6px;" onclick="window.PAUTA.editar('${i.id}')">✏️</span>
     <span class="pauta-item-remove" onclick="window.PAUTA.excluir('${i.id}')">✕</span>
   </div>`;
   }).join('');
+}
+
+function renderTagsHTML(texto) {
+  const cats = detectarCategorias(texto);
+  if (cats.length === 0) return '';
+  return `<div class="pauta-tags">${cats.map(c => `<span class="pauta-tag pauta-tag-${c.toLowerCase()}">${c}</span>`).join('')}</div>`;
 }
 
 function renderAdminPanel() {
@@ -2892,6 +2920,7 @@ function renderAdminPanel() {
       <div>
         <div class="pauta-item-nome">${escapeHTML(i.nome)} · ${formatDataHora(i.ts)}</div>
         <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
+        ${renderTagsHTML(i.texto)}
       </div>
     </div>`).join('')}
   </div>`;
