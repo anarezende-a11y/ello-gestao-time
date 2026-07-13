@@ -4,6 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pós-Venda · Ello Solar</title>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC7cNQNOQI4I68r2zkE2wOZU1tJZb7LbBw",
+    authDomain: "pos-vendas-95eee.firebaseapp.com",
+    projectId: "pos-vendas-95eee",
+    storageBucket: "pos-vendas-95eee.firebasestorage.app",
+    messagingSenderId: "942831555560",
+    appId: "1:942831555560:web:42fed71157834d67070a5d",
+    measurementId: "G-1YZGLN18SP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.fb = { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, onSnapshot };
+  window.dispatchEvent(new Event('fbReady'));
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -37,6 +59,17 @@ body {
   color:var(--text);
   min-height:100vh;
 }
+
+/* ===== TELA DE LOGIN ===== */
+#authScreen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card { width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:36px 30px; box-shadow:0 30px 70px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset; text-align:center; }
+.auth-logo { width:56px; height:56px; border-radius:16px; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; font-size:26px; background:linear-gradient(155deg, #045870 0%, #004358 60%); box-shadow:0 4px 14px rgba(0,20,28,0.4); }
+.auth-title { font-size:17px; font-weight:800; color:var(--text); margin-bottom:6px; }
+.auth-sub { font-size:12px; color:var(--muted); margin-bottom:22px; }
+#authScreen .tr-field { text-align:left; margin-bottom:14px; }
+.auth-erro { font-size:12px; color:#FF8080; min-height:16px; margin-bottom:8px; }
+.auth-btn { width:100%; justify-content:center; margin-top:6px; }
+.auth-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none!important; }
 
 
 
@@ -498,6 +531,101 @@ body {
 </head>
 <body>
 
+<!-- ================= TELA DE LOGIN ================= -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">🔒</div>
+    <div class="auth-title">Ello Solar · Pós-Venda</div>
+    <div class="auth-sub">Entre com seu e-mail e senha</div>
+    <div class="tr-field">
+      <label>E-mail</label>
+      <input type="email" class="tr-text-input" id="auth_email" placeholder="seuemail@ellosolar.com" autocomplete="username">
+    </div>
+    <div class="tr-field">
+      <label>Senha</label>
+      <input type="password" class="tr-text-input" id="auth_senha" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="auth_erro" class="auth-erro"></div>
+    <button class="tr-empty-btn auth-btn" id="auth_btn" onclick="window.APPAUTH.entrar()">Entrar</button>
+  </div>
+</div>
+
+<script>
+window.APPAUTH = window.APPAUTH || {};
+(function(){
+  const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
+  let fbReady = false;
+
+  function whenFbReady(cb) {
+    if (window.fb) { cb(); return; }
+    window.addEventListener('fbReady', cb, { once:true });
+  }
+
+  function entrar() {
+    const email = document.getElementById('auth_email').value.trim();
+    const senha = document.getElementById('auth_senha').value;
+    const erroBox = document.getElementById('auth_erro');
+    const btn = document.getElementById('auth_btn');
+    erroBox.textContent = '';
+    if (!email || !senha) { erroBox.textContent = 'Preenche e-mail e senha.'; return; }
+    if (!window.fb) { erroBox.textContent = 'Ainda carregando, tenta de novo em 1 segundo.'; return; }
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+    window.fb.signInWithEmailAndPassword(window.fb.auth, email, senha)
+      .catch(err => {
+        let msg = 'Não deu pra entrar. Confere e-mail e senha.';
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') msg = 'E-mail ou senha incorretos.';
+        if (err.code === 'auth/too-many-requests') msg = 'Muitas tentativas — espera um pouco e tenta de novo.';
+        if (err.code === 'auth/invalid-email') msg = 'E-mail inválido.';
+        erroBox.textContent = msg;
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Entrar';
+      });
+  }
+
+  function sair() {
+    if (!window.fb) return;
+    window.fb.signOut(window.fb.auth);
+  }
+
+  async function garantirUsuario(user) {
+    const ref = window.fb.doc(window.fb.db, 'usuarios', user.uid);
+    const snap = await window.fb.getDoc(ref);
+    if (!snap.exists()) {
+      const role = user.email === ADMIN_EMAIL ? 'admin' : 'liderado';
+      await window.fb.setDoc(ref, { email: user.email, role: role, nome: user.email.split('@')[0] });
+      return { email: user.email, role: role, nome: user.email.split('@')[0] };
+    }
+    return snap.data();
+  }
+
+  whenFbReady(() => {
+    window.fb.onAuthStateChanged(window.fb.auth, async (user) => {
+      if (user) {
+        const perfil = await garantirUsuario(user);
+        window.APPAUTH.usuarioAtual = { uid: user.uid, email: user.email, role: perfil.role, nome: perfil.nome };
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('appShell').style.display = 'block';
+        const info = document.getElementById('drawerUserInfo');
+        if (info) info.textContent = (perfil.role === 'admin' ? '👑 ' : '') + user.email;
+        window.dispatchEvent(new CustomEvent('userAuthed', { detail: window.APPAUTH.usuarioAtual }));
+      } else {
+        window.APPAUTH.usuarioAtual = null;
+        document.getElementById('authScreen').style.display = 'flex';
+        document.getElementById('appShell').style.display = 'none';
+      }
+    });
+  });
+
+  window.APPAUTH.entrar = entrar;
+  window.APPAUTH.sair = sair;
+})();
+</script>
+
+<div id="appShell" style="display:none;">
+
 <div class="main-header">
   <button class="hamburger" id="hamburgerBtn" onclick="toggleDrawer()" aria-label="Abrir menu">
     <span></span><span></span><span></span>
@@ -541,7 +669,10 @@ body {
   <button class="drawer-item" id="di_pop" onclick="mostrarTool('pop')">
     <span class="di-icon">📋</span> POP
   </button>
-  <div class="drawer-foot">Pós-Venda · Ello Solar<br>Ferramentas internas de gestão de time</div>
+  <div class="drawer-foot">
+    <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
+    <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
+  </div>
 </nav>
 
 <!-- ================= MENU PRINCIPAL ================= -->
@@ -1716,25 +1847,36 @@ const CATEGORIAS_PADRAO = ['Atendimento','CRM','Pós-Venda','Desenvolvimento Pes
 let catAtiva = 'Todos';
 let modalId = null; // id do módulo em edição, null = criando novo
 let saveTimer_t;
+let cachedData = null;
+let listenerAtivo_t = false;
+
+function defaultData() { return { categorias: CATEGORIAS_PADRAO.slice(), modulos: [] }; }
 
 function getData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      let mudou = false;
-      CATEGORIAS_PADRAO.forEach(c => {
-        if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; }
-      });
-      if (mudou) setData(data);
-      return data;
-    }
-  } catch(e) {}
-  return { categorias: CATEGORIAS_PADRAO.slice(), modulos: [] };
+  return cachedData || defaultData();
 }
 function setData(d) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+  cachedData = d;
+  if (window.fb && window.APPAUTH.usuarioAtual) {
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'treinamentos'), d).catch(e => console.error('TR save error', e));
+  }
 }
+function iniciarListener_t() {
+  if (listenerAtivo_t || !window.fb || !window.APPAUTH.usuarioAtual) return;
+  listenerAtivo_t = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'treinamentos'), (snap) => {
+    const data = snap.exists() ? snap.data() : defaultData();
+    if (!data.categorias) data.categorias = [];
+    if (!data.modulos) data.modulos = [];
+    let mudou = false;
+    CATEGORIAS_PADRAO.forEach(c => { if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; } });
+    cachedData = data;
+    if (mudou) setData(data);
+    render();
+  }, err => console.error('TR snapshot error', err));
+}
+window.addEventListener('userAuthed', iniciarListener_t);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciarListener_t();
 function uid() { return 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 
 function render() {
@@ -2022,17 +2164,31 @@ window.RP = window.RP || {};
 const STORAGE_KEY = 'ello_roleplay_sessoes';
 const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe'];
 let modalId = null;
+let cachedData = null;
+let listenerAtivo_p = false;
 
+function defaultData() { return { sessoes: [] }; }
 function getData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { sessoes: [] };
+  return cachedData || defaultData();
 }
 function setData(d) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+  cachedData = d;
+  if (window.fb && window.APPAUTH.usuarioAtual) {
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'roleplay'), d).catch(e => console.error('RP save error', e));
+  }
 }
+function iniciarListener_p() {
+  if (listenerAtivo_p || !window.fb || !window.APPAUTH.usuarioAtual) return;
+  listenerAtivo_p = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'roleplay'), (snap) => {
+    const data = snap.exists() ? snap.data() : defaultData();
+    if (!data.sessoes) data.sessoes = [];
+    cachedData = data;
+    render();
+  }, err => console.error('RP snapshot error', err));
+}
+window.addEventListener('userAuthed', iniciarListener_p);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciarListener_p();
 function uid() { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -2289,25 +2445,35 @@ const STORAGE_KEY = 'ello_pop_procedimentos';
 const CATEGORIAS_PADRAO = ['Pós Vendas','Financeiro'];
 let catAtiva = 'Todos';
 let modalId = null;
+let cachedData = null;
+let listenerAtivo_pop = false;
 
+function defaultData() { return { categorias: CATEGORIAS_PADRAO.slice(), procedimentos: [] }; }
 function getData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      let mudou = false;
-      CATEGORIAS_PADRAO.forEach(c => {
-        if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; }
-      });
-      if (mudou) setData(data);
-      return data;
-    }
-  } catch(e) {}
-  return { categorias: CATEGORIAS_PADRAO.slice(), procedimentos: [] };
+  return cachedData || defaultData();
 }
 function setData(d) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+  cachedData = d;
+  if (window.fb && window.APPAUTH.usuarioAtual) {
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'pop'), d).catch(e => console.error('POP save error', e));
+  }
 }
+function iniciarListener_pop() {
+  if (listenerAtivo_pop || !window.fb || !window.APPAUTH.usuarioAtual) return;
+  listenerAtivo_pop = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'pop'), (snap) => {
+    const data = snap.exists() ? snap.data() : defaultData();
+    if (!data.categorias) data.categorias = [];
+    if (!data.procedimentos) data.procedimentos = [];
+    let mudou = false;
+    CATEGORIAS_PADRAO.forEach(c => { if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; } });
+    cachedData = data;
+    if (mudou) setData(data);
+    render();
+  }, err => console.error('POP snapshot error', err));
+}
+window.addEventListener('userAuthed', iniciarListener_pop);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciarListener_pop();
 function uid() { return 'pop_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
 function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -2523,5 +2689,6 @@ render();
 })();
 </script>
 
+</div>
 </body>
 </html>
