@@ -2836,6 +2836,7 @@ function salvarEdicao(id) {
   setData(data);
   editandoId = null;
   render();
+  renderAdminPanel();
 }
 
 const CATEGORIAS_PALAVRAS = {
@@ -2917,14 +2918,36 @@ function renderAdminPanel() {
   wrap.innerHTML = `<div class="tr-card" style="cursor:default;">
     <div class="tr-card-title" style="margin-bottom:2px;">📝 Pauta enviada pelo time — semana ${semanaAtualKey || getISOWeekKey()}</div>
     <div class="pauta-item-nome" style="margin-bottom:14px;">Última atualização: ${formatDataHora(ultimaAtualizacao)}</div>
-    ${itens.map(i => `<div class="pauta-item">
+    ${itens.map(i => {
+      if (i.id === editandoId) {
+        return `<div class="pauta-item" style="flex-direction:column; align-items:stretch;">
+          <div class="pauta-item-nome">${escapeHTML(i.nome)}</div>
+          <textarea class="q-input" id="pauta_edit_${i.id}" rows="3">${escapeHTML(i.texto)}</textarea>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="tr-empty-btn" style="padding:8px 16px; font-size:12px;" onclick="window.PAUTA.salvarEdicao('${i.id}')">💾 Salvar</button>
+            <button class="tr-btn-delete" onclick="window.PAUTA.cancelarEdicaoAdmin()">Cancelar</button>
+          </div>
+        </div>`;
+      }
+      return `<div class="pauta-item">
       <div>
         <div class="pauta-item-nome">${escapeHTML(i.nome)} · ${formatDataHora(i.ts)}</div>
         <div class="pauta-item-texto">${escapeHTML(i.texto)}</div>
         ${renderTagsHTML(i.texto)}
       </div>
-    </div>`).join('')}
+      <span class="pauta-item-remove" style="margin-right:6px;" onclick="window.PAUTA.editarAdmin('${i.id}')">✏️</span>
+      <span class="pauta-item-remove" onclick="window.PAUTA.excluir('${i.id}')">✕</span>
+    </div>`;
+    }).join('')}
   </div>`;
+}
+function editarAdmin(id) {
+  editandoId = id;
+  renderAdminPanel();
+}
+function cancelarEdicaoAdmin() {
+  editandoId = null;
+  renderAdminPanel();
 }
 
 window.PAUTA.render = render;
@@ -2934,6 +2957,8 @@ window.PAUTA.excluir = excluir;
 window.PAUTA.editar = editar;
 window.PAUTA.cancelarEdicao = cancelarEdicao;
 window.PAUTA.salvarEdicao = salvarEdicao;
+window.PAUTA.editarAdmin = editarAdmin;
+window.PAUTA.cancelarEdicaoAdmin = cancelarEdicaoAdmin;
 })();
 </script>
 
