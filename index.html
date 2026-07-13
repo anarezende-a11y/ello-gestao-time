@@ -91,6 +91,7 @@ body {
 .home-card.c-oneone .hc-icon { background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); }
 .home-card.c-treinamentos .hc-icon { background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); }
 .home-card.c-roleplay .hc-icon { background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); }
+.home-card.c-pop .hc-icon { background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); }
 .home-card .hc-title { font-size:16px; font-weight:800; color:var(--text); margin-bottom:6px; }
 .home-card .hc-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:14px; }
 .home-card .hc-cta { font-size:12px; font-weight:800; color:var(--laranja); display:flex; align-items:center; gap:5px; }
@@ -454,6 +455,25 @@ body {
 .tr-modal-foot .btn-amber { padding:10px 20px; border-radius:13px; background:linear-gradient(150deg, #FF9130, var(--laranja) 60%); color:#fff; border:none; font-family:'Stilu','Nunito Sans',sans-serif; font-size:12px; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(253,116,0,0.34), inset 0 1px 0 rgba(255,255,255,0.3); transition:all .2s; }
 .tr-modal-foot .btn-amber:hover { transform:translateY(-2px); box-shadow:0 12px 26px rgba(253,116,0,0.42), inset 0 1px 0 rgba(255,255,255,0.3); }
 
+/* POP: passos numerados */
+.pop-passo { display:flex; gap:12px; background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:14px; margin-bottom:10px; }
+.pop-passo-num { flex-shrink:0; width:28px; height:28px; border-radius:9px; background:linear-gradient(150deg, #FF9130, var(--laranja) 60%); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; box-shadow:0 4px 10px rgba(253,116,0,0.3); }
+.pop-passo-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.pop-passo-body input[type=text], .pop-passo-body textarea { width:100%; background:var(--surface); border:1px solid var(--border2); border-radius:9px; padding:8px 10px; font-family:'Stilu','Nunito Sans',sans-serif; font-size:13px; color:var(--text); outline:none; transition:border .15s; resize:vertical; }
+.pop-passo-body input[type=text]:focus, .pop-passo-body textarea:focus { border-color:rgba(253,116,0,.5); }
+.pop-passo-body input::placeholder, .pop-passo-body textarea::placeholder { color:var(--muted2); }
+.pop-passo-top { display:flex; align-items:center; gap:8px; }
+.pop-passo-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; padding:2px; }
+.pop-passo-remove:hover { color:#D64545; }
+.pop-card-steps { font-size:11px; color:var(--muted2); font-weight:700; display:flex; align-items:center; gap:5px; }
+.pop-step-view { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.pop-step-view:last-child { border-bottom:none; }
+.pop-step-view .pop-passo-num { width:26px; height:26px; font-size:12px; }
+.pop-step-view-body { flex:1; }
+.pop-step-view-title { font-weight:700; font-size:13px; color:var(--text); margin-bottom:3px; }
+.pop-step-view-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.pop-step-view-img { margin-top:8px; max-width:100%; border-radius:10px; border:1px solid var(--border2); }
+
 /* Role Play: chips de participantes + escala de nota */
 .rp-chips { display:flex; flex-wrap:wrap; gap:8px; }
 .rp-chip { display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:100px; border:1.5px solid var(--border2); background:var(--card2); cursor:pointer; font-size:12px; font-weight:700; color:var(--muted); transition:all .15s; user-select:none; }
@@ -518,6 +538,9 @@ body {
   <button class="drawer-item" id="di_roleplay" onclick="mostrarTool('roleplay')">
     <span class="di-icon">🎭</span> Role Play
   </button>
+  <button class="drawer-item" id="di_pop" onclick="mostrarTool('pop')">
+    <span class="di-icon">📋</span> POP
+  </button>
   <div class="drawer-foot">Pós-Venda · Ello Solar<br>Ferramentas internas de gestão de time</div>
 </nav>
 
@@ -552,6 +575,12 @@ body {
         <div class="hc-icon">🎭</div>
         <div class="hc-title">Role Play</div>
         <div class="hc-desc">Registro das sessões de role play: data, participantes e feedback de cada prática.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-pop" onclick="mostrarTool('pop')">
+        <div class="hc-icon">📋</div>
+        <div class="hc-title">POP</div>
+        <div class="hc-desc">Procedimentos Operacionais Padrão por área, com passos numerados e organizados por tema.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
     </div>
@@ -660,6 +689,46 @@ body {
   </div>
 </div>
 
+<!-- ================= TOOL: POP (Procedimento Operacional Padrão) ================= -->
+<div class="tool-view tool-pop" id="view_pop">
+  <div class="tool-subbar">
+    <span class="sb-title">📋 POP</span>
+    <span class="save-ind" id="saveInd_pop">✓ Salvo</span>
+    <button class="btn btn-amber" onclick="window.POP.novoProcedimento()">+ Novo POP</button>
+  </div>
+  <div class="tr-cat-nav" id="popCatNav"></div>
+  <div class="wrap" id="mainWrap_pop"></div>
+</div>
+
+<!-- Modal de POP -->
+<div class="tr-modal-overlay" id="popModalOverlay" onclick="if(event.target===this) window.POP.fecharModal()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <input type="text" class="tr-modal-title-input" id="pop_titulo" placeholder="Nome do POP (ex: Sistema 360)...">
+      <button class="tr-modal-close" onclick="window.POP.fecharModal()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div class="tr-field">
+        <label>Área</label>
+        <select id="pop_categoria"></select>
+      </div>
+      <div class="tr-field">
+        <label>Descrição</label>
+        <textarea class="q-input" id="pop_descricao" rows="2" placeholder="Do que se trata esse procedimento..."></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Passos do procedimento</label>
+        <div id="pop_passos_list"></div>
+        <button class="tr-add-btn" onclick="window.POP.addPasso()">+ Adicionar passo</button>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="pop_delete_btn" onclick="window.POP.excluirProcedimento()">🗑️ Excluir POP</button>
+      <button class="btn btn-amber" onclick="window.POP.salvarProcedimento()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal de módulo (criar/editar) -->
 <div class="tr-modal-overlay" id="trModalOverlay" onclick="if(event.target===this) window.TR.fecharModal()">
   <div class="tr-modal">
@@ -716,8 +785,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP' };
   Object.keys(views).forEach(function(k) {
     var v = document.getElementById(views[k]);
     v.classList.toggle('active', k === nome);
@@ -730,6 +799,7 @@ function mostrarTool(nome) {
   try { localStorage.setItem('ello_tool_ativa', nome); } catch(e) {}
   if (nome === 'treinamentos' && window.TR) window.TR.render();
   if (nome === 'roleplay' && window.RP) window.RP.render();
+  if (nome === 'pop' && window.POP) window.POP.render();
   window.scrollTo(0, 0);
 }
 </script>
@@ -2208,6 +2278,240 @@ render();
   window.RP.atualizarPreviewVideo = atualizarPreviewVideo;
   window.RP.onParticipantesChange = onParticipantesChange;
   window.RP.selNota = selNota;
+})();
+</script>
+
+<!-- ===== JS: POP — Procedimento Operacional Padrão (escopo isolado) ===== -->
+<script>
+window.POP = window.POP || {};
+(function(){
+const STORAGE_KEY = 'ello_pop_procedimentos';
+const CATEGORIAS_PADRAO = ['Pós Vendas','Financeiro'];
+let catAtiva = 'Todos';
+let modalId = null;
+
+function getData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      let mudou = false;
+      CATEGORIAS_PADRAO.forEach(c => {
+        if (!data.categorias.includes(c)) { data.categorias.push(c); mudou = true; }
+      });
+      if (mudou) setData(data);
+      return data;
+    }
+  } catch(e) {}
+  return { categorias: CATEGORIAS_PADRAO.slice(), procedimentos: [] };
+}
+function setData(d) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
+}
+function uid() { return 'pop_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function render() {
+  const data = getData();
+  renderCatNav(data);
+  renderGrid(data);
+}
+
+function renderCatNav(data) {
+  const nav = document.getElementById('popCatNav');
+  const cats = ['Todos'].concat(data.categorias);
+  if (!cats.includes(catAtiva)) catAtiva = 'Todos';
+  nav.innerHTML = cats.map(c =>
+    `<button class="tr-cat-tab${c===catAtiva?' active':''}" onclick="window.POP.filtrarCategoria('${c.replace(/'/g,"\\'")}')">${c}</button>`
+  ).join('') + `<button class="tr-cat-add" onclick="window.POP.addCategoria()">+ Área</button>`;
+}
+
+function renderGrid(data) {
+  const wrap = document.getElementById('mainWrap_pop');
+  const itens = catAtiva === 'Todos' ? data.procedimentos : data.procedimentos.filter(p => p.categoria === catAtiva);
+
+  if (data.procedimentos.length === 0) {
+    wrap.innerHTML = `<div class="tr-empty">
+      <div class="tr-empty-badge"><div class="tr-empty-icon">📋</div></div>
+      <div class="tr-empty-title">Nenhum POP criado ainda</div>
+      <div class="tr-empty-desc">Crie procedimentos padrão por área, com passos numerados (ex: Sistema 360, Celesc).</div>
+      <button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Criar primeiro POP</button>
+    </div>`;
+    return;
+  }
+  if (itens.length === 0) {
+    wrap.innerHTML = `<div class="tr-empty">
+      <div class="tr-empty-badge"><div class="tr-empty-icon">📁</div></div>
+      <div class="tr-empty-title">Nenhum POP em "${catAtiva}"</div>
+      <div class="tr-empty-desc">Crie um POP nessa área ou veja outras no menu acima.</div>
+      <button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Novo POP</button>
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="tr-grid">${itens.map(p => {
+    const totalPassos = (p.passos||[]).length;
+    return `<button class="tr-card" onclick="window.POP.abrirProcedimento('${p.id}')">
+      <div class="tr-card-cat">${escapeHTML(p.categoria||'')}</div>
+      <div class="tr-card-title">${escapeHTML(p.titulo||'Sem título')}</div>
+      <div class="tr-card-desc">${escapeHTML(p.descricao||'')}</div>
+      <div class="pop-card-steps">📋 ${totalPassos} passo${totalPassos!==1?'s':''}</div>
+    </button>`;
+  }).join('')}</div>`;
+}
+
+function filtrarCategoria(cat) {
+  catAtiva = cat;
+  render();
+}
+
+function addCategoria() {
+  const nome = prompt('Nome da nova área:');
+  if (!nome || !nome.trim()) return;
+  const data = getData();
+  if (!data.categorias.includes(nome.trim())) {
+    data.categorias.push(nome.trim());
+    setData(data);
+  }
+  catAtiva = nome.trim();
+  render();
+}
+
+/* ===== MODAL ===== */
+function novoProcedimento() {
+  modalId = null;
+  const data = getData();
+  document.getElementById('pop_titulo').value = '';
+  document.getElementById('pop_descricao').value = '';
+  popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
+  renderPassos([]);
+  document.getElementById('pop_delete_btn').style.display = 'none';
+  document.getElementById('popModalOverlay').classList.add('open');
+}
+
+function abrirProcedimento(id) {
+  const data = getData();
+  const p = data.procedimentos.find(x => x.id === id);
+  if (!p) return;
+  modalId = id;
+  document.getElementById('pop_titulo').value = p.titulo || '';
+  document.getElementById('pop_descricao').value = p.descricao || '';
+  popularSelectCategorias(data, p.categoria);
+  renderPassos(p.passos || []);
+  document.getElementById('pop_delete_btn').style.display = 'inline-block';
+  document.getElementById('popModalOverlay').classList.add('open');
+}
+
+function popularSelectCategorias(data, selecionada) {
+  const sel = document.getElementById('pop_categoria');
+  sel.innerHTML = data.categorias.map(c =>
+    `<option value="${escapeHTML(c)}" ${c===selecionada?'selected':''}>${escapeHTML(c)}</option>`
+  ).join('');
+}
+
+function renderPassos(passos) {
+  const list = document.getElementById('pop_passos_list');
+  list.innerHTML = passos.map((p, i) => criarPassoHTML(p)).join('');
+  renumerarPassos();
+}
+
+function criarPassoHTML(p) {
+  p = p || { titulo:'', descricao:'', imagem:'' };
+  return `<div class="pop-passo">
+    <div class="pop-passo-num">•</div>
+    <div class="pop-passo-body">
+      <input type="text" placeholder="Título do passo (ex: Acessar o Sistema 360)" value="${escapeHTML(p.titulo||'')}">
+      <textarea rows="2" placeholder="Descrição detalhada do passo...">${escapeHTML(p.descricao||'')}</textarea>
+      <input type="text" placeholder="Link de imagem/print (opcional)" value="${escapeHTML(p.imagem||'')}">
+    </div>
+    <span class="pop-passo-remove" onclick="this.closest('.pop-passo').remove(); window.POP.renumerarPassos()">✕</span>
+  </div>`;
+}
+
+function addPasso() {
+  const list = document.getElementById('pop_passos_list');
+  list.insertAdjacentHTML('beforeend', criarPassoHTML());
+  renumerarPassos();
+}
+
+function renumerarPassos() {
+  document.querySelectorAll('#pop_passos_list .pop-passo-num').forEach((el, i) => {
+    el.textContent = i + 1;
+  });
+}
+
+function fecharModal() {
+  document.getElementById('popModalOverlay').classList.remove('open');
+  modalId = null;
+}
+
+function salvarProcedimento() {
+  const titulo = document.getElementById('pop_titulo').value.trim();
+  if (!titulo) { alert('Dá um nome pro POP antes de salvar :)'); return; }
+
+  const passos = [];
+  document.querySelectorAll('#pop_passos_list .pop-passo').forEach(item => {
+    const inputs = item.querySelectorAll('input[type=text]');
+    const textarea = item.querySelector('textarea');
+    const tit = inputs[0] ? inputs[0].value.trim() : '';
+    const img = inputs[1] ? inputs[1].value.trim() : '';
+    const desc = textarea ? textarea.value.trim() : '';
+    if (tit || desc || img) passos.push({ titulo: tit, descricao: desc, imagem: img });
+  });
+
+  const procedimento = {
+    id: modalId || uid(),
+    categoria: document.getElementById('pop_categoria').value,
+    titulo: titulo,
+    descricao: document.getElementById('pop_descricao').value.trim(),
+    passos: passos
+  };
+
+  const data = getData();
+  if (modalId) {
+    const idx = data.procedimentos.findIndex(p => p.id === modalId);
+    if (idx > -1) data.procedimentos[idx] = procedimento; else data.procedimentos.push(procedimento);
+  } else {
+    data.procedimentos.push(procedimento);
+  }
+  setData(data);
+  fecharModal();
+  render();
+  showSaved();
+}
+
+function excluirProcedimento() {
+  if (!modalId) return;
+  if (!confirm('Excluir esse POP? Essa ação não pode ser desfeita.')) return;
+  const data = getData();
+  data.procedimentos = data.procedimentos.filter(p => p.id !== modalId);
+  setData(data);
+  fecharModal();
+  render();
+  showSaved();
+}
+
+function showSaved() {
+  const ind = document.getElementById('saveInd_pop');
+  if (!ind) return;
+  ind.classList.add('show');
+  setTimeout(() => ind.classList.remove('show'), 2000);
+}
+
+render();
+
+  window.POP.render = render;
+  window.POP.filtrarCategoria = filtrarCategoria;
+  window.POP.addCategoria = addCategoria;
+  window.POP.novoProcedimento = novoProcedimento;
+  window.POP.abrirProcedimento = abrirProcedimento;
+  window.POP.fecharModal = fecharModal;
+  window.POP.salvarProcedimento = salvarProcedimento;
+  window.POP.excluirProcedimento = excluirProcedimento;
+  window.POP.addPasso = addPasso;
+  window.POP.renumerarPassos = renumerarPassos;
 })();
 </script>
 <script>
