@@ -1355,9 +1355,9 @@ window.APPAUTH = window.APPAUTH || {};
         <textarea class="q-input" id="pop_descricao" rows="2" placeholder="Do que se trata esse procedimento..."></textarea>
       </div>
       <div class="tr-field">
-        <label>Passos do procedimento</label>
-        <div id="pop_passos_list"></div>
-        <button class="tr-add-btn" onclick="window.POP.addPasso()">+ Adicionar passo</button>
+        <label>Link do arquivo (Google Drive, YouTube, imagem, PDF...)</label>
+        <input type="text" class="q-input" id="pop_link" placeholder="Cole aqui o link do arquivo..." oninput="window.POP.atualizarPreviewPop()">
+        <div id="pop_link_preview" class="pop-passo-preview"></div>
       </div>
     </div>
     <div class="tr-modal-foot">
@@ -3663,12 +3663,12 @@ function renderGrid(data) {
   }
 
   wrap.innerHTML = `<div class="tr-grid">${itens.map(p => {
-    const totalPassos = (p.passos||[]).length;
+    const temLink = !!(p.link && p.link.trim());
     return `<button class="tr-card" onclick="window.POP.abrirProcedimento('${p.id}')">
       <div class="tr-card-cat">${escapeHTML(p.categoria||'')}</div>
       <div class="tr-card-title">${escapeHTML(p.titulo||'Sem título')}</div>
       <div class="tr-card-desc">${escapeHTML(p.descricao||'')}</div>
-      <div class="pop-card-steps">📋 ${totalPassos} passo${totalPassos!==1?'s':''}</div>
+      <div class="pop-card-steps">${temLink ? '📎 Arquivo anexado' : '— sem arquivo'}</div>
     </button>`;
   }).join('')}</div>`;
 }
@@ -3696,8 +3696,9 @@ function novoProcedimento() {
   const data = getData();
   document.getElementById('pop_titulo').value = '';
   document.getElementById('pop_descricao').value = '';
+  document.getElementById('pop_link').value = '';
+  document.getElementById('pop_link_preview').innerHTML = '';
   popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
-  renderPassos([]);
   document.getElementById('pop_delete_btn').style.display = 'none';
   document.getElementById('popModalOverlay').classList.add('open');
 }
@@ -3709,8 +3710,10 @@ function abrirProcedimento(id) {
   modalId = id;
   document.getElementById('pop_titulo').value = p.titulo || '';
   document.getElementById('pop_descricao').value = p.descricao || '';
+  const link = p.link || '';
+  document.getElementById('pop_link').value = link;
+  document.getElementById('pop_link_preview').innerHTML = link && window.gerarEmbedVideo ? window.gerarEmbedVideo(link) : '';
   popularSelectCategorias(data, p.categoria);
-  renderPassos(p.passos || []);
   document.getElementById('pop_delete_btn').style.display = 'inline-block';
   document.getElementById('popModalOverlay').classList.add('open');
 }
@@ -3722,45 +3725,9 @@ function popularSelectCategorias(data, selecionada) {
   ).join('');
 }
 
-function renderPassos(passos) {
-  const list = document.getElementById('pop_passos_list');
-  list.innerHTML = passos.map((p, i) => criarPassoHTML(p)).join('');
-  renumerarPassos();
-}
-
-function criarPassoHTML(p) {
-  p = p || { titulo:'', descricao:'', imagem:'' };
-  const imgVal = p.imagem || '';
-  const previewHTML = imgVal ? (window.gerarEmbedVideo ? window.gerarEmbedVideo(imgVal) : '') : '';
-  return `<div class="pop-passo">
-    <div class="pop-passo-num">•</div>
-    <div class="pop-passo-body">
-      <input type="text" placeholder="Título do passo (ex: Acessar o Sistema 360)" value="${escapeHTML(p.titulo||'')}">
-      <textarea rows="2" placeholder="Descrição detalhada do passo...">${escapeHTML(p.descricao||'')}</textarea>
-      <input type="text" class="pop-passo-imagem-input" placeholder="Link do arquivo (Google Drive, YouTube, imagem, PDF...)" value="${escapeHTML(imgVal)}" oninput="window.POP.atualizarPreviewPasso(this)">
-      <div class="pop-passo-preview">${previewHTML}</div>
-    </div>
-    <span class="pop-passo-remove" onclick="this.closest('.pop-passo').remove(); window.POP.renumerarPassos()">✕</span>
-  </div>`;
-}
-
-function atualizarPreviewPasso(inputEl) {
-  const url = inputEl.value.trim();
-  const previewEl = inputEl.nextElementSibling;
-  if (!previewEl || !previewEl.classList.contains('pop-passo-preview')) return;
-  previewEl.innerHTML = url && window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
-}
-
-function addPasso() {
-  const list = document.getElementById('pop_passos_list');
-  list.insertAdjacentHTML('beforeend', criarPassoHTML());
-  renumerarPassos();
-}
-
-function renumerarPassos() {
-  document.querySelectorAll('#pop_passos_list .pop-passo-num').forEach((el, i) => {
-    el.textContent = i + 1;
-  });
+function atualizarPreviewPop() {
+  const url = document.getElementById('pop_link').value.trim();
+  document.getElementById('pop_link_preview').innerHTML = url && window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
 }
 
 function fecharModal() {
@@ -3772,22 +3739,12 @@ function salvarProcedimento() {
   const titulo = document.getElementById('pop_titulo').value.trim();
   if (!titulo) { alert('Dá um nome pro POP antes de salvar :)'); return; }
 
-  const passos = [];
-  document.querySelectorAll('#pop_passos_list .pop-passo').forEach(item => {
-    const inputs = item.querySelectorAll('input[type=text]');
-    const textarea = item.querySelector('textarea');
-    const tit = inputs[0] ? inputs[0].value.trim() : '';
-    const img = inputs[1] ? inputs[1].value.trim() : '';
-    const desc = textarea ? textarea.value.trim() : '';
-    if (tit || desc || img) passos.push({ titulo: tit, descricao: desc, imagem: img });
-  });
-
   const procedimento = {
     id: modalId || uid(),
     categoria: document.getElementById('pop_categoria').value,
     titulo: titulo,
     descricao: document.getElementById('pop_descricao').value.trim(),
-    passos: passos
+    link: document.getElementById('pop_link').value.trim()
   };
 
   const data = getData();
@@ -3831,9 +3788,7 @@ render();
   window.POP.fecharModal = fecharModal;
   window.POP.salvarProcedimento = salvarProcedimento;
   window.POP.excluirProcedimento = excluirProcedimento;
-  window.POP.addPasso = addPasso;
-  window.POP.renumerarPassos = renumerarPassos;
-  window.POP.atualizarPreviewPasso = atualizarPreviewPasso;
+  window.POP.atualizarPreviewPop = atualizarPreviewPop;
 })();
 </script>
 
