@@ -661,6 +661,7 @@ body {
 .pop-passo-body input::placeholder, .pop-passo-body textarea::placeholder { color:var(--muted2); }
 .pop-passo-top { display:flex; align-items:center; gap:8px; }
 .pop-passo-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; padding:2px; }
+.pop-passo-preview:empty { display:none; }
 .pop-passo-remove:hover { color:#D64545; }
 .pop-card-steps { font-size:11px; color:var(--muted2); font-weight:700; display:flex; align-items:center; gap:5px; }
 .pop-step-view { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
@@ -3016,6 +3017,7 @@ render();
   window.TR.toggleGostei = toggleGostei;
   window.TR.enviarRespostaAdmin = enviarRespostaAdmin;
   window.TR.exportarPDF = exportarPDF;
+  window.gerarEmbedVideo = gerarEmbedVideo;
 })();
 </script>
 
@@ -3728,15 +3730,25 @@ function renderPassos(passos) {
 
 function criarPassoHTML(p) {
   p = p || { titulo:'', descricao:'', imagem:'' };
+  const imgVal = p.imagem || '';
+  const previewHTML = imgVal ? (window.gerarEmbedVideo ? window.gerarEmbedVideo(imgVal) : '') : '';
   return `<div class="pop-passo">
     <div class="pop-passo-num">•</div>
     <div class="pop-passo-body">
       <input type="text" placeholder="Título do passo (ex: Acessar o Sistema 360)" value="${escapeHTML(p.titulo||'')}">
       <textarea rows="2" placeholder="Descrição detalhada do passo...">${escapeHTML(p.descricao||'')}</textarea>
-      <input type="text" placeholder="Link de imagem/print (opcional)" value="${escapeHTML(p.imagem||'')}">
+      <input type="text" class="pop-passo-imagem-input" placeholder="Link do arquivo (Google Drive, YouTube, imagem, PDF...)" value="${escapeHTML(imgVal)}" oninput="window.POP.atualizarPreviewPasso(this)">
+      <div class="pop-passo-preview">${previewHTML}</div>
     </div>
     <span class="pop-passo-remove" onclick="this.closest('.pop-passo').remove(); window.POP.renumerarPassos()">✕</span>
   </div>`;
+}
+
+function atualizarPreviewPasso(inputEl) {
+  const url = inputEl.value.trim();
+  const previewEl = inputEl.nextElementSibling;
+  if (!previewEl || !previewEl.classList.contains('pop-passo-preview')) return;
+  previewEl.innerHTML = url && window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
 }
 
 function addPasso() {
@@ -3821,6 +3833,7 @@ render();
   window.POP.excluirProcedimento = excluirProcedimento;
   window.POP.addPasso = addPasso;
   window.POP.renumerarPassos = renumerarPassos;
+  window.POP.atualizarPreviewPasso = atualizarPreviewPasso;
 })();
 </script>
 
