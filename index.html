@@ -662,6 +662,7 @@ body {
 .pop-passo-top { display:flex; align-items:center; gap:8px; }
 .pop-passo-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; padding:2px; }
 .pop-passo-preview:empty { display:none; }
+.pop-passo-preview { margin-top:12px; }
 .pop-abrir-arquivo-btn {
   display:inline-flex; align-items:center; gap:6px;
   margin-top:10px; padding:9px 16px;
@@ -1341,7 +1342,7 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="tool-subbar">
     <span class="sb-title">📋 POP</span>
     <span class="save-ind" id="saveInd_pop">✓ Salvo</span>
-    <button class="btn btn-amber" onclick="window.POP.novoProcedimento()">+ Novo POP</button>
+    <button class="btn btn-amber admin-only" onclick="window.POP.novoProcedimento()">+ Novo POP</button>
   </div>
   <div class="tr-cat-nav" id="popCatNav"></div>
   <div class="wrap" id="mainWrap_pop"></div>
@@ -1365,12 +1366,12 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
       <div class="tr-field">
         <label>Link do arquivo (Google Drive, YouTube, imagem, PDF...)</label>
-        <input type="text" class="q-input" id="pop_link" placeholder="Cole aqui o link do arquivo..." oninput="window.POP.atualizarPreviewPop()">
+        <input type="text" class="tr-text-input" id="pop_link" placeholder="Cole aqui o link do arquivo..." oninput="window.POP.atualizarPreviewPop()">
         <div id="pop_link_preview" class="pop-passo-preview"></div>
       </div>
     </div>
     <div class="tr-modal-foot">
-      <button class="tr-btn-delete" id="pop_delete_btn" onclick="window.POP.excluirProcedimento()">🗑️ Excluir POP</button>
+      <button class="tr-btn-delete admin-only" id="pop_delete_btn" onclick="window.POP.excluirProcedimento()">🗑️ Excluir POP</button>
       <button class="btn btn-amber" onclick="window.POP.salvarProcedimento()">💾 Salvar</button>
     </div>
   </div>
@@ -1471,7 +1472,7 @@ function fecharDrawer() {
 function mostrarTool(nome) {
   var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist' };
   var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist' };
-  var adminOnly = ['reuniao','oneone','pop','rco'];
+  var adminOnly = ['reuniao','oneone','rco'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
@@ -3643,21 +3644,23 @@ function renderCatNav(data) {
   const nav = document.getElementById('popCatNav');
   const cats = ['Todos'].concat(data.categorias);
   if (!cats.includes(catAtiva)) catAtiva = 'Todos';
+  const isAdmin = window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin';
   nav.innerHTML = cats.map(c =>
     `<button class="tr-cat-tab${c===catAtiva?' active':''}" onclick="window.POP.filtrarCategoria('${c.replace(/'/g,"\\'")}')">${c}</button>`
-  ).join('') + `<button class="tr-cat-add" onclick="window.POP.addCategoria()">+ Área</button>`;
+  ).join('') + (isAdmin ? `<button class="tr-cat-add" onclick="window.POP.addCategoria()">+ Área</button>` : '');
 }
 
 function renderGrid(data) {
   const wrap = document.getElementById('mainWrap_pop');
   const itens = catAtiva === 'Todos' ? data.procedimentos : data.procedimentos.filter(p => p.categoria === catAtiva);
+  const isAdmin = window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin';
 
   if (data.procedimentos.length === 0) {
     wrap.innerHTML = `<div class="tr-empty">
       <div class="tr-empty-badge"><div class="tr-empty-icon">📋</div></div>
       <div class="tr-empty-title">Nenhum POP criado ainda</div>
-      <div class="tr-empty-desc">Crie procedimentos padrão por área, com passos numerados (ex: Sistema 360, Celesc).</div>
-      <button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Criar primeiro POP</button>
+      <div class="tr-empty-desc">${isAdmin ? 'Crie procedimentos padrão por área, com passos numerados (ex: Sistema 360, Celesc).' : 'Assim que um POP for criado, ele aparece aqui.'}</div>
+      ${isAdmin ? `<button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Criar primeiro POP</button>` : ''}
     </div>`;
     return;
   }
@@ -3665,8 +3668,8 @@ function renderGrid(data) {
     wrap.innerHTML = `<div class="tr-empty">
       <div class="tr-empty-badge"><div class="tr-empty-icon">📁</div></div>
       <div class="tr-empty-title">Nenhum POP em "${catAtiva}"</div>
-      <div class="tr-empty-desc">Crie um POP nessa área ou veja outras no menu acima.</div>
-      <button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Novo POP</button>
+      <div class="tr-empty-desc">${isAdmin ? 'Crie um POP nessa área ou veja outras no menu acima.' : 'Veja outras áreas no menu acima.'}</div>
+      ${isAdmin ? `<button class="tr-empty-btn" onclick="window.POP.novoProcedimento()">+ Novo POP</button>` : ''}
     </div>`;
     return;
   }
@@ -3707,6 +3710,9 @@ function novoProcedimento() {
   document.getElementById('pop_descricao').value = '';
   document.getElementById('pop_link').value = '';
   document.getElementById('pop_link_preview').innerHTML = '';
+  document.getElementById('pop_titulo').readOnly = false;
+  document.getElementById('pop_descricao').readOnly = false;
+  document.getElementById('pop_categoria').disabled = false;
   popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
   document.getElementById('pop_delete_btn').style.display = 'none';
   document.getElementById('popModalOverlay').classList.add('open');
@@ -3717,13 +3723,17 @@ function abrirProcedimento(id) {
   const p = data.procedimentos.find(x => x.id === id);
   if (!p) return;
   modalId = id;
+  const isAdmin = window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin';
   document.getElementById('pop_titulo').value = p.titulo || '';
   document.getElementById('pop_descricao').value = p.descricao || '';
   const link = p.link || '';
   document.getElementById('pop_link').value = link;
   document.getElementById('pop_link_preview').innerHTML = renderPopLinkPreview(link);
   popularSelectCategorias(data, p.categoria);
-  document.getElementById('pop_delete_btn').style.display = 'inline-block';
+  document.getElementById('pop_titulo').readOnly = !isAdmin;
+  document.getElementById('pop_descricao').readOnly = !isAdmin;
+  document.getElementById('pop_categoria').disabled = !isAdmin;
+  document.getElementById('pop_delete_btn').style.display = isAdmin ? 'inline-block' : 'none';
   document.getElementById('popModalOverlay').classList.add('open');
 }
 
@@ -3741,7 +3751,9 @@ function atualizarPreviewPop() {
 
 function renderPopLinkPreview(url) {
   if (!url) return '';
-  const embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  let embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  // Remove the generic "Abrir link do vídeo" fallback link — we show our own button below instead
+  if (embed.includes('tr-video-link')) embed = '';
   const botao = `<a class="pop-abrir-arquivo-btn" href="${escapeHTML(url)}" target="_blank" rel="noopener">↗ Abrir arquivo em nova aba</a>`;
   return embed + botao;
 }
