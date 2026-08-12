@@ -662,6 +662,15 @@ body {
 .pop-passo-top { display:flex; align-items:center; gap:8px; }
 .pop-passo-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; padding:2px; }
 .pop-passo-preview:empty { display:none; }
+.pop-abrir-arquivo-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:10px; padding:9px 16px;
+  background:linear-gradient(150deg, #FF9130, var(--laranja) 60%);
+  color:#fff; font-weight:800; font-size:12.5px;
+  border-radius:10px; text-decoration:none;
+  box-shadow:0 4px 10px rgba(253,116,0,0.3);
+}
+.pop-abrir-arquivo-btn:hover { filter:brightness(1.06); }
 .pop-passo-remove:hover { color:#D64545; }
 .pop-card-steps { font-size:11px; color:var(--muted2); font-weight:700; display:flex; align-items:center; gap:5px; }
 .pop-step-view { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
@@ -3712,7 +3721,7 @@ function abrirProcedimento(id) {
   document.getElementById('pop_descricao').value = p.descricao || '';
   const link = p.link || '';
   document.getElementById('pop_link').value = link;
-  document.getElementById('pop_link_preview').innerHTML = link && window.gerarEmbedVideo ? window.gerarEmbedVideo(link) : '';
+  document.getElementById('pop_link_preview').innerHTML = renderPopLinkPreview(link);
   popularSelectCategorias(data, p.categoria);
   document.getElementById('pop_delete_btn').style.display = 'inline-block';
   document.getElementById('popModalOverlay').classList.add('open');
@@ -3727,7 +3736,14 @@ function popularSelectCategorias(data, selecionada) {
 
 function atualizarPreviewPop() {
   const url = document.getElementById('pop_link').value.trim();
-  document.getElementById('pop_link_preview').innerHTML = url && window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  document.getElementById('pop_link_preview').innerHTML = renderPopLinkPreview(url);
+}
+
+function renderPopLinkPreview(url) {
+  if (!url) return '';
+  const embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  const botao = `<a class="pop-abrir-arquivo-btn" href="${escapeHTML(url)}" target="_blank" rel="noopener">↗ Abrir arquivo em nova aba</a>`;
+  return embed + botao;
 }
 
 function fecharModal() {
