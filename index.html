@@ -663,6 +663,9 @@ body {
 .pop-passo-remove { cursor:pointer; color:var(--muted2); font-size:15px; flex-shrink:0; padding:2px; }
 .pop-passo-preview:empty { display:none; }
 .pop-passo-preview { margin-top:12px; }
+.tr-text-input[readonly], .tr-field textarea.q-input[readonly], .tr-field select:disabled {
+  opacity:.65; cursor:not-allowed; background:rgba(255,255,255,0.02);
+}
 .pop-abrir-arquivo-btn {
   display:inline-flex; align-items:center; gap:6px;
   margin-top:10px; padding:9px 16px;
@@ -1372,7 +1375,7 @@ window.APPAUTH = window.APPAUTH || {};
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete admin-only" id="pop_delete_btn" onclick="window.POP.excluirProcedimento()">🗑️ Excluir POP</button>
-      <button class="btn btn-amber" onclick="window.POP.salvarProcedimento()">💾 Salvar</button>
+      <button class="btn btn-amber" id="pop_salvar_btn" onclick="window.POP.salvarProcedimento()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -3713,6 +3716,9 @@ function novoProcedimento() {
   document.getElementById('pop_titulo').readOnly = false;
   document.getElementById('pop_descricao').readOnly = false;
   document.getElementById('pop_categoria').disabled = false;
+  document.getElementById('pop_link').readOnly = false;
+  const salvarBtnNovo = document.getElementById('pop_salvar_btn');
+  if (salvarBtnNovo) salvarBtnNovo.style.display = 'inline-block';
   popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
   document.getElementById('pop_delete_btn').style.display = 'none';
   document.getElementById('popModalOverlay').classList.add('open');
@@ -3733,7 +3739,10 @@ function abrirProcedimento(id) {
   document.getElementById('pop_titulo').readOnly = !isAdmin;
   document.getElementById('pop_descricao').readOnly = !isAdmin;
   document.getElementById('pop_categoria').disabled = !isAdmin;
+  document.getElementById('pop_link').readOnly = !isAdmin;
   document.getElementById('pop_delete_btn').style.display = isAdmin ? 'inline-block' : 'none';
+  const salvarBtn = document.getElementById('pop_salvar_btn');
+  if (salvarBtn) salvarBtn.style.display = isAdmin ? 'inline-block' : 'none';
   document.getElementById('popModalOverlay').classList.add('open');
 }
 
