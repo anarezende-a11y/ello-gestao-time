@@ -586,6 +586,12 @@
     document.getElementById('railFill').style.width = pct + '%';
     document.getElementById('railDone').textContent = done + ' concluído' + (done===1?'':'s');
   }
+
+  (function initFromURL(){
+    const params = new URLSearchParams(window.location.search);
+    const trilha = params.get('trilha');
+    if (trilha === 'sf' || trilha === 'pf') setTrack(trilha);
+  })();
 </script>
 
 </body>
