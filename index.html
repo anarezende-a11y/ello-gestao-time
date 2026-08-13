@@ -38,12 +38,25 @@
 @font-face { font-family:'Stilu'; src:local('Stilu-Bold'); font-weight:700; font-style:normal; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== Efeito vidro fosco (glassmorphism) nos cartões e paineis ===== */
+.auth-card, .tool-reuniao .week-nav, .tool-reuniao .meta-strip, .tool-reuniao .form-body,
+.tool-oneone .person-select-bar, .tool-oneone .history-nav, .tool-oneone .meta-strip,
+.tool-oneone .section-group, .tool-oneone .feedback-card, .tool-oneone .action-item,
+.tool-oneone .pauta-hint, .tool-oneone .private-group,
+.tr-comentario-item, .tr-minha-resposta-box, .tr-resposta-card, .tr-cat-nav,
+.tr-modal, .tr-modal-head, .tr-modal-foot, .tr-modal-close,
+.tr-text-input, .tr-field select, .tr-field textarea.q-input, .tr-video-link,
+.tr-mat-item, .tr-check-item, .camp-lancar-form, .camp-pend-item,
+.pop-passo, .pauta-item, .rco-pend-item, .rp-chip, .rp-scale-opt, .check-block {
+  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+}
 :root {
   /* Paleta oficial Ello Solar */
   --azul:#004358; --azul-2:#0A5A73; --laranja:#FD7400; --lima:#BEDB39; --verde:#1F8A70; --azul-claro:#58AFDA;
   --bg-grad-1:#0E2C38; --bg-grad-2:#081820;
 
-  --bg:var(--bg-grad-1); --surface:#123340; --card:#123340; --card2:#173B49;
+  --bg:var(--bg-grad-1); --surface:#123340; --card:rgba(18,51,64,0.34); --card2:rgba(23,59,73,0.30);
   --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
   --amber:var(--laranja); --amber-dim:rgba(253,116,0,0.18); --amber-mid:rgba(253,116,0,0.32);
   --green:var(--verde); --green-dim:rgba(31,138,112,0.18);
@@ -54,7 +67,11 @@
 }
 body {
   font-family:'Stilu','Nunito Sans',sans-serif;
-  background:linear-gradient(160deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%);
+  background:
+    radial-gradient(900px 500px at 8% -8%, rgba(253,116,0,0.22), transparent 60%),
+    radial-gradient(800px 600px at 100% 8%, rgba(88,175,218,0.24), transparent 60%),
+    radial-gradient(1000px 700px at 45% 105%, rgba(31,138,112,0.22), transparent 60%),
+    linear-gradient(160deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%);
   background-attachment:fixed;
   color:var(--text);
   min-height:100vh;
@@ -117,7 +134,7 @@ body {
 .home-desc { font-size:13px; color:rgba(255,255,255,0.82); line-height:1.6; max-width:480px; position:relative; }
 .home-cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:620px) { .home-cards { grid-template-columns:1fr; } }
-.home-card { background:linear-gradient(165deg, #15394A 0%, #0F2A36 100%); border:1px solid var(--border); border-radius:22px; padding:26px 24px; cursor:pointer; transition:all .25s cubic-bezier(.4,0,.2,1); text-align:left; font-family:inherit; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); }
+.home-card { background:linear-gradient(165deg, rgba(21,57,74,0.26) 0%, rgba(15,42,54,0.26) 100%); backdrop-filter:blur(34px) saturate(170%); -webkit-backdrop-filter:blur(34px) saturate(170%); border:1px solid rgba(255,255,255,0.10); border-radius:22px; padding:26px 24px; cursor:pointer; transition:all .25s cubic-bezier(.4,0,.2,1); text-align:left; font-family:inherit; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); }
 .home-card::after { content:''; position:absolute; inset:0; border-radius:22px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06); pointer-events:none; }
 .home-card:hover { transform:translateY(-5px) scale(1.01); box-shadow:0 16px 36px rgba(0,0,0,0.28); border-color:var(--laranja); }
 .home-card .hc-icon { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:23px; margin-bottom:16px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 4px rgba(0,0,0,0.25); }
@@ -514,7 +531,7 @@ body {
 .wrap { max-width:900px; margin:0 auto; padding:28px 20px 80px; }
 .tr-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:680px) { .tr-grid { grid-template-columns:1fr; } }
-.tr-card { background:linear-gradient(165deg, #15394A 0%, #0F2A36 100%); border:1px solid var(--border); border-radius:20px; padding:22px 22px 20px; cursor:pointer; transition:all .25s cubic-bezier(.4,0,.2,1); text-align:left; font-family:inherit; display:block; width:100%; position:relative; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); }
+.tr-card { background:linear-gradient(165deg, rgba(21,57,74,0.28) 0%, rgba(15,42,54,0.28) 100%); backdrop-filter:blur(34px) saturate(170%); -webkit-backdrop-filter:blur(34px) saturate(170%); border:1px solid rgba(255,255,255,0.10); border-radius:20px; padding:22px 22px 20px; cursor:pointer; transition:all .25s cubic-bezier(.4,0,.2,1); text-align:left; font-family:inherit; display:block; width:100%; position:relative; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); }
 .tr-card::after { content:''; position:absolute; inset:0; border-radius:20px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06); pointer-events:none; }
 .tr-card:hover { transform:translateY(-4px) scale(1.008); box-shadow:0 16px 34px rgba(0,0,0,0.3); border-color:var(--laranja); }
 .tr-card-cat { display:inline-block; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--azul-claro); background:rgba(255,255,255,0.08); padding:4px 10px; border-radius:20px; margin-bottom:10px; }
@@ -1253,6 +1270,11 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-field">
         <label>Participantes</label>
         <div class="camp-checklist" id="camp_participantes_list"></div>
+      </div>
+      <div class="tr-field">
+        <label>PDF da campanha (opcional)</label>
+        <input type="text" class="tr-text-input" id="camp_pdf" placeholder="Cole aqui o link do PDF (Google Drive, etc.)">
+        <div id="camp_pdf_preview" class="pop-passo-preview"></div>
       </div>
       <div class="tr-field">
         <label>Exige foto de comprovação?</label>
@@ -4191,6 +4213,10 @@ function render() {
   }
 
   let lista = data.campanhas.filter(c => tabAtiva === 'encerradas' ? isEncerrada(c) : !isEncerrada(c));
+  if (!isAdmin) {
+    const meuNomeGlobal = (user && user.nome || '').toLowerCase();
+    lista = lista.filter(c => (c.participantes || []).some(p => p.toLowerCase() === meuNomeGlobal));
+  }
   lista = lista.slice().sort((a,b) => (b.criadoEm||0) - (a.criadoEm||0));
 
   if (lista.length === 0) {
@@ -4286,6 +4312,7 @@ function renderCard(camp, isAdmin, user) {
     <div class="camp-card-periodo">${camp.inicio?fmtData(camp.inicio):''} até ${camp.fim?fmtData(camp.fim):''} · meta de ${camp.meta} ${escapeHTML(camp.unidade||'')} por pessoa</div>
     ${camp.usaCredencial ? `<div style="font-size:11px; color:var(--laranja); margin-bottom:12px; font-weight:700;">🎰 Giro extra a cada ${camp.giroQtdPrincipal||3} ${escapeHTML(camp.unidade||'avaliações')} + ${camp.giroQtdCredencial||2} credenciais NO MESMO DIA</div>` : ''}
     ${camp.descricao ? `<div style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5;">${escapeHTML(camp.descricao)}</div>` : ''}
+    ${camp.pdf ? `<a class="pop-abrir-arquivo-btn" style="margin-bottom:14px;" href="${escapeHTML(camp.pdf)}" target="_blank" rel="noopener">📄 Ver PDF da campanha</a>` : ''}
     ${semanaHTML}
     <div class="camp-rank">${rankHTML || '<div class="camp-empty" style="padding:20px;">Sem participantes cadastrados.</div>'}</div>
     <div class="camp-card-actions">
@@ -4350,6 +4377,8 @@ function novaCampanha() {
   document.getElementById('camp_giro_qtd_principal').value = '';
   document.getElementById('camp_giro_qtd_credencial').value = '';
   document.getElementById('camp_giro_regras_wrap').style.display = 'none';
+  document.getElementById('camp_pdf').value = '';
+  document.getElementById('camp_pdf_preview').innerHTML = '';
   renderParticipantesChecklist([]);
   document.getElementById('camp_delete_btn').style.display = 'none';
   document.getElementById('campModalOverlay').classList.add('open');
@@ -4370,6 +4399,8 @@ function editarCampanha(id) {
   document.getElementById('camp_giro_qtd_principal').value = camp.giroQtdPrincipal || '';
   document.getElementById('camp_giro_qtd_credencial').value = camp.giroQtdCredencial || '';
   document.getElementById('camp_giro_regras_wrap').style.display = camp.usaCredencial ? 'block' : 'none';
+  document.getElementById('camp_pdf').value = camp.pdf || '';
+  document.getElementById('camp_pdf_preview').innerHTML = camp.pdf && window.gerarEmbedVideo ? (window.gerarEmbedVideo(camp.pdf).includes('tr-video-link') ? '' : window.gerarEmbedVideo(camp.pdf)) + `<a class="pop-abrir-arquivo-btn" href="${camp.pdf}" target="_blank" rel="noopener">↗ Abrir PDF em nova aba</a>` : '';
   renderParticipantesChecklist(camp.participantes || []);
   document.getElementById('camp_delete_btn').style.display = 'inline-block';
   document.getElementById('campModalOverlay').classList.add('open');
@@ -4387,6 +4418,14 @@ function renderParticipantesChecklist(selecionados) {
     </label>
   `).join('');
 }
+
+document.getElementById('camp_pdf').addEventListener('input', function() {
+  const url = this.value.trim();
+  const el = document.getElementById('camp_pdf_preview');
+  if (!url) { el.innerHTML = ''; return; }
+  const embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  el.innerHTML = (embed.includes('tr-video-link') ? '' : embed) + `<a class="pop-abrir-arquivo-btn" href="${url}" target="_blank" rel="noopener">↗ Abrir PDF em nova aba</a>`;
+});
 
 function fecharModal() {
   document.getElementById('campModalOverlay').classList.remove('open');
@@ -4418,6 +4457,7 @@ function salvarCampanha() {
       c.fim = document.getElementById('camp_fim').value;
       c.exigeFoto = document.getElementById('camp_exige_foto').checked;
       c.participantes = participantes;
+      c.pdf = document.getElementById('camp_pdf').value.trim();
       c.usaCredencial = usaCredencial;
       c.giroQtdPrincipal = giroQtdPrincipal;
       c.giroQtdCredencial = giroQtdCredencial;
@@ -4432,6 +4472,7 @@ function salvarCampanha() {
       fim: document.getElementById('camp_fim').value,
       exigeFoto: document.getElementById('camp_exige_foto').checked,
       participantes,
+      pdf: document.getElementById('camp_pdf').value.trim(),
       usaCredencial,
       giroQtdPrincipal,
       giroQtdCredencial,
