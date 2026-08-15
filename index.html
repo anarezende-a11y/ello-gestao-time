@@ -1277,6 +1277,11 @@ window.APPAUTH = window.APPAUTH || {};
         <div id="camp_pdf_preview" class="pop-passo-preview"></div>
       </div>
       <div class="tr-field">
+        <label>Categorias de lançamento (opcional — pra campanhas com contadores por tipo de ação)</label>
+        <div id="camp_categorias_list"></div>
+        <button class="tr-add-btn" onclick="window.CAMP.addCategoriaBaloes()">+ Adicionar categoria</button>
+      </div>
+      <div class="tr-field">
         <label>Exige foto de comprovação?</label>
         <div class="camp-checklist">
           <label class="camp-check-pill"><input type="checkbox" id="camp_exige_foto" checked> Sim, pedir print pra validar</label>
@@ -4313,6 +4318,7 @@ function renderCard(camp, isAdmin, user) {
     ${camp.usaCredencial ? `<div style="font-size:11px; color:var(--laranja); margin-bottom:12px; font-weight:700;">🎰 Giro extra a cada ${camp.giroQtdPrincipal||3} ${escapeHTML(camp.unidade||'avaliações')} + ${camp.giroQtdCredencial||2} credenciais NO MESMO DIA</div>` : ''}
     ${camp.descricao ? `<div style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5;">${escapeHTML(camp.descricao)}</div>` : ''}
     ${camp.pdf ? `<a class="pop-abrir-arquivo-btn" style="margin-bottom:14px;" href="${escapeHTML(camp.pdf)}" target="_blank" rel="noopener">📄 Ver PDF da campanha</a>` : ''}
+    ${(camp.categorias && camp.categorias.length) ? renderCategoriasBloco(camp, isAdmin, meuNome, souParticipante) : ''}
     ${semanaHTML}
     <div class="camp-rank">${rankHTML || '<div class="camp-empty" style="padding:20px;">Sem participantes cadastrados.</div>'}</div>
     <div class="camp-card-actions">
@@ -4379,6 +4385,7 @@ function novaCampanha() {
   document.getElementById('camp_giro_regras_wrap').style.display = 'none';
   document.getElementById('camp_pdf').value = '';
   document.getElementById('camp_pdf_preview').innerHTML = '';
+  renderCategoriasList([]);
   renderParticipantesChecklist([]);
   document.getElementById('camp_delete_btn').style.display = 'none';
   document.getElementById('campModalOverlay').classList.add('open');
@@ -4401,6 +4408,7 @@ function editarCampanha(id) {
   document.getElementById('camp_giro_regras_wrap').style.display = camp.usaCredencial ? 'block' : 'none';
   document.getElementById('camp_pdf').value = camp.pdf || '';
   document.getElementById('camp_pdf_preview').innerHTML = camp.pdf && window.gerarEmbedVideo ? (window.gerarEmbedVideo(camp.pdf).includes('tr-video-link') ? '' : window.gerarEmbedVideo(camp.pdf)) + `<a class="pop-abrir-arquivo-btn" href="${camp.pdf}" target="_blank" rel="noopener">↗ Abrir PDF em nova aba</a>` : '';
+  renderCategoriasList(camp.categorias || []);
   renderParticipantesChecklist(camp.participantes || []);
   document.getElementById('camp_delete_btn').style.display = 'inline-block';
   document.getElementById('campModalOverlay').classList.add('open');
@@ -4417,6 +4425,201 @@ function renderParticipantesChecklist(selecionados) {
       <input type="checkbox" value="${escapeHTML(m.nome)}" ${selecionados.indexOf(m.nome)>-1?'checked':''}> ${escapeHTML(m.nome)}
     </label>
   `).join('');
+}
+
+function renderCategoriasList(categorias) {
+  const wrap = document.getElementById('camp_categorias_list');
+  wrap.innerHTML = (categorias || []).map(cat => criarCategoriaHTML(cat)).join('');
+}
+
+function criarCategoriaHTML(cat) {
+  cat = cat || { id: uid(), nome:'', tipo:'contador', icone:'📊', regras: [] };
+  const regrasHTML = (cat.regras||[]).map(r => criarRegraCatHTML(r)).join('');
+  return `<div class="camp-categoria-box" data-catid="${cat.id}" style="background:rgba(255,255,255,0.03); border:1px solid var(--border2); border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <input type="text" class="tr-text-input cat-icone" placeholder="🔵" value="${escapeHTML(cat.icone||'📊')}" style="width:56px; text-align:center;">
+      <input type="text" class="tr-text-input cat-nome" placeholder="Nome (ex: Relatórios)" value="${escapeHTML(cat.nome||'')}" style="flex:1;">
+      <select class="tr-text-input cat-tipo" style="width:150px;">
+        <option value="contador" ${cat.tipo==='contador'?'selected':''}>Contador (número)</option>
+        <option value="links" ${cat.tipo==='links'?'selected':''}>Lista de links</option>
+      </select>
+      <span class="pop-passo-remove" onclick="this.closest('.camp-categoria-box').remove()">✕</span>
+    </div>
+    <div style="font-size:11px; font-weight:700; color:var(--muted); margin-bottom:8px;">Regras (a cada quantidade → prêmio)</div>
+    <div class="cat-regras-list">${regrasHTML}</div>
+    <button class="tr-add-btn" style="font-size:11.5px; padding:7px 12px;" onclick="window.CAMP.addRegraCategoria(this)">+ Regra</button>
+  </div>`;
+}
+
+function criarRegraCatHTML(r) {
+  r = r || { multiplo: '', premio: '' };
+  return `<div class="cat-regra-row" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+    <span style="font-size:11.5px; color:var(--muted); white-space:nowrap;">A cada</span>
+    <input type="number" class="tr-text-input regra-multiplo" value="${escapeHTML(String(r.multiplo||''))}" style="width:64px;" min="1">
+    <input type="text" class="tr-text-input regra-premio" placeholder="Prêmio (ex: Balão Azul)" value="${escapeHTML(r.premio||'')}" style="flex:1;">
+    <span class="pop-passo-remove" onclick="this.closest('.cat-regra-row').remove()">✕</span>
+  </div>`;
+}
+
+function addCategoriaBaloes() {
+  const wrap = document.getElementById('camp_categorias_list');
+  wrap.insertAdjacentHTML('beforeend', criarCategoriaHTML());
+}
+
+function addRegraCategoria(btn) {
+  const list = btn.closest('.camp-categoria-box').querySelector('.cat-regras-list');
+  list.insertAdjacentHTML('beforeend', criarRegraCatHTML());
+}
+
+function lerCategorias() {
+  const categorias = [];
+  document.querySelectorAll('#camp_categorias_list .camp-categoria-box').forEach(box => {
+    const nome = box.querySelector('.cat-nome').value.trim();
+    const icone = box.querySelector('.cat-icone').value.trim() || '📊';
+    const tipo = box.querySelector('.cat-tipo').value;
+    const regras = [];
+    box.querySelectorAll('.cat-regra-row').forEach(row => {
+      const multiplo = parseInt(row.querySelector('.regra-multiplo').value, 10);
+      const premio = row.querySelector('.regra-premio').value.trim();
+      if (multiplo > 0 && premio) regras.push({ multiplo, premio });
+    });
+    if (nome) categorias.push({ id: box.dataset.catid, nome, icone, tipo, regras });
+  });
+  return categorias;
+}
+
+function tiersConquistados(valor, regras) {
+  return (regras || [])
+    .map(r => ({ premio: r.premio, qtd: Math.floor((valor||0) / r.multiplo) }))
+    .filter(t => t.qtd > 0);
+}
+
+function renderCategoriasBloco(camp, isAdmin, meuNome, souParticipante) {
+  const lanc = camp.lancCategorias || {};
+  let html = '';
+
+  if (souParticipante) {
+    html += `<div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:6px 0 12px;">Meus lançamentos — ${escapeHTML(meuNome)}</div>`;
+    const meusLanc = lanc[meuNome] || {};
+    camp.categorias.forEach(cat => {
+      const valor = cat.tipo === 'links' ? (meusLanc[cat.id] || []).length : (meusLanc[cat.id] || 0);
+      const tiers = tiersConquistados(valor, cat.regras);
+      const regrasTxt = (cat.regras||[]).map(r => `a cada ${r.multiplo} = ${escapeHTML(r.premio)}`).join(' · ');
+      html += `<div class="camp-categoria-box" style="background:rgba(255,255,255,0.03); border:1px solid var(--border2); border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div><div style="font-size:13px; font-weight:800;">${escapeHTML(cat.icone||'📊')} ${escapeHTML(cat.nome)}</div>${regrasTxt ? `<div style="font-size:10.5px; color:var(--muted); margin-top:2px;">${regrasTxt}</div>` : ''}</div>
+          ${cat.tipo === 'contador' ? `<div style="display:flex; align-items:center; gap:10px;">
+            <button class="tr-add-btn" style="width:32px; height:32px; padding:0; font-size:16px;" onclick="window.CAMP.lancar('${camp.id}','${cat.id}',-1)">−</button>
+            <span style="font-size:19px; font-weight:900; min-width:30px; text-align:center;">${valor}</span>
+            <button class="tr-add-btn" style="width:32px; height:32px; padding:0; font-size:16px;" onclick="window.CAMP.lancar('${camp.id}','${cat.id}',1)">+</button>
+          </div>` : ''}
+        </div>
+        ${cat.tipo === 'links' ? `
+          <div>${(meusLanc[cat.id]||[]).map((url,i) => `<div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;"><input type="text" class="tr-text-input" value="${escapeHTML(url)}" readonly style="flex:1; opacity:.75;"><span class="pop-passo-remove" onclick="window.CAMP.removerLink('${camp.id}','${cat.id}',${i})">✕</span></div>`).join('')}</div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" class="tr-text-input" id="camp_novolink_${camp.id}_${cat.id}" placeholder="Colar link do cliente indicado...">
+            <button class="tr-add-btn" onclick="window.CAMP.adicionarLink('${camp.id}','${cat.id}')">+ Adicionar</button>
+          </div>
+        ` : ''}
+        ${tiers.length ? `<div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">${tiers.map(t => `<span style="display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800; padding:4px 11px; border-radius:20px; background:rgba(253,116,0,0.15); color:var(--laranja); border:1px solid rgba(253,116,0,0.3);">${t.qtd}x ${escapeHTML(t.premio)}</span>`).join('')}</div>` : ''}
+      </div>`;
+    });
+  }
+
+  if (isAdmin) {
+    html += `<div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:16px 0 10px;">Resumo de todos os participantes</div>
+    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border2); border-radius:14px; padding:14px 16px; margin-bottom:14px;">
+      ${(camp.participantes||[]).map(nome => {
+        const pl = lanc[nome] || {};
+        const linhas = camp.categorias.map(cat => {
+          const valor = cat.tipo === 'links' ? (pl[cat.id]||[]).length : (pl[cat.id]||0);
+          const tiers = tiersConquistados(valor, cat.regras);
+          const premiosTxt = tiers.map(t => `${t.qtd}x ${t.premio}`).join(', ');
+          return `<span style="font-size:11.5px; color:var(--muted);">${escapeHTML(cat.nome)}: <b style="color:var(--text);">${valor}</b>${premiosTxt ? ` <span style="color:var(--laranja);">(${escapeHTML(premiosTxt)})</span>` : ''}</span>`;
+        }).join(' &nbsp;·&nbsp; ');
+        return `<div style="padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12.5px;"><b>${escapeHTML(nome)}</b><br>${linhas}</div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  html += `<button class="tr-add-btn" style="width:100%; margin-bottom:16px;" onclick="window.CAMP.exportarPDFCampanha('${camp.id}')">📥 Exportar / Imprimir PDF</button>`;
+  return html;
+}
+
+function lancar(campId, catId, delta) {
+  const data = getData();
+  const camp = data.campanhas.find(c => c.id === campId);
+  if (!camp) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const meuNome = (camp.participantes||[]).find(p => p.toLowerCase() === (user.nome||'').toLowerCase());
+  if (!meuNome) return;
+  camp.lancCategorias = camp.lancCategorias || {};
+  camp.lancCategorias[meuNome] = camp.lancCategorias[meuNome] || {};
+  const atual = camp.lancCategorias[meuNome][catId] || 0;
+  camp.lancCategorias[meuNome][catId] = Math.max(0, atual + delta);
+  setData(data);
+}
+
+function adicionarLink(campId, catId) {
+  const input = document.getElementById(`camp_novolink_${campId}_${catId}`);
+  const url = input.value.trim();
+  if (!url) return;
+  const data = getData();
+  const camp = data.campanhas.find(c => c.id === campId);
+  if (!camp) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const meuNome = (camp.participantes||[]).find(p => p.toLowerCase() === (user.nome||'').toLowerCase());
+  if (!meuNome) return;
+  camp.lancCategorias = camp.lancCategorias || {};
+  camp.lancCategorias[meuNome] = camp.lancCategorias[meuNome] || {};
+  camp.lancCategorias[meuNome][catId] = camp.lancCategorias[meuNome][catId] || [];
+  camp.lancCategorias[meuNome][catId].push(url);
+  setData(data);
+}
+
+function removerLink(campId, catId, index) {
+  const data = getData();
+  const camp = data.campanhas.find(c => c.id === campId);
+  if (!camp) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const meuNome = (camp.participantes||[]).find(p => p.toLowerCase() === (user.nome||'').toLowerCase());
+  if (!meuNome || !camp.lancCategorias || !camp.lancCategorias[meuNome] || !camp.lancCategorias[meuNome][catId]) return;
+  camp.lancCategorias[meuNome][catId].splice(index, 1);
+  setData(data);
+}
+
+function exportarPDFCampanha(campId) {
+  const data = getData();
+  const camp = data.campanhas.find(c => c.id === campId);
+  if (!camp) return;
+  const lanc = camp.lancCategorias || {};
+  const linhas = (camp.participantes||[]).map(nome => {
+    const pl = lanc[nome] || {};
+    const cats = (camp.categorias||[]).map(cat => {
+      const valor = cat.tipo === 'links' ? (pl[cat.id]||[]).length : (pl[cat.id]||0);
+      const tiers = tiersConquistados(valor, cat.regras);
+      const premiosTxt = tiers.map(t => `${t.qtd}x ${t.premio}`).join(', ') || '—';
+      return `<tr><td>${escapeHTML(nome)}</td><td>${escapeHTML(cat.nome)}</td><td>${valor}</td><td>${escapeHTML(premiosTxt)}</td></tr>`;
+    }).join('');
+    return cats;
+  }).join('');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escapeHTML(camp.titulo)}</title>
+    <style>
+      body{font-family:Arial,sans-serif; padding:40px; color:#1A2B33;}
+      h1{font-size:22px; margin-bottom:4px;}
+      .sub{color:#666; font-size:13px; margin-bottom:24px;}
+      table{width:100%; border-collapse:collapse; font-size:13px;}
+      th,td{border:1px solid #ddd; padding:8px 12px; text-align:left;}
+      th{background:#f4f4f4;}
+    </style></head><body>
+    <h1>${escapeHTML(camp.titulo)}</h1>
+    <div class="sub">${escapeHTML(camp.descricao||'')}</div>
+    <table><thead><tr><th>Participante</th><th>Categoria</th><th>Quantidade</th><th>Prêmios conquistados</th></tr></thead>
+    <tbody>${linhas}</tbody></table>
+    </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
 }
 
 document.getElementById('camp_pdf').addEventListener('input', function() {
@@ -4458,6 +4661,8 @@ function salvarCampanha() {
       c.exigeFoto = document.getElementById('camp_exige_foto').checked;
       c.participantes = participantes;
       c.pdf = document.getElementById('camp_pdf').value.trim();
+      c.categorias = lerCategorias();
+      c.lancCategorias = c.lancCategorias || {};
       c.usaCredencial = usaCredencial;
       c.giroQtdPrincipal = giroQtdPrincipal;
       c.giroQtdCredencial = giroQtdCredencial;
@@ -4473,6 +4678,8 @@ function salvarCampanha() {
       exigeFoto: document.getElementById('camp_exige_foto').checked,
       participantes,
       pdf: document.getElementById('camp_pdf').value.trim(),
+      categorias: lerCategorias(),
+      lancCategorias: {},
       usaCredencial,
       giroQtdPrincipal,
       giroQtdCredencial,
@@ -4745,6 +4952,12 @@ render();
 window.CAMP.render = render;
 window.CAMP.mudarTab = mudarTab;
 window.CAMP.novaCampanha = novaCampanha;
+window.CAMP.addCategoriaBaloes = addCategoriaBaloes;
+window.CAMP.addRegraCategoria = addRegraCategoria;
+window.CAMP.lancar = lancar;
+window.CAMP.adicionarLink = adicionarLink;
+window.CAMP.removerLink = removerLink;
+window.CAMP.exportarPDFCampanha = exportarPDFCampanha;
 window.CAMP.editarCampanha = editarCampanha;
 window.CAMP.fecharModal = fecharModal;
 window.CAMP.salvarCampanha = salvarCampanha;
