@@ -775,6 +775,22 @@ body {
 
 /* ===== TOOL: CHECKLIST DIÁRIO ===== */
 .tool-checklist .check-toppanel { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.check-pessoas-row { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; margin-bottom:14px; }
+.check-pessoa-card { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:12px 16px; cursor:pointer; transition:all .15s; min-width:78px; }
+.check-pessoa-card:hover { border-color:rgba(253,116,0,0.35); }
+.check-pessoa-card.active { background:linear-gradient(160deg, rgba(253,116,0,0.16), rgba(253,116,0,0.04)); border-color:var(--laranja); }
+.check-pessoa-avatar { width:36px; height:36px; border-radius:11px; background:linear-gradient(155deg, #045870, #004358); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; }
+.check-pessoa-card.active .check-pessoa-avatar { background:linear-gradient(155deg, #FF9130, var(--laranja)); }
+.check-pessoa-nome { font-size:11.5px; font-weight:700; color:var(--text); white-space:nowrap; }
+.check-datas-row { display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:18px; }
+.check-data-card { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:8px 12px; cursor:pointer; transition:all .15s; min-width:48px; position:relative; }
+.check-data-card:hover { border-color:rgba(253,116,0,0.35); }
+.check-data-card.active { background:linear-gradient(160deg, rgba(253,116,0,0.18), rgba(253,116,0,0.05)); border-color:var(--laranja); }
+.check-data-card.hoje:not(.active) { border-color:var(--lima); }
+.check-data-dow { font-size:9px; font-weight:800; color:var(--muted); letter-spacing:.04em; }
+.check-data-num { font-size:16px; font-weight:800; color:var(--text); }
+.check-data-hoje-tag { position:absolute; top:-8px; font-size:8px; font-weight:800; color:var(--lima); background:var(--bg-grad-1); padding:0 4px; }
+.check-dateinput-mini { flex-shrink:0; background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:8px 10px; color:var(--muted); font-size:12px; height:100%; align-self:stretch; }
 .tool-checklist .check-datelabel { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
 .tool-checklist .check-dateinput { background:rgba(255,255,255,.08); border:1px solid var(--border2); color:var(--text); font-family:inherit; font-weight:700; border-radius:10px; padding:7px 11px; font-size:13px; }
 .tool-checklist .check-dateinput::-webkit-calendar-picker-indicator { filter:invert(1); }
@@ -5252,6 +5268,26 @@ function step(key, delta, meta) {
 }
 
 // ---------- Render ----------
+function gerarDatasRowHTML() {
+  const dias = [];
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(hoje);
+    d.setDate(d.getDate() - i);
+    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    dias.push({ iso, dia: d.getDate(), dow: ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'][d.getDay()], hoje: iso === (hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0')) });
+  }
+  return `<div class="check-datas-row">
+    ${dias.map(d => `<button class="check-data-card${d.iso===dataAtual?' active':''}${d.hoje?' hoje':''}" onclick="window.CHECK.trocarData('${d.iso}')">
+      <div class="check-data-dow">${d.dow}</div>
+      <div class="check-data-num">${d.dia}</div>
+      ${d.hoje ? '<div class="check-data-hoje-tag">hoje</div>' : ''}
+    </button>`).join('')}
+    <input type="date" class="check-dateinput-mini" value="${dataAtual}" onchange="window.CHECK.trocarData(this.value)" title="Escolher outra data">
+  </div>`;
+}
+
 function render() {
   const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (!user) return;
@@ -5262,23 +5298,18 @@ function render() {
   if (user.role === 'admin') {
     if (!pessoaAtual || !DEFS[pessoaAtual]) pessoaAtual = Object.keys(DEFS)[0];
     seletorWrap.innerHTML = `
-      <div class="check-toppanel">
-        <span class="check-datelabel">Colaborador</span>
-        <select class="check-seletor" onchange="window.CHECK.trocarPessoa(this.value)">
-          ${Object.keys(DEFS).map(k => `<option value="${k}" ${k===pessoaAtual?'selected':''}>${DEFS[k].label}</option>`).join('')}
-        </select>
-        <span class="check-datelabel">Data</span>
-        <input type="date" class="check-dateinput" value="${dataAtual}" onchange="window.CHECK.trocarData(this.value)">
-      </div>`;
+      <div class="check-pessoas-row">
+        ${Object.keys(DEFS).map(k => `<button class="check-pessoa-card${k===pessoaAtual?' active':''}" onclick="window.CHECK.trocarPessoa('${k}')">
+          <div class="check-pessoa-avatar">${(DEFS[k].label||'?').slice(0,2).toUpperCase()}</div>
+          <div class="check-pessoa-nome">${escapeHTML(DEFS[k].label||k)}</div>
+        </button>`).join('')}
+      </div>
+      ${gerarDatasRowHTML()}`;
     semNome.style.display = 'none';
     conteudoWrap.style.display = '';
   } else {
     const p = pessoaDoUsuario(user);
-    seletorWrap.innerHTML = `
-      <div class="check-toppanel">
-        <span class="check-datelabel">Data</span>
-        <input type="date" class="check-dateinput" value="${dataAtual}" onchange="window.CHECK.trocarData(this.value)">
-      </div>`;
+    seletorWrap.innerHTML = gerarDatasRowHTML();
     if (!p) {
       semNome.style.display = 'block';
       conteudoWrap.style.display = 'none';
