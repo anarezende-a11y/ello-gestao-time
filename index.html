@@ -502,6 +502,8 @@ body {
 .tr-pergunta-minha { background:#fff; border:1px solid #ECE7DA; border-radius:20px; padding:18px; margin-bottom:26px; box-shadow:0 1px 2px rgba(0,0,0,0.03), 0 8px 20px rgba(0,0,0,0.05); }
 .tr-pergunta-minha label { display:block; font-size:10.5px; font-weight:800; color:#B8B0A0; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .tr-pergunta-minha textarea { margin-bottom:12px; background:#FAF9F6; border:1px solid #ECE7DA; border-radius:14px; color:#0B2530; }
+.tr-privado-toggle { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#6D7A82; text-transform:none; letter-spacing:0; margin-bottom:14px; cursor:pointer; }
+.tr-privado-toggle input { width:16px; height:16px; accent-color:var(--laranja); cursor:pointer; }
 .tr-pergunta-lista { padding:0 32px; display:flex; flex-direction:column; gap:18px; }
 .tr-pergunta-item { border-top:1px solid #EFEAE0; padding-top:16px; }
 .tr-pergunta-item:first-child { border-top:none; padding-top:0; }
@@ -509,6 +511,7 @@ body {
 .tr-pergunta-avatar { width:30px; height:30px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:800; color:#fff; flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
 .tr-pergunta-nome { font-size:12.5px; font-weight:800; color:#0B2530; }
 .tr-pergunta-data { font-size:10.5px; color:#B8B0A0; margin-left:auto; }
+.tr-privado-badge { font-size:9.5px; font-weight:800; color:#B8590A; background:#FFF1E0; border:1px solid #FFDBAD; padding:2px 8px; border-radius:20px; margin-left:8px; white-space:nowrap; }
 .tr-pergunta-texto { font-size:12.5px; color:#3A4548; line-height:1.6; padding-left:39px; margin-bottom:10px; }
 .tr-pergunta-thread { padding-left:39px; display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
 .tr-pergunta-coment { background:#F5F2EA; border-radius:14px; padding:9px 12px; }
@@ -1469,6 +1472,10 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-pergunta-minha">
         <label>Sua pergunta ou o que achou</label>
         <textarea class="q-input" id="tr_pergunta_input" rows="3" placeholder="Escreva aqui..."></textarea>
+        <label class="tr-privado-toggle">
+          <input type="checkbox" id="tr_pergunta_privado">
+          <span>🔒 Ocultar este comentário — só eu e o admin vemos</span>
+        </label>
         <button class="tr-resp-send-btn" onclick="window.TR.salvarPergunta()">Enviar →</button>
       </div>
     </div>
@@ -2538,7 +2545,11 @@ function renderGrid(data) {
     if (m.video) metaBits.push('🎥 Vídeo');
     if ((m.materiais||[]).length) metaBits.push('📎 ' + m.materiais.length + ' material' + (m.materiais.length>1?'is':''));
     const respostas = m.respostas || {};
-    const nomesRespostas = Object.keys(respostas).filter(n => (respostas[n].texto||'').trim());
+    const nomesRespostas = Object.keys(respostas).filter(n => {
+      if (!(respostas[n].texto||'').trim()) return false;
+      if (respostas[n].privado && !isAdmin && n !== meuNome) return false;
+      return true;
+    });
     if (nomesRespostas.length) metaBits.push('💬 ' + nomesRespostas.length);
 
     const cardPrincipal = `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.TR.abrirPergunta('${m.id}')">
@@ -2729,6 +2740,7 @@ function abrirPergunta(id) {
 
   const respostas = m.respostas || {};
   document.getElementById('tr_pergunta_input').value = (respostas[meuNome] && respostas[meuNome].texto) || '';
+  document.getElementById('tr_pergunta_privado').checked = !!(respostas[meuNome] && respostas[meuNome].privado);
 
   renderListaPerguntas(respostas, meuNome);
   document.getElementById('trPerguntaOverlay').classList.add('open');
@@ -2741,7 +2753,12 @@ function fecharPergunta() {
 
 function renderListaPerguntas(respostas, meuNome) {
   const wrap = document.getElementById('tr_pergunta_lista');
-  const nomes = Object.keys(respostas).filter(n => (respostas[n].texto||'').trim());
+  const isAdmin = window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin';
+  const nomes = Object.keys(respostas).filter(n => {
+    if (!(respostas[n].texto||'').trim()) return false;
+    if (respostas[n].privado && !isAdmin && n !== meuNome) return false;
+    return true;
+  });
   if (!nomes.length) {
     wrap.innerHTML = '<div class="tr-comentarios-empty">Ninguém respondeu ainda. Seja o primeiro!</div>';
     return;
@@ -2765,6 +2782,7 @@ function renderListaPerguntas(respostas, meuNome) {
       <div class="tr-pergunta-item-head">
         <div class="tr-pergunta-avatar" style="background:${corAvatar(nome)};">${iniciais}</div>
         <div class="tr-pergunta-nome">${escapeHTML(nome)}${nome===meuNome ? ' (você)' : ''}</div>
+        ${r.privado ? '<span class="tr-privado-badge">🔒 Privado</span>' : ''}
         <div class="tr-pergunta-data">${formatarDataHoraComentario(r.ts)}</div>
       </div>
       <div class="tr-pergunta-texto">${escapeHTML(r.texto||'')}</div>
@@ -2797,6 +2815,7 @@ function responderPergunta(nomeResposta, idSeguro) {
 function salvarPergunta() {
   if (!perguntaModuloId) return;
   const texto = document.getElementById('tr_pergunta_input').value.trim();
+  const privado = document.getElementById('tr_pergunta_privado').checked;
   const user = window.APPAUTH.usuarioAtual;
   const meuNome = (user && user.nome) || 'Anônimo';
   const data = getData();
@@ -2805,11 +2824,12 @@ function salvarPergunta() {
   m.respostas = m.respostas || {};
   if (texto) {
     const existente = m.respostas[meuNome];
-    m.respostas[meuNome] = { texto, ts: Date.now(), comentarios: existente ? existente.comentarios : [] };
+    m.respostas[meuNome] = { texto, privado, ts: Date.now(), comentarios: existente ? existente.comentarios : [] };
   } else {
     delete m.respostas[meuNome];
   }
   setData(data);
+  document.getElementById('tr_pergunta_privado').checked = false;
   renderListaPerguntas(m.respostas, meuNome);
   render();
 }
