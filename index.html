@@ -460,6 +460,16 @@ body {
 .tr-resposta-data { font-size:10px; color:var(--muted); margin-bottom:6px; }
 .tr-resposta-texto { font-size:12px; color:var(--text); line-height:1.5; white-space:pre-wrap; }
 .tr-card-resposta { position:relative; border-color:rgba(253,116,0,0.22); background:linear-gradient(160deg, #17323D 0%, #0E232B 100%); padding-top:34px; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.tr-section-label { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:30px 0 14px; padding-top:20px; border-top:1px solid var(--border2); }
+.tr-card-pessoa { cursor:default; }
+.tr-pessoa-historico { display:flex; flex-direction:column; gap:10px; margin-top:14px; max-height:280px; overflow-y:auto; }
+.tr-pessoa-item { background:rgba(255,255,255,0.03); border:1px solid var(--border2); border-radius:12px; padding:10px 12px; cursor:pointer; transition:border-color .15s; }
+.tr-pessoa-item:hover { border-color:rgba(253,116,0,0.35); }
+.tr-pessoa-item-head { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:11px; }
+.tr-pessoa-item-head b { color:var(--text); font-weight:800; }
+.tr-pessoa-item-data { margin-left:auto; color:var(--muted2); font-weight:600; white-space:nowrap; }
+.tr-pessoa-item-texto { font-size:12px; color:var(--muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.tr-pessoa-item-coment { font-size:10.5px; color:var(--laranja); font-weight:700; margin-top:6px; }
 .tr-card-resposta:hover { transform:translateY(-3px); border-color:rgba(253,116,0,0.4); box-shadow:0 4px 14px rgba(0,0,0,0.2), 0 14px 32px rgba(0,0,0,0.22); }
 .tr-resp-status { position:absolute; top:14px; right:14px; font-size:9px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:20px; }
 .tr-resp-status.pend { background:rgba(253,116,0,0.14); color:var(--laranja); }
@@ -2537,7 +2547,7 @@ function renderGrid(data) {
   const isAdmin = user && user.role === 'admin';
   const meuNome = (user && user.nome) || '';
 
-  wrap.innerHTML = `<div class="tr-grid">${mods.map(m => {
+  const moduleCardsHTML = mods.map(m => {
     const total = (m.checklist||[]).length;
     const done = (m.checklist||[]).filter(c=>c.done).length;
     const pct = total ? Math.round(done/total*100) : 0;
@@ -2552,7 +2562,7 @@ function renderGrid(data) {
     });
     if (nomesRespostas.length) metaBits.push('💬 ' + nomesRespostas.length);
 
-    const cardPrincipal = `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.TR.abrirPergunta('${m.id}')">
+    return `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.TR.abrirPergunta('${m.id}')">
       ${isAdmin ? `<button class="tr-card-edit-icon" onclick="event.stopPropagation(); window.TR.abrirModulo('${m.id}')" title="Editar módulo">✏️</button>` : ''}
       <div class="tr-card-cat">${escapeHTML(m.categoria||'')}</div>
       <div class="tr-card-title">${escapeHTML(m.titulo||'Sem título')}</div>
@@ -2563,36 +2573,56 @@ function renderGrid(data) {
       </div>` : ''}
       <div class="tr-card-meta">${metaBits.join(' &nbsp; ')}</div>
     </div>`;
+  }).join('');
 
-    const cardsResposta = nomesRespostas.map(nome => {
+  // Agrupa todas as respostas de todos os módulos, por pessoa
+  const porPessoa = {};
+  mods.forEach(m => {
+    const respostas = m.respostas || {};
+    Object.keys(respostas).forEach(nome => {
       const r = respostas[nome];
-      const curtido = !!((m.respostasLikes||{})[nome]);
-      const avatarCor = corAvatar(nome);
-      const iniciais = (nome||'?').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
-      const nComentarios = (r.comentarios||[]).length;
+      if (!(r.texto||'').trim()) return;
+      if (r.privado && !isAdmin && nome !== meuNome) return;
+      porPessoa[nome] = porPessoa[nome] || [];
+      porPessoa[nome].push({ moduloId: m.id, moduloTitulo: m.titulo, texto: r.texto, ts: r.ts, privado: r.privado, nComentarios: (r.comentarios||[]).length });
+    });
+  });
 
-      return `<div class="tr-card tr-card-resposta">
-        ${nComentarios ? `<div class="tr-resp-status ok">💬 ${nComentarios}</div>` : ''}
-        <div class="tr-resp-head" onclick="window.TR.abrirPergunta('${m.id}')" style="cursor:pointer;">
-          <div class="tr-resp-avatar" style="background:${avatarCor};">${iniciais}</div>
-          <div class="tr-resp-head-text">
-            <div class="tr-resp-nome">${escapeHTML(nome)}</div>
-            <div class="tr-resp-modulo">em <b>${escapeHTML(m.titulo||'Sem título')}</b> · ${formatarDataHoraComentario(r.ts)}</div>
-          </div>
-        </div>
-        <div class="tr-resp-texto" onclick="window.TR.abrirPergunta('${m.id}')" style="cursor:pointer;">${escapeHTML(r.texto||'')}</div>
-        <div class="tr-resp-footer">
-          ${isAdmin ? `<span class="tr-gostei-btn ${curtido?'curtido':''}" onclick="event.stopPropagation(); window.TR.toggleGostei('${m.id}','${escapeHTML(nome).replace(/'/g,"\\'")}')">${curtido ? '❤️ Curtido' : '🤍 Curtir'}</span>` : (curtido ? `<span class="tr-gostei-btn curtido">❤️ Curtido</span>` : '<span></span>')}
-          ${(isAdmin || nome === meuNome) ? `<span class="tr-resp-actions">
-            <button class="tr-resp-action-btn" title="Editar" onclick="event.stopPropagation(); window.TR.abrirPergunta('${m.id}')">✏️ Editar</button>
-            <button class="tr-resp-action-btn tr-resp-action-del" title="Excluir" onclick="event.stopPropagation(); window.TR.excluirResposta('${m.id}','${escapeHTML(nome).replace(/'/g,"\\'")}')">🗑️ Excluir</button>
-          </span>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+  const nomesPessoas = Object.keys(porPessoa).sort((a,b) => {
+    const ultA = Math.max.apply(null, porPessoa[a].map(x => x.ts||0));
+    const ultB = Math.max.apply(null, porPessoa[b].map(x => x.ts||0));
+    return ultB - ultA;
+  });
 
-    return cardPrincipal + cardsResposta;
-  }).join('')}</div>`;
+  const personCardsHTML = nomesPessoas.map(nome => {
+    const items = porPessoa[nome].slice().sort((a,b) => (b.ts||0) - (a.ts||0));
+    const avatarCor = corAvatar(nome);
+    const iniciais = (nome||'?').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
+    const itemsHTML = items.map(it => `
+      <div class="tr-pessoa-item" onclick="window.TR.abrirPergunta('${it.moduloId}')">
+        <div class="tr-pessoa-item-head">
+          <b>${escapeHTML(it.moduloTitulo||'Sem título')}</b>
+          ${it.privado ? '<span class="tr-privado-badge">🔒 Privado</span>' : ''}
+          <span class="tr-pessoa-item-data">${formatarDataHoraComentario(it.ts)}</span>
+        </div>
+        <div class="tr-pessoa-item-texto">${escapeHTML(it.texto||'')}</div>
+        ${it.nComentarios ? `<div class="tr-pessoa-item-coment">💬 ${it.nComentarios} resposta${it.nComentarios>1?'s':''}</div>` : ''}
+      </div>`).join('');
+
+    return `<div class="tr-card tr-card-pessoa">
+      <div class="tr-resp-head">
+        <div class="tr-resp-avatar" style="background:${avatarCor};">${iniciais}</div>
+        <div class="tr-resp-head-text">
+          <div class="tr-resp-nome">${escapeHTML(nome)}${nome===meuNome ? ' (você)' : ''}</div>
+          <div class="tr-resp-modulo">${items.length} comentário${items.length>1?'s':''}</div>
+        </div>
+      </div>
+      <div class="tr-pessoa-historico">${itemsHTML}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="tr-grid">${moduleCardsHTML}</div>` +
+    (nomesPessoas.length ? `<div class="tr-section-label">💬 Comentários da equipe</div><div class="tr-grid tr-grid-pessoas">${personCardsHTML}</div>` : '');
 }
 
 function escapeHTML(str) {
