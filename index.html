@@ -1247,15 +1247,9 @@ window.APPAUTH = window.APPAUTH || {};
         <label>Descrição (opcional)</label>
         <textarea class="q-input" id="camp_desc" rows="2" placeholder="Ex: cada um precisa bater a meta até o fim do período"></textarea>
       </div>
-      <div style="display:flex; gap:12px;">
-        <div class="tr-field" style="flex:1;">
-          <label>Meta por pessoa</label>
-          <input type="number" class="tr-text-input" id="camp_meta" placeholder="30" min="1">
-        </div>
-        <div class="tr-field" style="flex:1;">
-          <label>Unidade</label>
-          <input type="text" class="tr-text-input" id="camp_unidade" placeholder="avaliações" value="avaliações">
-        </div>
+      <div style="display:none;">
+        <input type="number" class="tr-text-input" id="camp_meta" placeholder="30" min="1">
+        <input type="text" class="tr-text-input" id="camp_unidade" placeholder="avaliações" value="avaliações">
       </div>
       <div style="display:flex; gap:12px;">
         <div class="tr-field" style="flex:1;">
@@ -4314,7 +4308,7 @@ function renderCard(camp, isAdmin, user) {
       </div>
       <span class="camp-card-badge ${encerrada?'camp-badge-encerrada':'camp-badge-ativa'}">${encerrada?'Encerrada':'Ativa'}</span>
     </div>
-    <div class="camp-card-periodo">${camp.inicio?fmtData(camp.inicio):''} até ${camp.fim?fmtData(camp.fim):''} · meta de ${camp.meta} ${escapeHTML(camp.unidade||'')} por pessoa</div>
+    <div class="camp-card-periodo">${camp.inicio?fmtData(camp.inicio):''} até ${camp.fim?fmtData(camp.fim):''}${(camp.categorias && camp.categorias.length) ? '' : ` · meta de ${camp.meta} ${escapeHTML(camp.unidade||'')} por pessoa`}</div>
     ${camp.usaCredencial ? `<div style="font-size:11px; color:var(--laranja); margin-bottom:12px; font-weight:700;">🎰 Giro extra a cada ${camp.giroQtdPrincipal||3} ${escapeHTML(camp.unidade||'avaliações')} + ${camp.giroQtdCredencial||2} credenciais NO MESMO DIA</div>` : ''}
     ${camp.descricao ? `<div style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5;">${escapeHTML(camp.descricao)}</div>` : ''}
     ${camp.pdf ? `<a class="pop-abrir-arquivo-btn" style="margin-bottom:14px;" href="${escapeHTML(camp.pdf)}" target="_blank" rel="noopener">📄 Ver PDF da campanha</a>` : ''}
@@ -4657,8 +4651,7 @@ function fecharModal() {
 function salvarCampanha() {
   const titulo = document.getElementById('camp_titulo').value.trim();
   if (!titulo) { alert('Dá um nome pra campanha antes de salvar :)'); return; }
-  const meta = Number(document.getElementById('camp_meta').value);
-  if (!meta || meta <= 0) { alert('Define uma meta válida.'); return; }
+  const meta = Number(document.getElementById('camp_meta').value) || 1;
   const participantes = Array.from(document.querySelectorAll('#camp_participantes_list input:checked')).map(el => el.value);
   if (participantes.length === 0) { alert('Marca pelo menos um participante.'); return; }
 
