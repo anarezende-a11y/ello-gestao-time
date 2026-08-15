@@ -470,6 +470,9 @@ body {
 .tr-pessoa-item-data { margin-left:auto; color:var(--muted2); font-weight:600; white-space:nowrap; }
 .tr-pessoa-item-texto { font-size:12px; color:var(--muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 .tr-pessoa-item-coment { font-size:10.5px; color:var(--laranja); font-weight:700; margin-top:6px; }
+.tr-filtro-aviso { display:flex; align-items:center; gap:10px; justify-content:space-between; background:var(--laranja-dim); border:1px solid rgba(253,116,0,0.3); border-radius:12px; padding:10px 14px; margin-bottom:14px; font-size:12px; font-weight:700; color:var(--laranja); }
+.tr-filtro-aviso button { background:transparent; border:1px solid rgba(253,116,0,0.4); color:var(--laranja); padding:6px 12px; border-radius:20px; font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.tr-filtro-aviso button:hover { background:rgba(253,116,0,0.15); }
 .tr-card-resposta:hover { transform:translateY(-3px); border-color:rgba(253,116,0,0.4); box-shadow:0 4px 14px rgba(0,0,0,0.2), 0 14px 32px rgba(0,0,0,0.22); }
 .tr-resp-status { position:absolute; top:14px; right:14px; font-size:9px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:20px; }
 .tr-resp-status.pend { background:rgba(253,116,0,0.14); color:var(--laranja); }
@@ -1490,6 +1493,10 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
     </div>
 
+    <div id="tr_pergunta_filtro_aviso" class="tr-filtro-aviso" style="display:none;">
+      <span></span>
+      <button onclick="window.TR.verTodosComentarios()">Ver todos os comentários</button>
+    </div>
     <div class="tr-pergunta-lista" id="tr_pergunta_lista"></div>
   </div>
 </div>
@@ -2599,7 +2606,7 @@ function renderGrid(data) {
     const avatarCor = corAvatar(nome);
     const iniciais = (nome||'?').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
     const itemsHTML = items.map(it => `
-      <div class="tr-pessoa-item" onclick="window.TR.abrirPergunta('${it.moduloId}')">
+      <div class="tr-pessoa-item" onclick="window.TR.abrirPerguntaFiltrada('${it.moduloId}','${escapeHTML(nome).replace(/'/g,"\\'")}')">
         <div class="tr-pessoa-item-head">
           <b>${escapeHTML(it.moduloTitulo||'Sem título')}</b>
           ${it.privado ? '<span class="tr-privado-badge">🔒 Privado</span>' : ''}
@@ -2746,7 +2753,7 @@ function salvarResposta() {
 
 let perguntaModuloId = null;
 
-function abrirPergunta(id) {
+function abrirPergunta(id, filtroNome) {
   const data = getData();
   const m = data.modulos.find(x => x.id === id);
   if (!m) return;
@@ -2772,8 +2779,27 @@ function abrirPergunta(id) {
   document.getElementById('tr_pergunta_input').value = (respostas[meuNome] && respostas[meuNome].texto) || '';
   document.getElementById('tr_pergunta_privado').checked = !!(respostas[meuNome] && respostas[meuNome].privado);
 
-  renderListaPerguntas(respostas, meuNome);
+  const filtroWrap = document.getElementById('tr_pergunta_filtro_aviso');
+  if (filtroNome && respostas[filtroNome]) {
+    const filtrado = {}; filtrado[filtroNome] = respostas[filtroNome];
+    renderListaPerguntas(filtrado, meuNome);
+    if (filtroWrap) {
+      filtroWrap.style.display = 'flex';
+      filtroWrap.querySelector('span').textContent = `Mostrando só o comentário de ${filtroNome}`;
+    }
+  } else {
+    renderListaPerguntas(respostas, meuNome);
+    if (filtroWrap) filtroWrap.style.display = 'none';
+  }
   document.getElementById('trPerguntaOverlay').classList.add('open');
+}
+
+function abrirPerguntaFiltrada(id, nome) {
+  abrirPergunta(id, nome);
+}
+
+function verTodosComentarios() {
+  if (perguntaModuloId) abrirPergunta(perguntaModuloId);
 }
 
 function fecharPergunta() {
@@ -3095,6 +3121,8 @@ render();
   window.TR.salvarResposta = salvarResposta;
   window.TR.excluirResposta = excluirResposta;
   window.TR.abrirPergunta = abrirPergunta;
+  window.TR.abrirPerguntaFiltrada = abrirPerguntaFiltrada;
+  window.TR.verTodosComentarios = verTodosComentarios;
   window.TR.fecharPergunta = fecharPergunta;
   window.TR.salvarPergunta = salvarPergunta;
   window.TR.responderPergunta = responderPergunta;
