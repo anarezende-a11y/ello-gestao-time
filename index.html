@@ -1276,11 +1276,7 @@ window.APPAUTH = window.APPAUTH || {};
         <input type="text" class="tr-text-input" id="camp_pdf" placeholder="Cole aqui o link do PDF (Google Drive, etc.)">
         <div id="camp_pdf_preview" class="pop-passo-preview"></div>
       </div>
-      <div class="tr-field">
-        <label>Categorias de lançamento (opcional — pra campanhas com contadores por tipo de ação)</label>
-        <div id="camp_categorias_list"></div>
-        <button class="tr-add-btn" onclick="window.CAMP.addCategoriaBaloes()">+ Adicionar categoria</button>
-      </div>
+      <div id="camp_categorias_list" style="display:none;"></div>
       <div class="tr-field">
         <label>Exige foto de comprovação?</label>
         <div class="camp-checklist">
