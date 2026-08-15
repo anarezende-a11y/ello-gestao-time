@@ -4318,11 +4318,12 @@ function renderCard(camp, isAdmin, user) {
     ${camp.usaCredencial ? `<div style="font-size:11px; color:var(--laranja); margin-bottom:12px; font-weight:700;">🎰 Giro extra a cada ${camp.giroQtdPrincipal||3} ${escapeHTML(camp.unidade||'avaliações')} + ${camp.giroQtdCredencial||2} credenciais NO MESMO DIA</div>` : ''}
     ${camp.descricao ? `<div style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.5;">${escapeHTML(camp.descricao)}</div>` : ''}
     ${camp.pdf ? `<a class="pop-abrir-arquivo-btn" style="margin-bottom:14px;" href="${escapeHTML(camp.pdf)}" target="_blank" rel="noopener">📄 Ver PDF da campanha</a>` : ''}
-    ${(camp.categorias && camp.categorias.length) ? renderCategoriasBloco(camp, isAdmin, meuNome, souParticipante) : ''}
+    ${(camp.categorias && camp.categorias.length) ? renderCategoriasBloco(camp, isAdmin, meuNome, souParticipante) : `
     ${semanaHTML}
     <div class="camp-rank">${rankHTML || '<div class="camp-empty" style="padding:20px;">Sem participantes cadastrados.</div>'}</div>
+    `}
     <div class="camp-card-actions">
-      ${podeLancar ? `<button class="tr-empty-btn" onclick="window.CAMP.abrirLancar('${camp.id}')">📩 Lançar meu número de hoje</button>` : ''}
+      ${(podeLancar && !(camp.categorias && camp.categorias.length)) ? `<button class="tr-empty-btn" onclick="window.CAMP.abrirLancar('${camp.id}')">📩 Lançar meu número de hoje</button>` : ''}
       ${isAdmin ? `<button class="tr-btn-delete" onclick="window.CAMP.editarCampanha('${camp.id}')">✏️ Editar campanha</button>` : ''}
     </div>
   </div>`;
