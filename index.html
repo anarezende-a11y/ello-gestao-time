@@ -999,6 +999,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_feedback" onclick="mostrarTool('feedback')">
     <span class="di-icon">🗣️</span> Feedback
   </button>
+  <button class="drawer-item" id="di_contratos" onclick="mostrarTool('contratos')">
+    <span class="di-icon">📁</span> Contratos
+  </button>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -1072,6 +1075,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-icon">🗣️</div>
         <div class="hc-title">Feedback</div>
         <div class="hc-desc">Feedbacks individuais por liderado(a) — cada um só enxerga o que é seu.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-contratos" onclick="mostrarTool('contratos')">
+        <div class="hc-icon">📁</div>
+        <div class="hc-title">Contratos</div>
+        <div class="hc-desc">Contratos e documentos de cada liderado — visível só pra você e a pessoa.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
     </div>
@@ -1367,6 +1376,65 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<!-- ================= TOOL: CONTRATOS ================= -->
+<div class="tool-view tool-contratos" id="view_contratos">
+  <div class="tool-subbar">
+    <span class="sb-title">📁 Contratos</span>
+    <span class="save-ind" id="saveInd_contr">✓ Salvo</span>
+    <button class="btn btn-amber admin-only" onclick="window.CONTR.novoDocumento()">+ Novo documento</button>
+  </div>
+  <div class="wrap">
+    <div id="contr_semNome" style="display:none; text-align:center; padding:40px 20px; color:var(--muted);">
+      Você ainda não tem documentos registrados.
+    </div>
+    <div id="contr_seletorWrap" class="admin-only" style="margin-bottom:16px;"></div>
+    <div id="contr_lista"></div>
+  </div>
+</div>
+
+<!-- Modal: criar/editar documento (admin) -->
+<div class="tr-modal-overlay" id="contrModalOverlay" onclick="if(event.target===this) window.CONTR.fecharModal()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" style="padding-top:8px;">Documento</span>
+      <button class="tr-modal-close" onclick="window.CONTR.fecharModal()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div style="display:flex; gap:12px;">
+        <div class="tr-field" style="flex:1;">
+          <label>Liderado(a)</label>
+          <select class="tr-text-input" id="contr_liderado"></select>
+        </div>
+        <div class="tr-field" style="flex:1;">
+          <label>Tipo de documento</label>
+          <select class="tr-text-input" id="contr_tipo">
+            <option value="contrato">Contrato de Prestação de Serviços</option>
+            <option value="cargo">Descritivo de Cargo / OTE</option>
+            <option value="aditivo">Aditivo Contratual</option>
+            <option value="outro">Outro documento</option>
+          </select>
+        </div>
+      </div>
+      <div class="tr-field">
+        <label>Título (opcional)</label>
+        <input type="text" class="tr-text-input" id="contr_titulo" placeholder="Ex: Contrato assinado em 01/06/2026">
+      </div>
+      <div class="tr-field">
+        <label>Data</label>
+        <input type="date" class="tr-text-input" id="contr_data">
+      </div>
+      <div class="tr-field">
+        <label>Link do arquivo (Google Drive, PDF...)</label>
+        <input type="text" class="tr-text-input" id="contr_link" placeholder="Cole aqui o link do Google Drive">
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="contr_delete_btn" onclick="window.CONTR.excluirDocumento()">🗑️ Excluir</button>
+      <button class="btn btn-amber" onclick="window.CONTR.salvarDocumento()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: criar/editar campanha (admin) -->
 <div class="tr-modal-overlay" id="campModalOverlay" onclick="if(event.target===this) window.CAMP.fecharModal()">
   <div class="tr-modal">
@@ -1634,8 +1702,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos' };
   var adminOnly = ['reuniao','oneone','rco'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -1660,6 +1728,7 @@ function mostrarTool(nome) {
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
   if (nome === 'feedback' && window.FEED) window.FEED.render();
+  if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   window.scrollTo(0, 0);
 }
 
@@ -5757,6 +5826,193 @@ window.FEED.excluirFeedback = excluirFeedback;
 window.FEED.abrirView = abrirView;
 window.FEED.fecharView = fecharView;
 window.FEED.salvarResposta = salvarResposta;
+})();
+</script>
+
+<!-- ===== JS: Contratos e documentos (escopo isolado) ===== -->
+<script>
+window.CONTR = window.CONTR || {};
+(function(){
+const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const TIPOS = { contrato:'📄 Contrato de Prestação de Serviços', cargo:'🧾 Descritivo de Cargo / OTE', aditivo:'📎 Aditivo Contratual', outro:'📁 Outro documento' };
+
+let cachedData = null;
+let listenerAtivo = false;
+let modalId = null;
+let pessoaFiltro = 'todos';
+
+function defaultData() { return { lista: [] }; }
+function getData() { return cachedData || defaultData(); }
+
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function salvar() {
+  if (!window.fb) return;
+  const d = getData();
+  const ind = document.getElementById('saveInd_contr');
+  if (ind) { ind.textContent = 'Salvando...'; }
+  window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'contratos'), d)
+    .then(() => { if (ind) { ind.textContent = '✓ Salvo'; } })
+    .catch(e => console.error('CONTR save error', e));
+}
+
+function carregar() {
+  if (!window.fb || listenerAtivo) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'contratos'), (snap) => {
+    cachedData = snap.exists() ? snap.data() : defaultData();
+    if (!cachedData.lista) cachedData.lista = [];
+    render();
+  }, err => console.error('CONTR snapshot error', err));
+}
+
+function meuNome(user) {
+  if (!user || !user.nome) return null;
+  const n = user.nome.trim().toLowerCase();
+  const m = MEMBROS.find(x => x.toLowerCase() === n);
+  return m || null;
+}
+
+function render() {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user) return;
+  if (!listenerAtivo) { carregar(); return; }
+  const isAdmin = user.role === 'admin';
+  const lista = getData().lista || [];
+  const seletorWrap = document.getElementById('contr_seletorWrap');
+  const listaWrap = document.getElementById('contr_lista');
+  const semNome = document.getElementById('contr_semNome');
+
+  if (isAdmin) {
+    semNome.style.display = 'none';
+    seletorWrap.innerHTML = `<div class="feed-seletor-row">${['todos'].concat(MEMBROS).map(p => `
+      <button class="check-pessoa-card${p===pessoaFiltro?' active':''}" style="min-width:64px; padding:9px 14px;" onclick="window.CONTR.filtrarPessoa('${p}')">
+        <div class="check-pessoa-nome">${p==='todos'?'Todos':escapeHTML(p)}</div>
+      </button>`).join('')}</div>`;
+    const filtrada = (pessoaFiltro==='todos' ? lista : lista.filter(f => f.liderado===pessoaFiltro))
+      .slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
+    if (!filtrada.length) {
+      listaWrap.innerHTML = renderEmpty(pessoaFiltro);
+      return;
+    }
+    listaWrap.innerHTML = `<div class="feed-grid">${filtrada.map(f => renderCardAdmin(f)).join('')}</div>`;
+  } else {
+    seletorWrap.innerHTML = '';
+    const nome = meuNome(user);
+    const meus = nome ? lista.filter(f => f.liderado.toLowerCase() === nome.toLowerCase()) : [];
+    meus.sort((a,b) => (b.data||'').localeCompare(a.data||''));
+    if (!meus.length) {
+      semNome.style.display = 'block';
+      listaWrap.innerHTML = '';
+      return;
+    }
+    semNome.style.display = 'none';
+    listaWrap.innerHTML = `<div class="feed-grid">${meus.map(f => renderCardLiderado(f)).join('')}</div>`;
+  }
+}
+
+function renderEmpty(pessoaFiltro) {
+  const quem = pessoaFiltro && pessoaFiltro !== 'todos' ? ` para ${escapeHTML(pessoaFiltro)}` : '';
+  return `<div class="feed-empty">
+    <div class="fe-icon">📁</div>
+    <div class="fe-title">Nenhum documento registrado${quem}</div>
+    <div class="fe-desc">Use o botão "+ Novo documento" no topo pra registrar o primeiro.</div>
+  </div>`;
+}
+
+function renderCardAdmin(f) {
+  return `<button class="tr-card feed-card" onclick="window.CONTR.abrirModal('${f.id}')">
+    <div class="tr-card-cat">${TIPOS[f.tipo] || 'Documento'}</div>
+    <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
+    <div class="tr-card-desc" style="-webkit-line-clamp:2;">${escapeHTML(f.titulo) || 'Sem título'}</div>
+    <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span></div>
+  </button>`;
+}
+
+function renderCardLiderado(f) {
+  return `<a class="tr-card feed-card" style="cursor:pointer; text-decoration:none;" href="${escapeHTML(f.link||'#')}" target="_blank" rel="noopener">
+    <div class="tr-card-cat">${TIPOS[f.tipo] || 'Documento'}</div>
+    <div class="tr-card-desc" style="-webkit-line-clamp:2; min-height:auto;">${escapeHTML(f.titulo) || 'Sem título'}</div>
+    <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
+      <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
+      <span class="feed-resposta-badge feito">Abrir arquivo →</span>
+    </div>
+  </a>`;
+}
+
+function filtrarPessoa(p) { pessoaFiltro = p; render(); }
+
+function novoDocumento() {
+  modalId = null;
+  document.getElementById('contr_liderado').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('contr_tipo').value = 'contrato';
+  document.getElementById('contr_titulo').value = '';
+  document.getElementById('contr_data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('contr_link').value = '';
+  document.getElementById('contr_delete_btn').style.display = 'none';
+  document.getElementById('contrModalOverlay').classList.add('open');
+}
+
+function abrirModal(id) {
+  const f = (getData().lista || []).find(x => x.id === id);
+  if (!f) return;
+  modalId = id;
+  document.getElementById('contr_liderado').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('contr_liderado').value = f.liderado;
+  document.getElementById('contr_tipo').value = f.tipo || 'contrato';
+  document.getElementById('contr_titulo').value = f.titulo || '';
+  document.getElementById('contr_data').value = f.data || '';
+  document.getElementById('contr_link').value = f.link || '';
+  document.getElementById('contr_delete_btn').style.display = 'inline-block';
+  document.getElementById('contrModalOverlay').classList.add('open');
+}
+
+function fecharModal() {
+  document.getElementById('contrModalOverlay').classList.remove('open');
+  modalId = null;
+}
+
+function salvarDocumento() {
+  const liderado = document.getElementById('contr_liderado').value;
+  const tipo = document.getElementById('contr_tipo').value;
+  const titulo = document.getElementById('contr_titulo').value.trim();
+  const data = document.getElementById('contr_data').value;
+  const link = document.getElementById('contr_link').value.trim();
+  if (!liderado || !link) { alert('Escolhe o liderado e cola o link do arquivo.'); return; }
+  const d = getData();
+  if (!d.lista) d.lista = [];
+  if (modalId) {
+    const item = d.lista.find(x => x.id === modalId);
+    if (item) { item.liderado = liderado; item.tipo = tipo; item.titulo = titulo; item.data = data; item.link = link; }
+  } else {
+    d.lista.push({ id: 'c_' + Date.now(), liderado, tipo, titulo, data, link, criadoEm: Date.now() });
+  }
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+function excluirDocumento() {
+  if (!modalId) return;
+  if (!confirm('Excluir esse documento?')) return;
+  const d = getData();
+  d.lista = (d.lista || []).filter(x => x.id !== modalId);
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+window.CONTR.render = render;
+window.CONTR.filtrarPessoa = filtrarPessoa;
+window.CONTR.novoDocumento = novoDocumento;
+window.CONTR.abrirModal = abrirModal;
+window.CONTR.fecharModal = fecharModal;
+window.CONTR.salvarDocumento = salvarDocumento;
+window.CONTR.excluirDocumento = excluirDocumento;
 })();
 </script>
 
