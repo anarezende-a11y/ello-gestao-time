@@ -548,6 +548,19 @@ body {
 .tr-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:680px) { .tr-grid { grid-template-columns:1fr; } }
 .tr-card { background:linear-gradient(165deg, rgba(21,57,74,0.28) 0%, rgba(15,42,54,0.28) 100%); backdrop-filter:blur(34px) saturate(170%); -webkit-backdrop-filter:blur(34px) saturate(170%); border:1px solid rgba(255,255,255,0.10); border-radius:20px; padding:22px 22px 20px; cursor:pointer; transition:all .25s cubic-bezier(.4,0,.2,1); text-align:left; font-family:inherit; display:block; width:100%; position:relative; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); }
+.feed-seletor-row { display:flex!important; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
+.feed-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
+.feed-card { border-left:4px solid var(--laranja); }
+.feed-card.tipo-melhoria { border-left-color:#E0B23A; }
+.feed-card.tipo-alinhamento { border-left-color:#3AAFE0; }
+.feed-card:hover { transform:translateY(-4px) scale(1.008); box-shadow:0 16px 34px rgba(0,0,0,0.3); }
+.feed-empty { text-align:center; padding:64px 20px; color:var(--muted); background:linear-gradient(165deg, rgba(21,57,74,0.2) 0%, rgba(15,42,54,0.2) 100%); border:1px dashed var(--border2); border-radius:20px; }
+.feed-empty .fe-icon { font-size:34px; margin-bottom:10px; opacity:.7; }
+.feed-empty .fe-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:4px; }
+.feed-empty .fe-desc { font-size:12.5px; }
+.feed-resposta-badge { display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; }
+.feed-resposta-badge.pendente { background:rgba(253,116,0,0.14); color:#FFAF63; }
+.feed-resposta-badge.feito { background:rgba(31,138,112,0.18); color:#5FD9B4; }
 .tr-card::after { content:''; position:absolute; inset:0; border-radius:20px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06); pointer-events:none; }
 .tr-card:hover { transform:translateY(-4px) scale(1.008); box-shadow:0 16px 34px rgba(0,0,0,0.3); border-color:var(--laranja); }
 .tr-card-cat { display:inline-block; font-size:10px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--azul-claro); background:rgba(255,255,255,0.08); padding:4px 10px; border-radius:20px; margin-bottom:10px; }
@@ -5576,17 +5589,17 @@ function render() {
 
   if (isAdmin) {
     semNome.style.display = 'none';
-    seletorWrap.innerHTML = ['todos'].concat(MEMBROS).map(p => `
+    seletorWrap.innerHTML = `<div class="feed-seletor-row">${['todos'].concat(MEMBROS).map(p => `
       <button class="check-pessoa-card${p===pessoaFiltro?' active':''}" style="min-width:64px; padding:9px 14px;" onclick="window.FEED.filtrarPessoa('${p}')">
         <div class="check-pessoa-nome">${p==='todos'?'Todos':escapeHTML(p)}</div>
-      </button>`).join('');
+      </button>`).join('')}</div>`;
     const filtrada = (pessoaFiltro==='todos' ? lista : lista.filter(f => f.liderado===pessoaFiltro))
       .slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
     if (!filtrada.length) {
-      listaWrap.innerHTML = `<div style="text-align:center; padding:30px; color:var(--muted);">Nenhum feedback registrado ainda.</div>`;
+      listaWrap.innerHTML = renderEmpty(pessoaFiltro);
       return;
     }
-    listaWrap.innerHTML = filtrada.map(f => renderCardAdmin(f)).join('');
+    listaWrap.innerHTML = `<div class="feed-grid">${filtrada.map(f => renderCardAdmin(f)).join('')}</div>`;
   } else {
     seletorWrap.innerHTML = '';
     const nome = meuNome(user);
@@ -5598,24 +5611,41 @@ function render() {
       return;
     }
     semNome.style.display = 'none';
-    listaWrap.innerHTML = meus.map(f => renderCardLiderado(f)).join('');
+    listaWrap.innerHTML = `<div class="feed-grid">${meus.map(f => renderCardLiderado(f)).join('')}</div>`;
   }
 }
 
+function renderEmpty(pessoaFiltro) {
+  const quem = pessoaFiltro && pessoaFiltro !== 'todos' ? ` para ${escapeHTML(pessoaFiltro)}` : '';
+  return `<div class="feed-empty">
+    <div class="fe-icon">🗣️</div>
+    <div class="fe-title">Nenhum feedback registrado${quem}</div>
+    <div class="fe-desc">Use o botão "+ Novo feedback" no topo pra registrar o primeiro.</div>
+  </div>`;
+}
+
 function renderCardAdmin(f) {
-  return `<button class="tr-card" style="cursor:pointer;" onclick="window.FEED.abrirModal('${f.id}')">
+  const respondido = !!f.resposta;
+  return `<button class="tr-card feed-card tipo-${f.tipo||'positivo'}" onclick="window.FEED.abrirModal('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
     <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:3;">${escapeHTML(f.texto)}</div>
-    <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>${f.resposta ? '<span>💬 respondido</span>' : ''}</div>
+    <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
+      <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
+      <span class="feed-resposta-badge ${respondido?'feito':'pendente'}">${respondido?'💬 respondido':'⏳ sem resposta'}</span>
+    </div>
   </button>`;
 }
 
 function renderCardLiderado(f) {
-  return `<button class="tr-card" style="cursor:pointer;" onclick="window.FEED.abrirView('${f.id}')">
+  const respondido = !!f.resposta;
+  return `<button class="tr-card feed-card tipo-${f.tipo||'positivo'}" onclick="window.FEED.abrirView('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:3; min-height:auto;">${escapeHTML(f.texto)}</div>
-    <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>${f.resposta ? '<span>✓ você respondeu</span>' : '<span>Toque pra ver e responder</span>'}</div>
+    <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
+      <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
+      <span class="feed-resposta-badge ${respondido?'feito':'pendente'}">${respondido?'✓ você respondeu':'Toque pra ver'}</span>
+    </div>
   </button>`;
 }
 
