@@ -983,6 +983,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_checklist" onclick="mostrarTool('checklist')">
     <span class="di-icon">✅</span> Checklist
   </button>
+  <button class="drawer-item" id="di_feedback" onclick="mostrarTool('feedback')">
+    <span class="di-icon">🗣️</span> Feedback
+  </button>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -1050,6 +1053,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-icon">✅</div>
         <div class="hc-title">Checklist</div>
         <div class="hc-desc">Rotina diária de cada liderado, passo a passo, com histórico por dia.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-feedback" onclick="mostrarTool('feedback')">
+        <div class="hc-icon">🗣️</div>
+        <div class="hc-title">Feedback</div>
+        <div class="hc-desc">Feedbacks individuais por liderado(a) — cada um só enxerga o que é seu.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
     </div>
@@ -1264,6 +1273,84 @@ window.APPAUTH = window.APPAUTH || {};
     </div>
     <div id="check_seletorWrap" class="admin-only" style="margin-bottom:16px;"></div>
     <div id="check_conteudo"></div>
+  </div>
+</div>
+
+<!-- ================= TOOL: FEEDBACK ================= -->
+<div class="tool-view tool-feedback" id="view_feedback">
+  <div class="tool-subbar">
+    <span class="sb-title">🗣️ Feedback</span>
+    <span class="save-ind" id="saveInd_feed">✓ Salvo</span>
+    <button class="btn btn-amber admin-only" onclick="window.FEED.novoFeedback()">+ Novo feedback</button>
+  </div>
+  <div class="wrap">
+    <div id="feed_semNome" style="display:none; text-align:center; padding:40px 20px; color:var(--muted);">
+      Você ainda não tem feedbacks registrados.
+    </div>
+    <div id="feed_seletorWrap" class="admin-only" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;"></div>
+    <div id="feed_lista" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+</div>
+
+<!-- Modal: criar/editar feedback (admin) -->
+<div class="tr-modal-overlay" id="feedModalOverlay" onclick="if(event.target===this) window.FEED.fecharModal()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" style="padding-top:8px;">Feedback</span>
+      <button class="tr-modal-close" onclick="window.FEED.fecharModal()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div style="display:flex; gap:12px;">
+        <div class="tr-field" style="flex:1;">
+          <label>Liderado(a)</label>
+          <select class="tr-text-input" id="feed_liderado"></select>
+        </div>
+        <div class="tr-field" style="flex:1;">
+          <label>Data</label>
+          <input type="date" class="tr-text-input" id="feed_data">
+        </div>
+      </div>
+      <div class="tr-field">
+        <label>Tipo</label>
+        <select class="tr-text-input" id="feed_tipo">
+          <option value="positivo">👍 Positivo</option>
+          <option value="melhoria">🎯 Ponto de melhoria</option>
+          <option value="alinhamento">🧭 Alinhamento</option>
+        </select>
+      </div>
+      <div class="tr-field">
+        <label>Feedback</label>
+        <textarea class="q-input" id="feed_texto" rows="5" placeholder="Escreva o feedback para essa pessoa..."></textarea>
+      </div>
+      <div class="tr-field" id="feed_resposta_wrap" style="display:none;">
+        <label>Resposta do(a) liderado(a)</label>
+        <div id="feed_resposta_view" style="font-size:13px; color:var(--muted); white-space:pre-wrap; background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:10px 12px;"></div>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="feed_delete_btn" onclick="window.FEED.excluirFeedback()">🗑️ Excluir</button>
+      <button class="btn btn-amber" onclick="window.FEED.salvarFeedback()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: visualizar/responder feedback (liderado) -->
+<div class="tr-modal-overlay" id="feedViewOverlay" onclick="if(event.target===this) window.FEED.fecharView()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" id="feedview_titulo" style="padding-top:8px;">Feedback</span>
+      <button class="tr-modal-close" onclick="window.FEED.fecharView()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div id="feedview_texto" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-bottom:18px;"></div>
+      <div class="tr-field">
+        <label>Sua resposta (opcional)</label>
+        <textarea class="q-input" id="feedview_resposta" rows="4" placeholder="Escreva sua resposta pra Ana..."></textarea>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="btn btn-amber" onclick="window.FEED.salvarResposta()">💾 Salvar resposta</button>
+    </div>
   </div>
 </div>
 
@@ -1534,8 +1621,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback' };
   var adminOnly = ['reuniao','oneone','rco'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -1559,6 +1646,7 @@ function mostrarTool(nome) {
   if (nome === 'reuniao' && window.PAUTA) window.PAUTA.renderAdminPanel();
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
+  if (nome === 'feedback' && window.FEED) window.FEED.render();
   window.scrollTo(0, 0);
 }
 
@@ -5426,6 +5514,219 @@ window.CHECK.toggleItem = toggleItem;
 window.CHECK.step = step;
 window.CHECK.gerarPDF = gerarPDF;
 
+})();
+</script>
+
+<!-- ===== JS: Feedback individual (escopo isolado) ===== -->
+<script>
+window.FEED = window.FEED || {};
+(function(){
+const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
+
+let cachedData = null;
+let listenerAtivo = false;
+let modalId = null;      // id do feedback aberto no modal de admin
+let viewId = null;       // id do feedback aberto na visualização do liderado
+let pessoaFiltro = 'todos';
+
+function defaultData() { return { lista: [] }; }
+function getData() { return cachedData || defaultData(); }
+
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function salvar() {
+  if (!window.fb) return;
+  const d = getData();
+  const ind = document.getElementById('saveInd_feed');
+  if (ind) { ind.textContent = 'Salvando...'; ind.classList.add('saving'); }
+  window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'feedbacks'), d)
+    .then(() => { if (ind) { ind.textContent = '✓ Salvo'; ind.classList.remove('saving'); } })
+    .catch(e => console.error('FEED save error', e));
+}
+
+function carregar() {
+  if (!window.fb || listenerAtivo) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'feedbacks'), (snap) => {
+    cachedData = snap.exists() ? snap.data() : defaultData();
+    if (!cachedData.lista) cachedData.lista = [];
+    render();
+  }, err => console.error('FEED snapshot error', err));
+}
+
+function meuNome(user) {
+  if (!user || !user.nome) return null;
+  const n = user.nome.trim().toLowerCase();
+  const m = MEMBROS.find(x => x.toLowerCase() === n);
+  return m || null;
+}
+
+function render() {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user) return;
+  if (!listenerAtivo) { carregar(); return; }
+  const isAdmin = user.role === 'admin';
+  const lista = getData().lista || [];
+  const seletorWrap = document.getElementById('feed_seletorWrap');
+  const listaWrap = document.getElementById('feed_lista');
+  const semNome = document.getElementById('feed_semNome');
+
+  if (isAdmin) {
+    semNome.style.display = 'none';
+    seletorWrap.innerHTML = ['todos'].concat(MEMBROS).map(p => `
+      <button class="check-pessoa-card${p===pessoaFiltro?' active':''}" style="min-width:64px; padding:9px 14px;" onclick="window.FEED.filtrarPessoa('${p}')">
+        <div class="check-pessoa-nome">${p==='todos'?'Todos':escapeHTML(p)}</div>
+      </button>`).join('');
+    const filtrada = (pessoaFiltro==='todos' ? lista : lista.filter(f => f.liderado===pessoaFiltro))
+      .slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
+    if (!filtrada.length) {
+      listaWrap.innerHTML = `<div style="text-align:center; padding:30px; color:var(--muted);">Nenhum feedback registrado ainda.</div>`;
+      return;
+    }
+    listaWrap.innerHTML = filtrada.map(f => renderCardAdmin(f)).join('');
+  } else {
+    seletorWrap.innerHTML = '';
+    const nome = meuNome(user);
+    const meus = nome ? lista.filter(f => f.liderado.toLowerCase() === nome.toLowerCase()) : [];
+    meus.sort((a,b) => (b.data||'').localeCompare(a.data||''));
+    if (!meus.length) {
+      semNome.style.display = 'block';
+      listaWrap.innerHTML = '';
+      return;
+    }
+    semNome.style.display = 'none';
+    listaWrap.innerHTML = meus.map(f => renderCardLiderado(f)).join('');
+  }
+}
+
+function renderCardAdmin(f) {
+  return `<button class="tr-card" style="cursor:pointer;" onclick="window.FEED.abrirModal('${f.id}')">
+    <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
+    <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
+    <div class="tr-card-desc" style="-webkit-line-clamp:3;">${escapeHTML(f.texto)}</div>
+    <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>${f.resposta ? '<span>💬 respondido</span>' : ''}</div>
+  </button>`;
+}
+
+function renderCardLiderado(f) {
+  return `<button class="tr-card" style="cursor:pointer;" onclick="window.FEED.abrirView('${f.id}')">
+    <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
+    <div class="tr-card-desc" style="-webkit-line-clamp:3; min-height:auto;">${escapeHTML(f.texto)}</div>
+    <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>${f.resposta ? '<span>✓ você respondeu</span>' : '<span>Toque pra ver e responder</span>'}</div>
+  </button>`;
+}
+
+function filtrarPessoa(p) { pessoaFiltro = p; render(); }
+
+function novoFeedback() {
+  modalId = null;
+  document.getElementById('feed_liderado').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('feed_liderado').disabled = false;
+  document.getElementById('feed_data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('feed_tipo').value = 'positivo';
+  document.getElementById('feed_texto').value = '';
+  document.getElementById('feed_resposta_wrap').style.display = 'none';
+  document.getElementById('feed_delete_btn').style.display = 'none';
+  document.getElementById('feedModalOverlay').classList.add('open');
+}
+
+function abrirModal(id) {
+  const f = (getData().lista || []).find(x => x.id === id);
+  if (!f) return;
+  modalId = id;
+  document.getElementById('feed_liderado').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('feed_liderado').value = f.liderado;
+  document.getElementById('feed_liderado').disabled = false;
+  document.getElementById('feed_data').value = f.data || '';
+  document.getElementById('feed_tipo').value = f.tipo || 'positivo';
+  document.getElementById('feed_texto').value = f.texto || '';
+  if (f.resposta) {
+    document.getElementById('feed_resposta_wrap').style.display = 'block';
+    document.getElementById('feed_resposta_view').textContent = f.resposta;
+  } else {
+    document.getElementById('feed_resposta_wrap').style.display = 'none';
+  }
+  document.getElementById('feed_delete_btn').style.display = 'inline-block';
+  document.getElementById('feedModalOverlay').classList.add('open');
+}
+
+function fecharModal() {
+  document.getElementById('feedModalOverlay').classList.remove('open');
+  modalId = null;
+}
+
+function salvarFeedback() {
+  const liderado = document.getElementById('feed_liderado').value;
+  const data = document.getElementById('feed_data').value;
+  const tipo = document.getElementById('feed_tipo').value;
+  const texto = document.getElementById('feed_texto').value.trim();
+  if (!liderado || !texto) { alert('Escolhe o liderado e escreve o feedback.'); return; }
+  const d = getData();
+  if (!d.lista) d.lista = [];
+  if (modalId) {
+    const item = d.lista.find(x => x.id === modalId);
+    if (item) { item.liderado = liderado; item.data = data; item.tipo = tipo; item.texto = texto; }
+  } else {
+    d.lista.push({ id: 'f_' + Date.now(), liderado, data, tipo, texto, resposta:'', criadoEm: Date.now() });
+  }
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+function excluirFeedback() {
+  if (!modalId) return;
+  if (!confirm('Excluir esse feedback?')) return;
+  const d = getData();
+  d.lista = (d.lista || []).filter(x => x.id !== modalId);
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+function abrirView(id) {
+  const f = (getData().lista || []).find(x => x.id === id);
+  if (!f) return;
+  viewId = id;
+  document.getElementById('feedview_titulo').textContent = (TIPOS[f.tipo] || 'Feedback') + (f.data ? ' · ' + f.data.split('-').reverse().join('/') : '');
+  document.getElementById('feedview_texto').textContent = f.texto || '';
+  document.getElementById('feedview_resposta').value = f.resposta || '';
+  document.getElementById('feedViewOverlay').classList.add('open');
+}
+
+function fecharView() {
+  document.getElementById('feedViewOverlay').classList.remove('open');
+  viewId = null;
+}
+
+function salvarResposta() {
+  if (!viewId) return;
+  const d = getData();
+  const item = (d.lista || []).find(x => x.id === viewId);
+  if (!item) return;
+  item.resposta = document.getElementById('feedview_resposta').value.trim();
+  item.respostaEm = Date.now();
+  cachedData = d;
+  salvar();
+  fecharView();
+  render();
+}
+
+window.FEED.render = render;
+window.FEED.filtrarPessoa = filtrarPessoa;
+window.FEED.novoFeedback = novoFeedback;
+window.FEED.abrirModal = abrirModal;
+window.FEED.fecharModal = fecharModal;
+window.FEED.salvarFeedback = salvarFeedback;
+window.FEED.excluirFeedback = excluirFeedback;
+window.FEED.abrirView = abrirView;
+window.FEED.fecharView = fecharView;
+window.FEED.salvarResposta = salvarResposta;
 })();
 </script>
 
