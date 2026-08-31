@@ -5659,11 +5659,22 @@ function carregar() {
   }, err => console.error('FEED snapshot error', err));
 }
 
+function normalizarNome(s) {
+  return (s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[._\d]+/g, '');
+}
+
 function meuNome(user) {
-  if (!user || !user.nome) return null;
-  const n = user.nome.trim().toLowerCase();
-  const m = MEMBROS.find(x => x.toLowerCase() === n);
-  return m || null;
+  if (!user) return null;
+  const candidatos = [user.nome, user.email ? user.email.split('@')[0] : ''].filter(Boolean);
+  for (const c of candidatos) {
+    const norm = normalizarNome(c);
+    const m = MEMBROS.find(x => {
+      const xn = normalizarNome(x);
+      return xn === norm || norm.startsWith(xn) || xn.startsWith(norm);
+    });
+    if (m) return m;
+  }
+  return null;
 }
 
 function render() {
@@ -5945,11 +5956,22 @@ function carregar() {
   }, err => console.error('CONTR snapshot error', err));
 }
 
+function normalizarNome(s) {
+  return (s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[._\d]+/g, '');
+}
+
 function meuNome(user) {
-  if (!user || !user.nome) return null;
-  const n = user.nome.trim().toLowerCase();
-  const m = MEMBROS.find(x => x.toLowerCase() === n);
-  return m || null;
+  if (!user) return null;
+  const candidatos = [user.nome, user.email ? user.email.split('@')[0] : ''].filter(Boolean);
+  for (const c of candidatos) {
+    const norm = normalizarNome(c);
+    const m = MEMBROS.find(x => {
+      const xn = normalizarNome(x);
+      return xn === norm || norm.startsWith(xn) || xn.startsWith(norm);
+    });
+    if (m) return m;
+  }
+  return null;
 }
 
 function render() {
