@@ -775,6 +775,8 @@ body {
   #view_home { display:none!important; }
   body.rco-print-mode > *:not(#rcoPrintArea) { display:none!important; }
   #rcoPrintArea.show { display:block!important; }
+  body.feed-print-mode > *:not(#feedPrintArea) { display:none!important; }
+  #feedPrintArea.show { display:block!important; }
 }
 #rcoPrintArea { display:none; }
 #rcoPrintArea.show { display:block; background:#fff; color:#111; padding:30px; font-family:'Stilu','Nunito Sans',sans-serif; }
@@ -785,7 +787,22 @@ body {
 #rcoPrintArea li { font-size:13px; margin-bottom:4px; }
 #rcoPrintArea p { font-size:13px; line-height:1.6; white-space:pre-wrap; }
 #rcoPrintArea .rp-chip-print { display:inline-block; font-size:11px; font-weight:700; background:#F0F0F0; border-radius:20px; padding:3px 10px; margin:0 6px 6px 0; }
-
+#feedPrintArea { display:none; }
+#feedPrintArea.show { display:block; background:#fff; color:#111; padding:30px; font-family:'Stilu','Nunito Sans',sans-serif; }
+#feedPrintArea .fp-header { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #FD7400; padding-bottom:14px; margin-bottom:20px; }
+#feedPrintArea .fp-brand { font-size:16px; font-weight:800; color:#004358; }
+#feedPrintArea .fp-brand-sub { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:.08em; }
+#feedPrintArea .fp-tag { font-size:11px; font-weight:800; color:#fff; background:#004358; padding:5px 12px; border-radius:20px; }
+#feedPrintArea h1 { font-size:19px; color:#004358; margin-bottom:4px; }
+#feedPrintArea .rp-meta { font-size:12px; color:#555; margin-bottom:20px; }
+#feedPrintArea .fp-body { font-size:13.5px; line-height:1.7; white-space:pre-wrap; border:1px solid #ddd; border-radius:10px; padding:16px; margin-bottom:16px; }
+#feedPrintArea h2 { font-size:12px; color:#FD7400; text-transform:uppercase; letter-spacing:.05em; margin:18px 0 8px; border-bottom:1px solid #ddd; padding-bottom:4px; }
+#feedPrintArea .fp-resposta { font-size:13px; line-height:1.6; white-space:pre-wrap; border:1px solid #ddd; border-radius:10px; padding:14px; background:#FAFAFA; }
+#feedPrintArea .fp-sign-row { display:flex; gap:40px; margin-top:60px; }
+#feedPrintArea .fp-sign-col { flex:1; text-align:center; }
+#feedPrintArea .fp-sign-line { border-top:1px solid #333; margin-bottom:6px; padding-top:6px; }
+#feedPrintArea .fp-sign-name { font-size:12px; font-weight:700; color:#111; }
+#feedPrintArea .fp-sign-role { font-size:10.5px; color:#777; }
 /* ===== TOOL: CHECKLIST DIÁRIO ===== */
 .tool-checklist .check-toppanel { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
 .check-pessoas-row { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; margin-bottom:14px; }
@@ -1351,6 +1368,7 @@ window.APPAUTH = window.APPAUTH || {};
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete" id="feed_delete_btn" onclick="window.FEED.excluirFeedback()">🗑️ Excluir</button>
+      <button class="tr-btn-delete" id="feed_print_btn" style="display:none;" onclick="window.FEED.imprimirFeedback()">🖨️ Imprimir</button>
       <button class="btn btn-amber" onclick="window.FEED.salvarFeedback()">💾 Salvar</button>
     </div>
   </div>
@@ -1371,6 +1389,7 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
     </div>
     <div class="tr-modal-foot">
+      <button class="tr-btn-delete" onclick="window.FEED.imprimirFeedbackView()">🖨️ Imprimir</button>
       <button class="btn btn-amber" onclick="window.FEED.salvarResposta()">💾 Salvar resposta</button>
     </div>
   </div>
@@ -1562,6 +1581,7 @@ window.APPAUTH = window.APPAUTH || {};
 </div>
 
 <div id="rcoPrintArea"></div>
+<div id="feedPrintArea"></div>
 <div class="tool-view tool-pop" id="view_pop">
   <div class="tool-subbar">
     <span class="sb-title">📋 POP</span>
@@ -5729,6 +5749,7 @@ function novoFeedback() {
   document.getElementById('feed_texto').value = '';
   document.getElementById('feed_resposta_wrap').style.display = 'none';
   document.getElementById('feed_delete_btn').style.display = 'none';
+  document.getElementById('feed_print_btn').style.display = 'none';
   document.getElementById('feedModalOverlay').classList.add('open');
 }
 
@@ -5749,6 +5770,7 @@ function abrirModal(id) {
     document.getElementById('feed_resposta_wrap').style.display = 'none';
   }
   document.getElementById('feed_delete_btn').style.display = 'inline-block';
+  document.getElementById('feed_print_btn').style.display = 'inline-block';
   document.getElementById('feedModalOverlay').classList.add('open');
 }
 
@@ -5825,7 +5847,62 @@ window.FEED.salvarFeedback = salvarFeedback;
 window.FEED.excluirFeedback = excluirFeedback;
 window.FEED.abrirView = abrirView;
 window.FEED.fecharView = fecharView;
+function montarPrintArea(f) {
+  const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
+  const area = document.getElementById('feedPrintArea');
+  area.innerHTML = `
+    <div class="fp-header">
+      <div>
+        <div class="fp-brand">ELLO SOLAR</div>
+        <div class="fp-brand-sub">Energia Renovável · Gestão do Time</div>
+      </div>
+      <div class="fp-tag">${escapeHTML(TIPOS[f.tipo] || 'Feedback')}</div>
+    </div>
+    <h1>Registro de Feedback</h1>
+    <div class="rp-meta">Liderado(a): <b>${escapeHTML(f.liderado)}</b> &nbsp;·&nbsp; Data: ${dataFmt}</div>
+    <div class="fp-body">${escapeHTML(f.texto)}</div>
+    ${f.resposta ? `<h2>Resposta do(a) liderado(a)</h2><div class="fp-resposta">${escapeHTML(f.resposta)}</div>` : ''}
+    <div class="fp-sign-row">
+      <div class="fp-sign-col">
+        <div class="fp-sign-line"></div>
+        <div class="fp-sign-name">${escapeHTML(f.liderado)}</div>
+        <div class="fp-sign-role">Colaborador(a)</div>
+      </div>
+      <div class="fp-sign-col">
+        <div class="fp-sign-line"></div>
+        <div class="fp-sign-name">Ana Rezende</div>
+        <div class="fp-sign-role">Gestão · Ello Solar</div>
+      </div>
+    </div>
+  `;
+  area.classList.add('show');
+  document.body.classList.add('feed-print-mode');
+  setTimeout(() => {
+    window.print();
+    area.classList.remove('show');
+    document.body.classList.remove('feed-print-mode');
+  }, 80);
+}
+
+function imprimirFeedback() {
+  if (!modalId) return;
+  const f = (getData().lista || []).find(x => x.id === modalId);
+  if (!f) return;
+  montarPrintArea(f);
+}
+
+function imprimirFeedbackView() {
+  if (!viewId) return;
+  const f = (getData().lista || []).find(x => x.id === viewId);
+  if (!f) return;
+  // usa a resposta digitada na hora, mesmo se ainda não salva
+  const respostaAtual = document.getElementById('feedview_resposta').value.trim();
+  montarPrintArea(Object.assign({}, f, { resposta: respostaAtual || f.resposta }));
+}
+
 window.FEED.salvarResposta = salvarResposta;
+window.FEED.imprimirFeedback = imprimirFeedback;
+window.FEED.imprimirFeedbackView = imprimirFeedbackView;
 })();
 </script>
 
