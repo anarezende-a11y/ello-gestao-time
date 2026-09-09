@@ -1338,6 +1338,7 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="tool-subbar">
     <span class="sb-title">🗣️ Feedback</span>
     <span class="save-ind" id="saveInd_feed">✓ Salvo</span>
+    <span class="feed-resposta-badge feito admin-only" id="feed_contadorAceite" style="display:none;"></span>
     <button class="btn btn-amber admin-only" onclick="window.FEED.novoFeedback()">+ Novo feedback</button>
   </div>
   <div class="wrap">
@@ -1383,6 +1384,7 @@ window.APPAUTH = window.APPAUTH || {};
         <label>Resposta do(a) liderado(a)</label>
         <div id="feed_resposta_view" style="font-size:13px; color:var(--muted); white-space:pre-wrap; background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:10px 12px;"></div>
       </div>
+      <div class="tr-field" id="feed_statusAceite" style="display:none;"></div>
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete" id="feed_delete_btn" onclick="window.FEED.excluirFeedback()">🗑️ Excluir</button>
@@ -1400,7 +1402,8 @@ window.APPAUTH = window.APPAUTH || {};
       <button class="tr-modal-close" onclick="window.FEED.fecharView()">✕</button>
     </div>
     <div class="tr-modal-body">
-      <div id="feedview_texto" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-bottom:18px;"></div>
+      <div id="feedview_texto" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-bottom:14px;"></div>
+      <div id="feedview_aceite" style="margin-bottom:18px;"></div>
       <div class="tr-field">
         <label>Sua resposta (opcional)</label>
         <textarea class="q-input" id="feedview_resposta" rows="4" placeholder="Escreva sua resposta pra Ana..."></textarea>
@@ -5775,12 +5778,24 @@ function render() {
       </button>`).join('')}</div>`;
     const filtrada = (pessoaFiltro==='todos' ? lista : lista.filter(f => f.liderado===pessoaFiltro))
       .slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
+    const contadorEl = document.getElementById('feed_contadorAceite');
+    if (contadorEl) {
+      if (filtrada.length) {
+        const aceitos = filtrada.filter(f => f.aceito).length;
+        contadorEl.style.display = 'inline-flex';
+        contadorEl.textContent = `✅ ${aceitos}/${filtrada.length} confirmaram`;
+      } else {
+        contadorEl.style.display = 'none';
+      }
+    }
     if (!filtrada.length) {
       listaWrap.innerHTML = renderEmpty(pessoaFiltro);
       return;
     }
     listaWrap.innerHTML = `<div class="feed-grid">${filtrada.map(f => renderCardAdmin(f)).join('')}</div>`;
   } else {
+    const contadorEl = document.getElementById('feed_contadorAceite');
+    if (contadorEl) contadorEl.style.display = 'none';
     seletorWrap.innerHTML = '';
     const nome = meuNome(user);
     const meus = nome ? lista.filter(f => f.liderado.toLowerCase() === nome.toLowerCase()) : [];
@@ -5804,29 +5819,42 @@ function renderEmpty(pessoaFiltro) {
   </div>`;
 }
 
+function formatarDataHora(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('pt-BR');
+}
+
 function renderCardAdmin(f) {
   const respondido = !!f.resposta;
+  const aceiteBadge = f.aceito
+    ? `<span class="feed-resposta-badge feito">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<span class="feed-resposta-badge pendente">👁️ Aguardando aceite</span>`;
   return `<button class="tr-card feed-card tipo-${f.tipo||'positivo'}" onclick="window.FEED.abrirModal('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
     <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:3;">${escapeHTML(f.texto)}</div>
-    <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
+    <div class="tr-card-meta" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
       <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
       <span class="feed-resposta-badge ${respondido?'feito':'pendente'}">${respondido?'💬 respondido':'⏳ sem resposta'}</span>
     </div>
+    <div style="margin-top:8px; display:flex; justify-content:flex-end;">${aceiteBadge}</div>
   </button>`;
 }
 
 function renderCardLiderado(f) {
   const respondido = !!f.resposta;
-  return `<button class="tr-card feed-card tipo-${f.tipo||'positivo'}" onclick="window.FEED.abrirView('${f.id}')">
+  const aceiteBloco = f.aceito
+    ? `<span class="feed-resposta-badge feito" style="white-space:nowrap;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<button class="btn btn-amber" style="padding:6px 12px; font-size:13px; white-space:nowrap;" onclick="event.stopPropagation(); window.FEED.aceitarFeedback('${f.id}')">✅ Confirmar recebimento</button>`;
+  return `<div class="tr-card feed-card tipo-${f.tipo||'positivo'}" style="cursor:pointer;" onclick="window.FEED.abrirView('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:3; min-height:auto;">${escapeHTML(f.texto)}</div>
     <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
       <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
       <span class="feed-resposta-badge ${respondido?'feito':'pendente'}">${respondido?'✓ você respondeu':'Toque pra ver'}</span>
     </div>
-  </button>`;
+    <div style="margin-top:8px; display:flex; justify-content:flex-end;">${aceiteBloco}</div>
+  </div>`;
 }
 
 function filtrarPessoa(p) { pessoaFiltro = p; render(); }
@@ -5839,6 +5867,7 @@ function novoFeedback() {
   document.getElementById('feed_tipo').value = 'positivo';
   document.getElementById('feed_texto').value = '';
   document.getElementById('feed_resposta_wrap').style.display = 'none';
+  document.getElementById('feed_statusAceite').style.display = 'none';
   document.getElementById('feed_delete_btn').style.display = 'none';
   document.getElementById('feed_print_btn').style.display = 'none';
   document.getElementById('feedModalOverlay').classList.add('open');
@@ -5860,6 +5889,11 @@ function abrirModal(id) {
   } else {
     document.getElementById('feed_resposta_wrap').style.display = 'none';
   }
+  const statusEl = document.getElementById('feed_statusAceite');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = f.aceito
+    ? `<label>Status de aceite</label><div class="feed-resposta-badge feito" style="display:inline-flex;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}${f.aceitoPor ? ' por ' + escapeHTML(f.aceitoPor) : ''}</div>`
+    : `<label>Status de aceite</label><div class="feed-resposta-badge pendente" style="display:inline-flex;">⏳ Ainda não confirmado</div>`;
   document.getElementById('feed_delete_btn').style.display = 'inline-block';
   document.getElementById('feed_print_btn').style.display = 'inline-block';
   document.getElementById('feedModalOverlay').classList.add('open');
@@ -5901,6 +5935,30 @@ function excluirFeedback() {
   render();
 }
 
+function aceitarFeedback(id) {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user) return;
+  if (!confirm('Confirma que você recebeu e leu este feedback?')) return;
+  const d = getData();
+  const item = (d.lista || []).find(x => x.id === id);
+  if (!item || item.aceito) return;
+  item.aceito = true;
+  item.aceitoEm = Date.now();
+  item.aceitoPor = meuNome(user) || user.nome || (user.email ? user.email.split('@')[0] : '');
+  cachedData = d;
+  salvar();
+  render();
+  if (viewId === id) atualizarStatusAceiteView(item);
+}
+
+function atualizarStatusAceiteView(f) {
+  const el = document.getElementById('feedview_aceite');
+  if (!el) return;
+  el.innerHTML = f.aceito
+    ? `<span class="feed-resposta-badge feito">✅ Você confirmou o recebimento em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<button class="btn btn-amber" onclick="window.FEED.aceitarFeedback('${f.id}')">✅ Confirmar recebimento</button>`;
+}
+
 function abrirView(id) {
   const f = (getData().lista || []).find(x => x.id === id);
   if (!f) return;
@@ -5908,6 +5966,7 @@ function abrirView(id) {
   document.getElementById('feedview_titulo').textContent = (TIPOS[f.tipo] || 'Feedback') + (f.data ? ' · ' + f.data.split('-').reverse().join('/') : '');
   document.getElementById('feedview_texto').textContent = f.texto || '';
   document.getElementById('feedview_resposta').value = f.resposta || '';
+  atualizarStatusAceiteView(f);
   document.getElementById('feedViewOverlay').classList.add('open');
 }
 
@@ -5938,6 +5997,7 @@ window.FEED.salvarFeedback = salvarFeedback;
 window.FEED.excluirFeedback = excluirFeedback;
 window.FEED.abrirView = abrirView;
 window.FEED.fecharView = fecharView;
+window.FEED.aceitarFeedback = aceitarFeedback;
 function montarPrintArea(f) {
   const dataFmt = f.data ? f.data.split('-').reverse().join('/') : '';
   const area = document.getElementById('feedPrintArea');
