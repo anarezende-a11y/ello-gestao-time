@@ -1464,6 +1464,7 @@ window.APPAUTH = window.APPAUTH || {};
         <label>Link do arquivo (Google Drive, PDF...)</label>
         <input type="text" class="tr-text-input" id="contr_link" placeholder="Cole aqui o link do Google Drive">
       </div>
+      <div class="tr-field" id="contr_statusAceite" style="display:none; margin-top:4px;"></div>
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete" id="contr_delete_btn" onclick="window.CONTR.excluirDocumento()">🗑️ Excluir</button>
@@ -6101,23 +6102,36 @@ function renderEmpty(pessoaFiltro) {
 }
 
 function renderCardAdmin(f) {
+  const aceiteBadge = f.aceito
+    ? `<span class="feed-resposta-badge feito" style="margin-top:8px; display:inline-block;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<span class="feed-resposta-badge pendente" style="margin-top:8px; display:inline-block;">⏳ Aguardando aceite</span>`;
   return `<button class="tr-card feed-card" onclick="window.CONTR.abrirModal('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Documento'}</div>
     <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:2;">${escapeHTML(f.titulo) || 'Sem título'}</div>
     <div class="tr-card-meta"><span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span></div>
+    ${aceiteBadge}
   </button>`;
 }
 
+function formatarDataHora(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('pt-BR');
+}
+
 function renderCardLiderado(f) {
-  return `<a class="tr-card feed-card" style="cursor:pointer; text-decoration:none;" href="${escapeHTML(f.link||'#')}" target="_blank" rel="noopener">
+  const aceiteBloco = f.aceito
+    ? `<span class="feed-resposta-badge feito" style="white-space:nowrap;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<button class="btn btn-amber" style="padding:6px 12px; font-size:13px; white-space:nowrap;" onclick="event.stopPropagation(); window.CONTR.aceitarDocumento('${f.id}')">✅ Aceitar contrato</button>`;
+  return `<div class="tr-card feed-card" style="cursor:default;">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Documento'}</div>
     <div class="tr-card-desc" style="-webkit-line-clamp:2; min-height:auto;">${escapeHTML(f.titulo) || 'Sem título'}</div>
-    <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
+    <div class="tr-card-meta" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
       <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
-      <span class="feed-resposta-badge feito">Abrir arquivo →</span>
+      <a href="${escapeHTML(f.link||'#')}" target="_blank" rel="noopener" class="feed-resposta-badge feito" style="text-decoration:none; white-space:nowrap;">Abrir arquivo →</a>
     </div>
-  </a>`;
+    <div style="margin-top:10px; display:flex; justify-content:flex-end;">${aceiteBloco}</div>
+  </div>`;
 }
 
 function filtrarPessoa(p) { pessoaFiltro = p; render(); }
@@ -6130,6 +6144,7 @@ function novoDocumento() {
   document.getElementById('contr_data').value = new Date().toISOString().slice(0,10);
   document.getElementById('contr_link').value = '';
   document.getElementById('contr_delete_btn').style.display = 'none';
+  document.getElementById('contr_statusAceite').style.display = 'none';
   document.getElementById('contrModalOverlay').classList.add('open');
 }
 
@@ -6144,6 +6159,11 @@ function abrirModal(id) {
   document.getElementById('contr_data').value = f.data || '';
   document.getElementById('contr_link').value = f.link || '';
   document.getElementById('contr_delete_btn').style.display = 'inline-block';
+  const statusEl = document.getElementById('contr_statusAceite');
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = f.aceito
+    ? `<label>Status de aceite</label><div class="feed-resposta-badge feito" style="display:inline-flex;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}${f.aceitoPor ? ' por ' + escapeHTML(f.aceitoPor) : ''}</div>`
+    : `<label>Status de aceite</label><div class="feed-resposta-badge pendente" style="display:inline-flex;">⏳ Ainda não aceito</div>`;
   document.getElementById('contrModalOverlay').classList.add('open');
 }
 
@@ -6184,6 +6204,21 @@ function excluirDocumento() {
   render();
 }
 
+function aceitarDocumento(id) {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user) return;
+  if (!confirm('Confirma que você leu e aceita este documento?')) return;
+  const d = getData();
+  const item = (d.lista || []).find(x => x.id === id);
+  if (!item || item.aceito) return;
+  item.aceito = true;
+  item.aceitoEm = Date.now();
+  item.aceitoPor = meuNome(user) || user.nome || (user.email ? user.email.split('@')[0] : '');
+  cachedData = d;
+  salvar();
+  render();
+}
+
 window.CONTR.render = render;
 window.CONTR.filtrarPessoa = filtrarPessoa;
 window.CONTR.novoDocumento = novoDocumento;
@@ -6191,6 +6226,7 @@ window.CONTR.abrirModal = abrirModal;
 window.CONTR.fecharModal = fecharModal;
 window.CONTR.salvarDocumento = salvarDocumento;
 window.CONTR.excluirDocumento = excluirDocumento;
+window.CONTR.aceitarDocumento = aceitarDocumento;
 })();
 </script>
 
