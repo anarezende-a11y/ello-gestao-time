@@ -121,6 +121,10 @@ body {
 .drawer-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
 .drawer-item.active { background:linear-gradient(90deg, rgba(253,116,0,0.18), rgba(253,116,0,0.03)); border-left-color:var(--laranja); color:#fff; }
 .drawer-item .di-icon { font-size:17px; width:24px; text-align:center; }
+.drawer-body { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding-bottom:8px; position:relative; z-index:1; }
+.drawer-body::-webkit-scrollbar { width:6px; }
+.drawer-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.18); border-radius:3px; }
+.drawer-body::-webkit-scrollbar-track { background:transparent; }
 .liderado-only { display:none; }
 .drawer-foot { margin-top:auto; padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; position:relative; z-index:1; }
 
@@ -991,6 +995,7 @@ window.APPAUTH = window.APPAUTH || {};
     </div>
   </div>
   <div class="drawer-section-label">Menu</div>
+  <div class="drawer-body">
   <button class="drawer-item active" id="di_home" onclick="mostrarTool('home')">
     <span class="di-icon">🏠</span> Menu Principal
   </button>
@@ -1031,6 +1036,7 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_desafio" onclick="mostrarTool('desafioreuniao')">
     <span class="di-icon">🎯</span> Desafio Reunião
   </button>
+  </div>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
