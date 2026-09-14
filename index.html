@@ -6644,6 +6644,9 @@ let emAndamento = {};
 let refazendo = false;
 
 function uid() { return 'pv_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
 function defaultData() { return { provas: [] }; }
 function getData() { return cachedData || defaultData(); }
 function setData(d) {
