@@ -1056,6 +1056,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_desafio" onclick="mostrarTool('desafioreuniao')">
     <span class="di-icon">🎯</span> Desafio Reunião
   </button>
+  <button class="drawer-item" id="di_provas" onclick="mostrarTool('provas')">
+    <span class="di-icon">📝</span> Provas
+  </button>
   </div>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
@@ -1562,6 +1565,71 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<div class="tool-view tool-provas" id="view_provas">
+  <div class="tool-subbar">
+    <span class="sb-title">📝 Provas</span>
+    <span class="save-ind" id="saveInd_pv">✓ Salvo</span>
+    <button class="btn btn-amber admin-only" onclick="window.PROVAS.abrirDash()">📊 Dashboard</button>
+    <button class="btn btn-amber admin-only" onclick="window.PROVAS.novaProva()">+ Nova prova</button>
+  </div>
+  <div class="wrap">
+    <div id="pv_lista"></div>
+  </div>
+</div>
+
+<!-- Modal: criar/editar prova (admin) -->
+<div class="tr-modal-overlay" id="pvModalOverlay" onclick="if(event.target===this) window.PROVAS.fecharModal()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <input type="text" class="tr-modal-title-input" id="pv_titulo" placeholder="Nome da prova (ex: Seguro Solar)">
+      <button class="tr-modal-close" onclick="window.PROVAS.fecharModal()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div class="tr-field">
+        <label>Perguntas</label>
+        <div id="pv_prova_list"></div>
+        <button class="tr-add-btn" onclick="window.PROVAS.addPergunta()">+ Adicionar pergunta</button>
+      </div>
+      <div class="tr-field" id="pv_resultados_field" style="display:none;">
+        <label>Resultados</label>
+        <div id="pv_resultados_list"></div>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="pv_delete_btn" onclick="window.PROVAS.excluirProva()">🗑️ Excluir prova</button>
+      <button class="btn btn-amber" onclick="window.PROVAS.salvarProva()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: responder prova (todos) -->
+<div class="tr-modal-overlay" id="pvTakeOverlay" onclick="if(event.target===this) window.PROVAS.fecharTake()">
+  <div class="tr-pergunta-modal">
+    <div class="tr-pergunta-header">
+      <button class="tr-pergunta-close" onclick="window.PROVAS.fecharTake()">✕</button>
+      <div class="tr-pergunta-eyebrow">PROVA</div>
+      <div class="tr-pergunta-titulo" id="pv_take_titulo"></div>
+    </div>
+    <div class="tr-pergunta-desc-wrap">
+      <div id="pv_take_area"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: dashboard geral (admin) -->
+<div class="tr-modal-overlay" id="pvDashOverlay" onclick="if(event.target===this) window.PROVAS.fecharDash()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" style="padding-top:8px;">📊 Dashboard de provas</span>
+      <button class="tr-modal-close" onclick="window.PROVAS.fecharDash()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Ranking geral de acertos, somando todas as provas respondidas por cada pessoa.</div>
+      <div id="pv_dash_lista" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: criar/editar campanha (admin) -->
 <div class="tr-modal-overlay" id="campModalOverlay" onclick="if(event.target===this) window.CAMP.fecharModal()">
   <div class="tr-modal">
@@ -1760,15 +1828,6 @@ window.APPAUTH = window.APPAUTH || {};
         <div id="tr_checklist_list"></div>
         <button class="tr-add-btn" onclick="window.TR.addChecklistItem()">+ Adicionar item</button>
       </div>
-      <div class="tr-field">
-        <label>Prova (opcional)</label>
-        <div id="tr_prova_list"></div>
-        <button class="tr-add-btn" onclick="window.TR.addPerguntaProva()">+ Adicionar pergunta</button>
-      </div>
-      <div class="tr-field" id="tr_prova_resultados_field" style="display:none;">
-        <label>Resultados da prova</label>
-        <div id="tr_prova_resultados_list"></div>
-      </div>
       <div class="tr-field" id="tr_comentarios_field" style="display:none;">
         <label>Sua resposta</label>
         <div class="tr-minha-resposta-box">
@@ -1802,7 +1861,6 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-pergunta-desc" id="tr_pergunta_desc"></div>
       <div id="tr_pergunta_video" style="display:none;"></div>
       <div id="tr_pergunta_materiais" style="display:none;"></div>
-      <div id="tr_pergunta_prova" style="display:none;"></div>
 
       <div class="tr-pergunta-minha">
         <label>Sua pergunta ou o que achou</label>
@@ -1840,8 +1898,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao', provas:'view_provas' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião', provas:'Provas' };
   var adminOnly = ['reuniao','oneone','rco'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -1868,6 +1926,7 @@ function mostrarTool(nome) {
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   if (nome === 'desafioreuniao' && window.DESAFIO) window.DESAFIO.render();
+  if (nome === 'provas' && window.PROVAS) window.PROVAS.render();
   window.scrollTo(0, 0);
 }
 
@@ -2796,8 +2855,6 @@ const STORAGE_KEY = 'ello_treinamentos';
 const CATEGORIAS_PADRAO = ['Atendimento','CRM','Pós-Venda','Desenvolvimento Pessoal'];
 let catAtiva = 'Todos';
 let modalId = null; // id do módulo em edição, null = criando novo
-let provaEmAndamento = {};
-let provaRefazendo = false;
 let saveTimer_t;
 let cachedData = null;
 let listenerAtivo_t = false;
@@ -2896,7 +2953,6 @@ function renderGrid(data) {
     const metaBits = [];
     if (m.video) metaBits.push('🎥 Vídeo');
     if ((m.materiais||[]).length) metaBits.push('📎 ' + m.materiais.length + ' material' + (m.materiais.length>1?'is':''));
-    if ((m.prova && (m.prova.perguntas||[]).length)) metaBits.push('📝 Prova');
     const respostas = m.respostas || {};
     const nomesRespostas = Object.keys(respostas).filter(n => {
       if (!(respostas[n].texto||'').trim()) return false;
@@ -2999,8 +3055,6 @@ function novoModulo() {
   popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
   renderMateriais([]);
   renderChecklist([]);
-  renderProva([]);
-  document.getElementById('tr_prova_resultados_field').style.display = 'none';
   atualizarPreviewVideo();
   document.getElementById('tr_comentarios_field').style.display = 'none';
   document.getElementById('tr_print_btn').style.display = 'none';
@@ -3019,8 +3073,6 @@ function abrirModulo(id) {
   popularSelectCategorias(data, m.categoria);
   renderMateriais(m.materiais || []);
   renderChecklist(m.checklist || []);
-  renderProva((m.prova && m.prova.perguntas) || []);
-  renderProvaResultados(m);
   atualizarPreviewVideo();
   document.getElementById('tr_comentarios_field').style.display = 'block';
   const user = window.APPAUTH.usuarioAtual;
@@ -3115,9 +3167,6 @@ function abrirPergunta(id, filtroNome) {
     materiais.map(mat => `<a class="tr-video-link" href="${escapeHTML(mat.url||'')}" target="_blank" rel="noopener">📎 ${escapeHTML(mat.titulo || mat.url || 'Material')}</a>`).join('') : '';
   materiaisWrap.style.display = materiais.length ? 'block' : 'none';
 
-  provaRefazendo = false;
-  renderProvaTaking(m, meuNome);
-
   const respostas = m.respostas || {};
   document.getElementById('tr_pergunta_input').value = (respostas[meuNome] && respostas[meuNome].texto) || '';
   document.getElementById('tr_pergunta_privado').checked = !!(respostas[meuNome] && respostas[meuNome].privado);
@@ -3139,77 +3188,6 @@ function abrirPergunta(id, filtroNome) {
 
 function abrirPerguntaFiltrada(id, nome) {
   abrirPergunta(id, nome);
-}
-
-function renderProvaTaking(m, meuNome) {
-  const wrap = document.getElementById('tr_pergunta_prova');
-  const perguntas = (m.prova && m.prova.perguntas) || [];
-  if (!perguntas.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
-  wrap.style.display = 'block';
-
-  const resultados = m.provaResultados || {};
-  const meuResultado = resultados[meuNome];
-
-  if (meuResultado && !provaRefazendo) {
-    wrap.innerHTML = `<div class="tr-prova-resultado-card">
-      <div class="tr-prova-resultado-titulo">📝 Prova respondida</div>
-      <div class="tr-prova-resultado-nota">${meuResultado.acertos}/${meuResultado.total} acertos</div>
-      <button class="tr-add-btn" onclick="window.TR.refazerProva()">🔄 Refazer prova</button>
-    </div>`;
-    return;
-  }
-
-  provaEmAndamento = {};
-  wrap.innerHTML = `<div class="tr-prova-form">
-    <div class="tr-prova-form-titulo">📝 Prova · ${perguntas.length} pergunta${perguntas.length>1?'s':''}</div>
-    ${perguntas.map((p, i) => `
-      <div class="tr-prova-pergunta-take">
-        <div class="tr-prova-pergunta-texto">${i+1}. ${escapeHTML(p.texto)}</div>
-        <div class="tr-prova-alt-list">
-          ${p.opcoes.map((op, oi) => op ? `<label class="tr-prova-alt-take">
-            <input type="radio" name="take_${p.id}" value="${oi}" onchange="window.TR.marcarRespostaProva('${p.id}', ${oi})">
-            <span>${escapeHTML(op)}</span>
-          </label>` : '').join('')}
-        </div>
-      </div>
-    `).join('')}
-    <button class="tr-resp-send-btn" onclick="window.TR.enviarProva()">Enviar prova →</button>
-  </div>`;
-}
-
-function marcarRespostaProva(perguntaId, escolha) {
-  provaEmAndamento[perguntaId] = escolha;
-}
-
-function refazerProva() {
-  provaRefazendo = true;
-  const data = getData();
-  const m = data.modulos.find(x => x.id === perguntaModuloId);
-  if (!m) return;
-  const user = window.APPAUTH.usuarioAtual;
-  renderProvaTaking(m, (user && user.nome) || '');
-}
-
-function enviarProva() {
-  const data = getData();
-  const m = data.modulos.find(x => x.id === perguntaModuloId);
-  if (!m) return;
-  const perguntas = (m.prova && m.prova.perguntas) || [];
-  if (Object.keys(provaEmAndamento).length < perguntas.length) {
-    alert('Responda todas as perguntas antes de enviar.');
-    return;
-  }
-  let acertos = 0;
-  perguntas.forEach(p => { if (provaEmAndamento[p.id] === p.correta) acertos++; });
-  const user = window.APPAUTH.usuarioAtual;
-  const meuNome = (user && user.nome) || 'Anônimo';
-  m.provaResultados = m.provaResultados || {};
-  m.provaResultados[meuNome] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
-  provaRefazendo = false;
-  setData(data);
-  showSaved();
-  renderProvaTaking(m, meuNome);
-  render();
 }
 
 function verTodosComentarios() {
@@ -3363,73 +3341,6 @@ function popularSelectCategorias(data, selecionada) {
   ).join('');
 }
 
-function provaItemHTML(p) {
-  const gid = 'g' + Math.random().toString(36).slice(2,9);
-  const opcoes = (p && p.opcoes) || ['','','',''];
-  const correta = p && typeof p.correta === 'number' ? p.correta : 0;
-  const letras = ['A','B','C','D'];
-  return `<div class="tr-prova-item">
-    <div class="tr-prova-item-head">
-      <span class="tr-prova-item-num">Pergunta</span>
-      <span class="tr-remove-x" onclick="this.closest('.tr-prova-item').remove()">✕</span>
-    </div>
-    <input type="text" class="tr-prova-pergunta" placeholder="Digite a pergunta..." value="${escapeHTML((p&&p.texto)||'')}">
-    <div class="tr-prova-opcoes">
-      ${[0,1,2,3].map(i => `<div class="tr-prova-opcao">
-        <input type="radio" name="${gid}" value="${i}" ${i===correta?'checked':''}>
-        <input type="text" class="tr-prova-alt" placeholder="Alternativa ${letras[i]}" value="${escapeHTML(opcoes[i]||'')}">
-      </div>`).join('')}
-    </div>
-  </div>`;
-}
-
-function renderProva(perguntas) {
-  const list = document.getElementById('tr_prova_list');
-  list.innerHTML = (perguntas||[]).map(p => provaItemHTML(p)).join('');
-}
-
-function addPerguntaProva() {
-  const list = document.getElementById('tr_prova_list');
-  const d = document.createElement('div');
-  d.innerHTML = provaItemHTML(null);
-  list.appendChild(d.firstElementChild);
-}
-
-function coletarProvaForm() {
-  const perguntas = [];
-  document.querySelectorAll('#tr_prova_list .tr-prova-item').forEach(item => {
-    const texto = item.querySelector('.tr-prova-pergunta').value.trim();
-    const alts = Array.from(item.querySelectorAll('.tr-prova-alt')).map(inp => inp.value.trim());
-    const checkedRadio = item.querySelector('input[type=radio]:checked');
-    const corretaIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : -1;
-    const preenchidas = alts.filter(a => a).length;
-    if (texto && preenchidas >= 2 && corretaIndex > -1 && alts[corretaIndex]) {
-      perguntas.push({ id: uid(), texto: texto, opcoes: alts, correta: corretaIndex });
-    }
-  });
-  return perguntas.length ? { perguntas: perguntas } : null;
-}
-
-function renderProvaResultados(m) {
-  const field = document.getElementById('tr_prova_resultados_field');
-  const list = document.getElementById('tr_prova_resultados_list');
-  const resultados = m.provaResultados || {};
-  const nomes = Object.keys(resultados);
-  if (!m.prova || !(m.prova.perguntas||[]).length || !nomes.length) {
-    field.style.display = 'none';
-    return;
-  }
-  field.style.display = 'block';
-  nomes.sort((a,b) => (resultados[b].ts||0) - (resultados[a].ts||0));
-  list.innerHTML = nomes.map(nome => {
-    const r = resultados[nome];
-    return `<div class="tr-resposta-card">
-      <div class="tr-resposta-nome">${escapeHTML(nome)}</div>
-      <div class="tr-resposta-data">${formatarDataHoraComentario(r.ts)} · ${r.acertos}/${r.total} acertos</div>
-    </div>`;
-  }).join('');
-}
-
 function renderMateriais(materiais) {
   const list = document.getElementById('tr_materiais_list');
   list.innerHTML = materiais.map((mt, i) => `<div class="tr-mat-item" data-idx="${i}">
@@ -3545,8 +3456,6 @@ function salvarModulo() {
     if (texto) checklist.push({ texto: texto, done: cb ? cb.checked : false });
   });
 
-  const prova = coletarProvaForm();
-
   const data = getData();
   let modulo;
   if (modalId) {
@@ -3561,7 +3470,6 @@ function salvarModulo() {
   modulo.video = document.getElementById('tr_video').value.trim();
   modulo.materiais = materiais;
   modulo.checklist = checklist;
-  modulo.prova = prova;
 
   if (modalId) {
     const idx = data.modulos.findIndex(m => m.id === modalId);
@@ -3605,10 +3513,6 @@ render();
   window.TR.excluirModulo = excluirModulo;
   window.TR.addMaterial = addMaterial;
   window.TR.addChecklistItem = addChecklistItem;
-  window.TR.addPerguntaProva = addPerguntaProva;
-  window.TR.marcarRespostaProva = marcarRespostaProva;
-  window.TR.enviarProva = enviarProva;
-  window.TR.refazerProva = refazerProva;
   window.TR.atualizarPreviewVideo = atualizarPreviewVideo;
   window.TR.salvarResposta = salvarResposta;
   window.TR.excluirResposta = excluirResposta;
@@ -6726,6 +6630,350 @@ window.DESAFIO.salvarRegistro = salvarRegistro;
 window.DESAFIO.excluirRegistro = excluirRegistro;
 window.DESAFIO.abrirView = abrirView;
 window.DESAFIO.fecharView = fecharView;
+})();
+</script>
+
+<script>
+window.PROVAS = window.PROVAS || {};
+(function(){
+let cachedData = null;
+let listenerAtivo = false;
+let modalId = null;
+let takeId = null;
+let emAndamento = {};
+let refazendo = false;
+
+function uid() { return 'pv_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function defaultData() { return { provas: [] }; }
+function getData() { return cachedData || defaultData(); }
+function setData(d) {
+  cachedData = d;
+  if (window.fb && window.APPAUTH.usuarioAtual) {
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'provas'), d).catch(e => console.error('PROVAS save error', e));
+  }
+}
+function iniciarListener() {
+  if (listenerAtivo || !window.fb || !window.APPAUTH.usuarioAtual) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'provas'), (snap) => {
+    const data = snap.exists() ? snap.data() : defaultData();
+    if (!data.provas) data.provas = [];
+    cachedData = data;
+    render();
+  }, err => console.error('PROVAS snapshot error', err));
+}
+window.addEventListener('userAuthed', iniciarListener);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciarListener();
+
+function formatarData(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+}
+function formatarDataHora(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return formatarData(ts) + ' às ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function showSaved() {
+  const ind = document.getElementById('saveInd_pv');
+  if (!ind) return;
+  ind.classList.add('show');
+  setTimeout(() => ind.classList.remove('show'), 2000);
+}
+
+function render() {
+  const data = getData();
+  const wrap = document.getElementById('pv_lista');
+  if (!wrap) return;
+  const user = window.APPAUTH.usuarioAtual;
+  const isAdmin = user && user.role === 'admin';
+
+  const provas = data.provas.slice().sort((a,b) => (b.criadoEm||0) - (a.criadoEm||0));
+
+  if (!provas.length) {
+    wrap.innerHTML = `<div class="tr-empty">
+      <div class="tr-empty-badge"><div class="tr-empty-icon">📝</div></div>
+      <div class="tr-empty-title">Nenhuma prova criada ainda</div>
+      <div class="tr-empty-desc">Crie provas com perguntas de múltipla escolha para o time responder.</div>
+      ${isAdmin ? `<button class="tr-empty-btn" onclick="window.PROVAS.novaProva()">+ Criar primeira prova</button>` : ''}
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="feed-grid">${provas.map(p => {
+    const total = (p.perguntas||[]).length;
+    const nResp = Object.keys(p.resultados||{}).length;
+    return `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.PROVAS.abrirTake('${p.id}')">
+      ${isAdmin ? `<button class="tr-card-edit-icon" onclick="event.stopPropagation(); window.PROVAS.abrirModal('${p.id}')" title="Editar prova">✏️</button>` : ''}
+      <div class="tr-card-cat">Prova</div>
+      <div class="tr-card-title">${escapeHTML(p.titulo||'Sem título')}</div>
+      <div class="tr-card-meta">📅 ${formatarData(p.criadoEm)} &nbsp; 📝 ${total} pergunta${total!==1?'s':''} &nbsp; ✅ ${nResp} respondeu(ram)</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function provaItemHTML(p) {
+  const gid = 'g' + Math.random().toString(36).slice(2,9);
+  const opcoes = (p && p.opcoes) || ['','','',''];
+  const correta = p && typeof p.correta === 'number' ? p.correta : 0;
+  const letras = ['A','B','C','D'];
+  return `<div class="tr-prova-item">
+    <div class="tr-prova-item-head">
+      <span class="tr-prova-item-num">Pergunta</span>
+      <span class="tr-remove-x" onclick="this.closest('.tr-prova-item').remove()">✕</span>
+    </div>
+    <input type="text" class="tr-prova-pergunta" placeholder="Digite a pergunta..." value="${escapeHTML((p&&p.texto)||'')}">
+    <div class="tr-prova-opcoes">
+      ${[0,1,2,3].map(i => `<div class="tr-prova-opcao">
+        <input type="radio" name="${gid}" value="${i}" ${i===correta?'checked':''}>
+        <input type="text" class="tr-prova-alt" placeholder="Alternativa ${letras[i]}" value="${escapeHTML(opcoes[i]||'')}">
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+function renderPerguntas(perguntas) {
+  document.getElementById('pv_prova_list').innerHTML = (perguntas||[]).map(p => provaItemHTML(p)).join('');
+}
+function addPergunta() {
+  const list = document.getElementById('pv_prova_list');
+  const d = document.createElement('div');
+  d.innerHTML = provaItemHTML(null);
+  list.appendChild(d.firstElementChild);
+}
+function coletarPerguntas() {
+  const perguntas = [];
+  document.querySelectorAll('#pv_prova_list .tr-prova-item').forEach(item => {
+    const texto = item.querySelector('.tr-prova-pergunta').value.trim();
+    const alts = Array.from(item.querySelectorAll('.tr-prova-alt')).map(inp => inp.value.trim());
+    const checkedRadio = item.querySelector('input[type=radio]:checked');
+    const corretaIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : -1;
+    const preenchidas = alts.filter(a => a).length;
+    if (texto && preenchidas >= 2 && corretaIndex > -1 && alts[corretaIndex]) {
+      perguntas.push({ id: uid(), texto: texto, opcoes: alts, correta: corretaIndex });
+    }
+  });
+  return perguntas;
+}
+
+function renderResultados(p) {
+  const field = document.getElementById('pv_resultados_field');
+  const list = document.getElementById('pv_resultados_list');
+  const resultados = p.resultados || {};
+  const nomes = Object.keys(resultados);
+  if (!nomes.length) { field.style.display = 'none'; return; }
+  field.style.display = 'block';
+  nomes.sort((a,b) => (resultados[b].ts||0) - (resultados[a].ts||0));
+  list.innerHTML = nomes.map(nome => {
+    const r = resultados[nome];
+    return `<div class="tr-resposta-card">
+      <div class="tr-resposta-nome">${escapeHTML(nome)}</div>
+      <div class="tr-resposta-data">${formatarDataHora(r.ts)} · ${r.acertos}/${r.total} acertos</div>
+    </div>`;
+  }).join('');
+}
+
+function novaProva() {
+  modalId = null;
+  document.getElementById('pv_titulo').value = '';
+  renderPerguntas([]);
+  document.getElementById('pv_resultados_field').style.display = 'none';
+  document.getElementById('pv_delete_btn').style.display = 'none';
+  document.getElementById('pvModalOverlay').classList.add('open');
+}
+function abrirModal(id) {
+  const data = getData();
+  const p = data.provas.find(x => x.id === id);
+  if (!p) return;
+  modalId = id;
+  document.getElementById('pv_titulo').value = p.titulo || '';
+  renderPerguntas(p.perguntas || []);
+  renderResultados(p);
+  document.getElementById('pv_delete_btn').style.display = 'inline-block';
+  document.getElementById('pvModalOverlay').classList.add('open');
+}
+function fecharModal() {
+  document.getElementById('pvModalOverlay').classList.remove('open');
+  modalId = null;
+}
+function salvarProva() {
+  const titulo = document.getElementById('pv_titulo').value.trim();
+  if (!titulo) { alert('Dá um nome pra prova antes de salvar :)'); return; }
+  const perguntas = coletarPerguntas();
+  const data = getData();
+  let prova;
+  if (modalId) {
+    const existente = data.provas.find(p => p.id === modalId);
+    prova = existente ? Object.assign({}, existente) : { id: modalId, criadoEm: Date.now() };
+  } else {
+    prova = { id: uid(), criadoEm: Date.now() };
+  }
+  prova.titulo = titulo;
+  prova.perguntas = perguntas;
+
+  if (modalId) {
+    const idx = data.provas.findIndex(p => p.id === modalId);
+    if (idx > -1) data.provas[idx] = prova; else data.provas.push(prova);
+  } else {
+    data.provas.push(prova);
+  }
+  setData(data);
+  fecharModal();
+  render();
+  showSaved();
+}
+function excluirProva() {
+  if (!modalId) return;
+  if (!confirm('Excluir essa prova? Essa ação não pode ser desfeita.')) return;
+  const data = getData();
+  data.provas = data.provas.filter(p => p.id !== modalId);
+  setData(data);
+  fecharModal();
+  render();
+  showSaved();
+}
+
+function abrirTake(id) {
+  const data = getData();
+  const p = data.provas.find(x => x.id === id);
+  if (!p) return;
+  takeId = id;
+  refazendo = false;
+  document.getElementById('pv_take_titulo').textContent = p.titulo || 'Sem título';
+  const user = window.APPAUTH.usuarioAtual;
+  renderTakeArea(p, (user && user.nome) || '');
+  document.getElementById('pvTakeOverlay').classList.add('open');
+}
+function fecharTake() {
+  document.getElementById('pvTakeOverlay').classList.remove('open');
+  takeId = null;
+}
+function renderTakeArea(p, meuNome) {
+  const area = document.getElementById('pv_take_area');
+  const perguntas = p.perguntas || [];
+  if (!perguntas.length) {
+    area.innerHTML = `<div class="tr-comentarios-empty">Essa prova ainda não tem perguntas cadastradas.</div>`;
+    return;
+  }
+  const resultados = p.resultados || {};
+  const meuResultado = resultados[meuNome];
+  if (meuResultado && !refazendo) {
+    area.innerHTML = `<div class="tr-prova-resultado-card">
+      <div class="tr-prova-resultado-titulo">📝 Prova respondida</div>
+      <div class="tr-prova-resultado-nota">${meuResultado.acertos}/${meuResultado.total} acertos</div>
+      <button class="tr-add-btn" onclick="window.PROVAS.refazer()">🔄 Refazer prova</button>
+    </div>`;
+    return;
+  }
+  emAndamento = {};
+  area.innerHTML = `<div class="tr-prova-form" style="margin-top:0;">
+    <div class="tr-prova-form-titulo">📝 ${perguntas.length} pergunta${perguntas.length>1?'s':''}</div>
+    ${perguntas.map((q, i) => `
+      <div class="tr-prova-pergunta-take">
+        <div class="tr-prova-pergunta-texto">${i+1}. ${escapeHTML(q.texto)}</div>
+        <div class="tr-prova-alt-list">
+          ${q.opcoes.map((op, oi) => op ? `<label class="tr-prova-alt-take">
+            <input type="radio" name="take_${q.id}" value="${oi}" onchange="window.PROVAS.marcarResposta('${q.id}', ${oi})">
+            <span>${escapeHTML(op)}</span>
+          </label>` : '').join('')}
+        </div>
+      </div>
+    `).join('')}
+    <button class="tr-resp-send-btn" onclick="window.PROVAS.enviar()">Enviar prova →</button>
+  </div>`;
+}
+function marcarResposta(perguntaId, escolha) {
+  emAndamento[perguntaId] = escolha;
+}
+function refazer() {
+  refazendo = true;
+  const data = getData();
+  const p = data.provas.find(x => x.id === takeId);
+  if (!p) return;
+  const user = window.APPAUTH.usuarioAtual;
+  renderTakeArea(p, (user && user.nome) || '');
+}
+function enviar() {
+  const data = getData();
+  const p = data.provas.find(x => x.id === takeId);
+  if (!p) return;
+  const perguntas = p.perguntas || [];
+  if (Object.keys(emAndamento).length < perguntas.length) {
+    alert('Responda todas as perguntas antes de enviar.');
+    return;
+  }
+  let acertos = 0;
+  perguntas.forEach(q => { if (emAndamento[q.id] === q.correta) acertos++; });
+  const user = window.APPAUTH.usuarioAtual;
+  const meuNome = (user && user.nome) || 'Anônimo';
+  p.resultados = p.resultados || {};
+  p.resultados[meuNome] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  refazendo = false;
+  setData(data);
+  showSaved();
+  renderTakeArea(p, meuNome);
+  render();
+}
+
+function calcularRanking(data) {
+  const porPessoa = {};
+  data.provas.forEach(p => {
+    const resultados = p.resultados || {};
+    Object.keys(resultados).forEach(nome => {
+      const r = resultados[nome];
+      porPessoa[nome] = porPessoa[nome] || { nome: nome, provas: 0, acertos: 0, total: 0 };
+      porPessoa[nome].provas++;
+      porPessoa[nome].acertos += r.acertos;
+      porPessoa[nome].total += r.total;
+    });
+  });
+  return Object.keys(porPessoa).map(nome => {
+    const p = porPessoa[nome];
+    return { nome: p.nome, provas: p.provas, acertos: p.acertos, total: p.total, pct: p.total ? Math.round(p.acertos/p.total*100) : 0 };
+  }).sort((a,b) => b.pct - a.pct || b.total - a.total);
+}
+function abrirDash() {
+  const data = getData();
+  const ranking = calcularRanking(data);
+  const wrap = document.getElementById('pv_dash_lista');
+  if (!ranking.length) {
+    wrap.innerHTML = `<div class="tr-comentarios-empty">Ninguém respondeu nenhuma prova ainda.</div>`;
+  } else {
+    wrap.innerHTML = ranking.map((r, i) => {
+      const medalha = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : (i+1) + 'º';
+      return `<div class="tr-resposta-card" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:15px; font-weight:800; color:var(--muted2); min-width:30px;">${medalha}</span>
+          <span class="tr-resposta-nome" style="margin:0;">${escapeHTML(r.nome)}</span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:16px; font-weight:800; color:var(--laranja);">${r.pct}%</div>
+          <div style="font-size:11px; color:var(--muted2);">${r.acertos}/${r.total} acertos · ${r.provas} prova${r.provas>1?'s':''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('pvDashOverlay').classList.add('open');
+}
+function fecharDash() {
+  document.getElementById('pvDashOverlay').classList.remove('open');
+}
+
+window.PROVAS.render = render;
+window.PROVAS.novaProva = novaProva;
+window.PROVAS.abrirModal = abrirModal;
+window.PROVAS.fecharModal = fecharModal;
+window.PROVAS.salvarProva = salvarProva;
+window.PROVAS.excluirProva = excluirProva;
+window.PROVAS.addPergunta = addPergunta;
+window.PROVAS.abrirTake = abrirTake;
+window.PROVAS.fecharTake = fecharTake;
+window.PROVAS.marcarResposta = marcarResposta;
+window.PROVAS.refazer = refazer;
+window.PROVAS.enviar = enviar;
+window.PROVAS.abrirDash = abrirDash;
+window.PROVAS.fecharDash = fecharDash;
 })();
 </script>
 
