@@ -525,9 +525,9 @@ body {
 .tr-pergunta-titulo { position:relative; z-index:1; font-size:24px; font-weight:800; color:var(--text); line-height:1.25; margin-bottom:2px; padding-right:32px; }
 .tr-pergunta-desc-wrap { padding:0 28px; }
 .tr-pergunta-desc { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
-.tr-pergunta-minha { background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:16px; margin-bottom:24px; }
+.tr-pergunta-minha { background:#0F2A36; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; box-shadow:0 1px 0 rgba(255,255,255,0.03) inset; }
 .tr-pergunta-minha label { display:block; font-size:10.5px; font-weight:800; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
-.tr-pergunta-minha textarea { margin-bottom:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border2); border-radius:12px; color:var(--text); }
+.tr-pergunta-minha textarea { margin-bottom:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border2); border-radius:12px; color:var(--text); min-height:130px; }
 .tr-privado-toggle { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; margin-bottom:14px; cursor:pointer; }
 .tr-privado-toggle input { width:16px; height:16px; accent-color:var(--laranja); cursor:pointer; }
 .tr-pergunta-lista { padding:0 28px; display:flex; flex-direction:column; gap:16px; }
@@ -620,6 +620,26 @@ body {
 .tr-remove-x:hover { color:var(--laranja); }
 .tr-add-btn { padding:9px 16px; background:transparent; border:1px dashed var(--border2); border-radius:11px; color:var(--muted); font-family:'Stilu','Nunito Sans',sans-serif; font-size:11px; font-weight:700; cursor:pointer; transition:all .18s; }
 .tr-add-btn:hover { border-color:var(--laranja); color:var(--laranja); background:rgba(253,116,0,.04); }
+.tr-prova-item { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:14px; margin-bottom:12px; }
+.tr-prova-item-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.tr-prova-item-num { font-size:10.5px; font-weight:800; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; }
+.tr-prova-pergunta { width:100%; background:var(--surface); border:1px solid var(--border2); border-radius:10px; padding:10px 12px; font-size:13px; color:var(--text); margin-bottom:10px; font-family:inherit; box-sizing:border-box; }
+.tr-prova-opcoes { display:flex; flex-direction:column; gap:8px; }
+.tr-prova-opcao { display:flex; align-items:center; gap:8px; }
+.tr-prova-opcao input[type=radio] { accent-color:var(--laranja); width:16px; height:16px; flex-shrink:0; }
+.tr-prova-alt { flex:1; background:var(--surface); border:1px solid var(--border2); border-radius:8px; padding:8px 10px; font-size:12.5px; color:var(--text); font-family:inherit; box-sizing:border-box; }
+.tr-prova-resultado-card { background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:18px; text-align:center; margin-top:18px; margin-bottom:24px; }
+.tr-prova-resultado-titulo { font-size:11.5px; font-weight:800; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+.tr-prova-resultado-nota { font-size:26px; font-weight:800; color:var(--laranja); margin-bottom:14px; }
+.tr-prova-form { background:#0F2A36; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; }
+.tr-prova-form-titulo { font-size:13px; font-weight:800; color:var(--text); margin-bottom:14px; }
+.tr-prova-pergunta-take { margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+.tr-prova-pergunta-take:last-of-type { border-bottom:none; padding-bottom:0; margin-bottom:14px; }
+.tr-prova-pergunta-texto { font-size:13px; font-weight:700; color:var(--text); margin-bottom:10px; }
+.tr-prova-alt-list { display:flex; flex-direction:column; gap:8px; }
+.tr-prova-alt-take { display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--muted); cursor:pointer; background:rgba(255,255,255,0.03); border:1px solid var(--border2); border-radius:10px; padding:9px 12px; transition:all .15s; }
+.tr-prova-alt-take:hover { border-color:var(--laranja); }
+.tr-prova-alt-take input[type=radio] { accent-color:var(--laranja); width:16px; height:16px; flex-shrink:0; }
 .tr-modal-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 22px; border-top:1px solid var(--border); position:sticky; bottom:0; background:var(--card); border-radius:0 0 24px 24px; }
 .tr-btn-delete { padding:9px 16px; background:transparent; border:1px solid var(--border2); border-radius:12px; color:var(--muted); font-family:'Stilu','Nunito Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
 .tr-btn-delete:hover { border-color:#D64545; color:#D64545; background:rgba(214,69,69,.05); }
@@ -1740,6 +1760,15 @@ window.APPAUTH = window.APPAUTH || {};
         <div id="tr_checklist_list"></div>
         <button class="tr-add-btn" onclick="window.TR.addChecklistItem()">+ Adicionar item</button>
       </div>
+      <div class="tr-field">
+        <label>Prova (opcional)</label>
+        <div id="tr_prova_list"></div>
+        <button class="tr-add-btn" onclick="window.TR.addPerguntaProva()">+ Adicionar pergunta</button>
+      </div>
+      <div class="tr-field" id="tr_prova_resultados_field" style="display:none;">
+        <label>Resultados da prova</label>
+        <div id="tr_prova_resultados_list"></div>
+      </div>
       <div class="tr-field" id="tr_comentarios_field" style="display:none;">
         <label>Sua resposta</label>
         <div class="tr-minha-resposta-box">
@@ -1773,10 +1802,11 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-pergunta-desc" id="tr_pergunta_desc"></div>
       <div id="tr_pergunta_video" style="display:none;"></div>
       <div id="tr_pergunta_materiais" style="display:none;"></div>
+      <div id="tr_pergunta_prova" style="display:none;"></div>
 
       <div class="tr-pergunta-minha">
         <label>Sua pergunta ou o que achou</label>
-        <textarea class="q-input" id="tr_pergunta_input" rows="3" placeholder="Escreva aqui..."></textarea>
+        <textarea class="q-input" id="tr_pergunta_input" rows="5" placeholder="Escreva aqui..."></textarea>
         <label class="tr-privado-toggle">
           <input type="checkbox" id="tr_pergunta_privado">
           <span>🔒 Ocultar este comentário — só eu e o admin vemos</span>
@@ -2766,6 +2796,8 @@ const STORAGE_KEY = 'ello_treinamentos';
 const CATEGORIAS_PADRAO = ['Atendimento','CRM','Pós-Venda','Desenvolvimento Pessoal'];
 let catAtiva = 'Todos';
 let modalId = null; // id do módulo em edição, null = criando novo
+let provaEmAndamento = {};
+let provaRefazendo = false;
 let saveTimer_t;
 let cachedData = null;
 let listenerAtivo_t = false;
@@ -2822,9 +2854,17 @@ function renderCatNav(data) {
   ).join('') + `<button class="tr-cat-add" onclick="window.TR.addCategoria()">+ Categoria</button>`;
 }
 
+function parseCriadoEm(m) {
+  if (m.criadoEm) return m.criadoEm;
+  const parts = String(m.id||'').split('_');
+  const n = parseInt(parts[1], 10);
+  return isNaN(n) ? 0 : n;
+}
+
 function renderGrid(data) {
   const wrap = document.getElementById('mainWrap_t');
-  const mods = catAtiva === 'Todos' ? data.modulos : data.modulos.filter(m => m.categoria === catAtiva);
+  const mods = (catAtiva === 'Todos' ? data.modulos : data.modulos.filter(m => m.categoria === catAtiva))
+    .slice().sort((a,b) => parseCriadoEm(b) - parseCriadoEm(a));
 
   if (data.modulos.length === 0) {
     wrap.innerHTML = `<div class="tr-empty">
@@ -2856,6 +2896,7 @@ function renderGrid(data) {
     const metaBits = [];
     if (m.video) metaBits.push('🎥 Vídeo');
     if ((m.materiais||[]).length) metaBits.push('📎 ' + m.materiais.length + ' material' + (m.materiais.length>1?'is':''));
+    if ((m.prova && (m.prova.perguntas||[]).length)) metaBits.push('📝 Prova');
     const respostas = m.respostas || {};
     const nomesRespostas = Object.keys(respostas).filter(n => {
       if (!(respostas[n].texto||'').trim()) return false;
@@ -2958,6 +2999,8 @@ function novoModulo() {
   popularSelectCategorias(data, catAtiva !== 'Todos' ? catAtiva : (data.categorias[0]||''));
   renderMateriais([]);
   renderChecklist([]);
+  renderProva([]);
+  document.getElementById('tr_prova_resultados_field').style.display = 'none';
   atualizarPreviewVideo();
   document.getElementById('tr_comentarios_field').style.display = 'none';
   document.getElementById('tr_print_btn').style.display = 'none';
@@ -2976,6 +3019,8 @@ function abrirModulo(id) {
   popularSelectCategorias(data, m.categoria);
   renderMateriais(m.materiais || []);
   renderChecklist(m.checklist || []);
+  renderProva((m.prova && m.prova.perguntas) || []);
+  renderProvaResultados(m);
   atualizarPreviewVideo();
   document.getElementById('tr_comentarios_field').style.display = 'block';
   const user = window.APPAUTH.usuarioAtual;
@@ -3070,6 +3115,9 @@ function abrirPergunta(id, filtroNome) {
     materiais.map(mat => `<a class="tr-video-link" href="${escapeHTML(mat.url||'')}" target="_blank" rel="noopener">📎 ${escapeHTML(mat.titulo || mat.url || 'Material')}</a>`).join('') : '';
   materiaisWrap.style.display = materiais.length ? 'block' : 'none';
 
+  provaRefazendo = false;
+  renderProvaTaking(m, meuNome);
+
   const respostas = m.respostas || {};
   document.getElementById('tr_pergunta_input').value = (respostas[meuNome] && respostas[meuNome].texto) || '';
   document.getElementById('tr_pergunta_privado').checked = !!(respostas[meuNome] && respostas[meuNome].privado);
@@ -3091,6 +3139,77 @@ function abrirPergunta(id, filtroNome) {
 
 function abrirPerguntaFiltrada(id, nome) {
   abrirPergunta(id, nome);
+}
+
+function renderProvaTaking(m, meuNome) {
+  const wrap = document.getElementById('tr_pergunta_prova');
+  const perguntas = (m.prova && m.prova.perguntas) || [];
+  if (!perguntas.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = 'block';
+
+  const resultados = m.provaResultados || {};
+  const meuResultado = resultados[meuNome];
+
+  if (meuResultado && !provaRefazendo) {
+    wrap.innerHTML = `<div class="tr-prova-resultado-card">
+      <div class="tr-prova-resultado-titulo">📝 Prova respondida</div>
+      <div class="tr-prova-resultado-nota">${meuResultado.acertos}/${meuResultado.total} acertos</div>
+      <button class="tr-add-btn" onclick="window.TR.refazerProva()">🔄 Refazer prova</button>
+    </div>`;
+    return;
+  }
+
+  provaEmAndamento = {};
+  wrap.innerHTML = `<div class="tr-prova-form">
+    <div class="tr-prova-form-titulo">📝 Prova · ${perguntas.length} pergunta${perguntas.length>1?'s':''}</div>
+    ${perguntas.map((p, i) => `
+      <div class="tr-prova-pergunta-take">
+        <div class="tr-prova-pergunta-texto">${i+1}. ${escapeHTML(p.texto)}</div>
+        <div class="tr-prova-alt-list">
+          ${p.opcoes.map((op, oi) => op ? `<label class="tr-prova-alt-take">
+            <input type="radio" name="take_${p.id}" value="${oi}" onchange="window.TR.marcarRespostaProva('${p.id}', ${oi})">
+            <span>${escapeHTML(op)}</span>
+          </label>` : '').join('')}
+        </div>
+      </div>
+    `).join('')}
+    <button class="tr-resp-send-btn" onclick="window.TR.enviarProva()">Enviar prova →</button>
+  </div>`;
+}
+
+function marcarRespostaProva(perguntaId, escolha) {
+  provaEmAndamento[perguntaId] = escolha;
+}
+
+function refazerProva() {
+  provaRefazendo = true;
+  const data = getData();
+  const m = data.modulos.find(x => x.id === perguntaModuloId);
+  if (!m) return;
+  const user = window.APPAUTH.usuarioAtual;
+  renderProvaTaking(m, (user && user.nome) || '');
+}
+
+function enviarProva() {
+  const data = getData();
+  const m = data.modulos.find(x => x.id === perguntaModuloId);
+  if (!m) return;
+  const perguntas = (m.prova && m.prova.perguntas) || [];
+  if (Object.keys(provaEmAndamento).length < perguntas.length) {
+    alert('Responda todas as perguntas antes de enviar.');
+    return;
+  }
+  let acertos = 0;
+  perguntas.forEach(p => { if (provaEmAndamento[p.id] === p.correta) acertos++; });
+  const user = window.APPAUTH.usuarioAtual;
+  const meuNome = (user && user.nome) || 'Anônimo';
+  m.provaResultados = m.provaResultados || {};
+  m.provaResultados[meuNome] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  provaRefazendo = false;
+  setData(data);
+  showSaved();
+  renderProvaTaking(m, meuNome);
+  render();
 }
 
 function verTodosComentarios() {
@@ -3244,6 +3363,73 @@ function popularSelectCategorias(data, selecionada) {
   ).join('');
 }
 
+function provaItemHTML(p) {
+  const gid = 'g' + Math.random().toString(36).slice(2,9);
+  const opcoes = (p && p.opcoes) || ['','','',''];
+  const correta = p && typeof p.correta === 'number' ? p.correta : 0;
+  const letras = ['A','B','C','D'];
+  return `<div class="tr-prova-item">
+    <div class="tr-prova-item-head">
+      <span class="tr-prova-item-num">Pergunta</span>
+      <span class="tr-remove-x" onclick="this.closest('.tr-prova-item').remove()">✕</span>
+    </div>
+    <input type="text" class="tr-prova-pergunta" placeholder="Digite a pergunta..." value="${escapeHTML((p&&p.texto)||'')}">
+    <div class="tr-prova-opcoes">
+      ${[0,1,2,3].map(i => `<div class="tr-prova-opcao">
+        <input type="radio" name="${gid}" value="${i}" ${i===correta?'checked':''}>
+        <input type="text" class="tr-prova-alt" placeholder="Alternativa ${letras[i]}" value="${escapeHTML(opcoes[i]||'')}">
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderProva(perguntas) {
+  const list = document.getElementById('tr_prova_list');
+  list.innerHTML = (perguntas||[]).map(p => provaItemHTML(p)).join('');
+}
+
+function addPerguntaProva() {
+  const list = document.getElementById('tr_prova_list');
+  const d = document.createElement('div');
+  d.innerHTML = provaItemHTML(null);
+  list.appendChild(d.firstElementChild);
+}
+
+function coletarProvaForm() {
+  const perguntas = [];
+  document.querySelectorAll('#tr_prova_list .tr-prova-item').forEach(item => {
+    const texto = item.querySelector('.tr-prova-pergunta').value.trim();
+    const alts = Array.from(item.querySelectorAll('.tr-prova-alt')).map(inp => inp.value.trim());
+    const checkedRadio = item.querySelector('input[type=radio]:checked');
+    const corretaIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : -1;
+    const preenchidas = alts.filter(a => a).length;
+    if (texto && preenchidas >= 2 && corretaIndex > -1 && alts[corretaIndex]) {
+      perguntas.push({ id: uid(), texto: texto, opcoes: alts, correta: corretaIndex });
+    }
+  });
+  return perguntas.length ? { perguntas: perguntas } : null;
+}
+
+function renderProvaResultados(m) {
+  const field = document.getElementById('tr_prova_resultados_field');
+  const list = document.getElementById('tr_prova_resultados_list');
+  const resultados = m.provaResultados || {};
+  const nomes = Object.keys(resultados);
+  if (!m.prova || !(m.prova.perguntas||[]).length || !nomes.length) {
+    field.style.display = 'none';
+    return;
+  }
+  field.style.display = 'block';
+  nomes.sort((a,b) => (resultados[b].ts||0) - (resultados[a].ts||0));
+  list.innerHTML = nomes.map(nome => {
+    const r = resultados[nome];
+    return `<div class="tr-resposta-card">
+      <div class="tr-resposta-nome">${escapeHTML(nome)}</div>
+      <div class="tr-resposta-data">${formatarDataHoraComentario(r.ts)} · ${r.acertos}/${r.total} acertos</div>
+    </div>`;
+  }).join('');
+}
+
 function renderMateriais(materiais) {
   const list = document.getElementById('tr_materiais_list');
   list.innerHTML = materiais.map((mt, i) => `<div class="tr-mat-item" data-idx="${i}">
@@ -3359,17 +3545,24 @@ function salvarModulo() {
     if (texto) checklist.push({ texto: texto, done: cb ? cb.checked : false });
   });
 
-  const modulo = {
-    id: modalId || uid(),
-    categoria: document.getElementById('tr_categoria').value,
-    titulo: titulo,
-    descricao: document.getElementById('tr_descricao').value.trim(),
-    video: document.getElementById('tr_video').value.trim(),
-    materiais: materiais,
-    checklist: checklist
-  };
+  const prova = coletarProvaForm();
 
   const data = getData();
+  let modulo;
+  if (modalId) {
+    const existente = data.modulos.find(m => m.id === modalId);
+    modulo = existente ? Object.assign({}, existente) : { id: modalId, criadoEm: Date.now() };
+  } else {
+    modulo = { id: uid(), criadoEm: Date.now() };
+  }
+  modulo.categoria = document.getElementById('tr_categoria').value;
+  modulo.titulo = titulo;
+  modulo.descricao = document.getElementById('tr_descricao').value.trim();
+  modulo.video = document.getElementById('tr_video').value.trim();
+  modulo.materiais = materiais;
+  modulo.checklist = checklist;
+  modulo.prova = prova;
+
   if (modalId) {
     const idx = data.modulos.findIndex(m => m.id === modalId);
     if (idx > -1) data.modulos[idx] = modulo; else data.modulos.push(modulo);
@@ -3412,6 +3605,10 @@ render();
   window.TR.excluirModulo = excluirModulo;
   window.TR.addMaterial = addMaterial;
   window.TR.addChecklistItem = addChecklistItem;
+  window.TR.addPerguntaProva = addPerguntaProva;
+  window.TR.marcarRespostaProva = marcarRespostaProva;
+  window.TR.enviarProva = enviarProva;
+  window.TR.refazerProva = refazerProva;
   window.TR.atualizarPreviewVideo = atualizarPreviewVideo;
   window.TR.salvarResposta = salvarResposta;
   window.TR.excluirResposta = excluirResposta;
