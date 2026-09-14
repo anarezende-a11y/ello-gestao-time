@@ -1601,10 +1601,14 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
       <div class="tr-field" id="pv_lancar_field" style="display:none;">
         <label>Lançar resultado manual</label>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-          <select class="tr-text-input" id="pv_lancar_pessoa" style="flex:1;"></select>
-          <button class="tr-add-btn" onclick="window.PROVAS.iniciarLancamento()">Marcar respostas</button>
+        <div style="display:flex; gap:10px; margin-bottom:8px; align-items:center; flex-wrap:wrap;">
+          <select class="tr-text-input" id="pv_lancar_pessoa" style="flex:1; min-width:130px;"></select>
+          <input type="number" class="tr-text-input" id="pv_lancar_nota" placeholder="Acertos" min="0" style="width:90px;">
+          <span id="pv_lancar_de_texto" style="font-size:12px; color:var(--muted); white-space:nowrap;"></span>
+          <button class="btn btn-amber" onclick="window.PROVAS.salvarNotaRapida()">💾 Salvar nota</button>
         </div>
+        <div style="font-size:11px; color:var(--muted2); margin:10px 0 8px;">Ou, se preferir, marque certo/errado pergunta por pergunta:</div>
+        <button class="tr-add-btn" onclick="window.PROVAS.iniciarLancamento()">Marcar respostas uma a uma</button>
         <div id="pv_lancar_perguntas" style="display:none;"></div>
       </div>
     </div>
@@ -6808,6 +6812,27 @@ function renderResultados(p) {
 
 let lancamentoRespostas = {};
 
+function salvarNotaRapida() {
+  const data = getData();
+  const p = data.provas.find(x => x.id === modalId);
+  if (!p) return;
+  const perguntas = p.perguntas || [];
+  const pessoa = document.getElementById('pv_lancar_pessoa').value;
+  const notaInput = document.getElementById('pv_lancar_nota');
+  const acertos = parseInt(notaInput.value, 10);
+  if (isNaN(acertos) || acertos < 0 || acertos > perguntas.length) {
+    alert('Digite um número de acertos válido, de 0 até ' + perguntas.length + '.');
+    return;
+  }
+  p.resultados = p.resultados || {};
+  p.resultados[pessoa] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  setData(data);
+  showSaved();
+  renderResultados(p);
+  render();
+  notaInput.value = '';
+}
+
 function iniciarLancamento() {
   const data = getData();
   const p = data.provas.find(x => x.id === modalId);
@@ -6878,6 +6903,9 @@ function abrirModal(id) {
   if ((p.perguntas||[]).length) {
     lancarField.style.display = 'block';
     document.getElementById('pv_lancar_pessoa').innerHTML = MEMBROS.map(m => `<option value="${m}">${escapeHTML(m)}</option>`).join('');
+    document.getElementById('pv_lancar_nota').value = '';
+    document.getElementById('pv_lancar_nota').max = p.perguntas.length;
+    document.getElementById('pv_lancar_de_texto').textContent = 'de ' + p.perguntas.length + (p.perguntas.length>1 ? ' perguntas' : ' pergunta');
     document.getElementById('pv_lancar_perguntas').style.display = 'none';
     document.getElementById('pv_lancar_perguntas').innerHTML = '';
   } else {
@@ -7059,6 +7087,7 @@ window.PROVAS.excluirProva = excluirProva;
 window.PROVAS.addPergunta = addPergunta;
 window.PROVAS.carregarSeguroSolar = carregarSeguroSolar;
 window.PROVAS.iniciarLancamento = iniciarLancamento;
+window.PROVAS.salvarNotaRapida = salvarNotaRapida;
 window.PROVAS.marcarManual = marcarManual;
 window.PROVAS.salvarLancamento = salvarLancamento;
 window.PROVAS.abrirTake = abrirTake;
