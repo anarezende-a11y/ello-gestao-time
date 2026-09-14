@@ -1059,6 +1059,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_provas" onclick="mostrarTool('provas')">
     <span class="di-icon">📝</span> Provas
   </button>
+  <button class="drawer-item admin-only" id="di_dashboard" onclick="mostrarTool('dashboard')">
+    <span class="di-icon">📊</span> Dashboard
+  </button>
   </div>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
@@ -1569,7 +1572,6 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="tool-subbar">
     <span class="sb-title">📝 Provas</span>
     <span class="save-ind" id="saveInd_pv">✓ Salvo</span>
-    <button class="btn btn-amber admin-only" onclick="window.PROVAS.abrirDash()">📊 Dashboard</button>
     <button class="btn btn-amber admin-only" onclick="window.PROVAS.novaProva()">+ Nova prova</button>
   </div>
   <div class="wrap">
@@ -1616,17 +1618,14 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
-<!-- Modal: dashboard geral (admin) -->
-<div class="tr-modal-overlay" id="pvDashOverlay" onclick="if(event.target===this) window.PROVAS.fecharDash()">
-  <div class="tr-modal">
-    <div class="tr-modal-head">
-      <span class="tr-modal-title-input" style="padding-top:8px;">📊 Dashboard de provas</span>
-      <button class="tr-modal-close" onclick="window.PROVAS.fecharDash()">✕</button>
-    </div>
-    <div class="tr-modal-body">
-      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Ranking geral de acertos, somando todas as provas respondidas por cada pessoa.</div>
-      <div id="pv_dash_lista" style="display:flex; flex-direction:column; gap:10px;"></div>
-    </div>
+<!-- View: dashboard geral (admin) -->
+<div class="tool-view tool-provas" id="view_dashboard">
+  <div class="tool-subbar">
+    <span class="sb-title">📊 Dashboard de provas</span>
+  </div>
+  <div class="wrap">
+    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Ranking geral de acertos, somando todas as provas respondidas por cada pessoa.</div>
+    <div id="pv_dash_lista" style="display:flex; flex-direction:column; gap:10px;"></div>
   </div>
 </div>
 
@@ -1898,9 +1897,9 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao', provas:'view_provas' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião', provas:'Provas' };
-  var adminOnly = ['reuniao','oneone','rco'];
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard' };
+  var adminOnly = ['reuniao','oneone','rco','dashboard'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
@@ -1927,6 +1926,7 @@ function mostrarTool(nome) {
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   if (nome === 'desafioreuniao' && window.DESAFIO) window.DESAFIO.render();
   if (nome === 'provas' && window.PROVAS) window.PROVAS.render();
+  if (nome === 'dashboard' && window.PROVAS) window.PROVAS.renderDash();
   window.scrollTo(0, 0);
 }
 
@@ -6933,10 +6933,11 @@ function calcularRanking(data) {
     return { nome: p.nome, provas: p.provas, acertos: p.acertos, total: p.total, pct: p.total ? Math.round(p.acertos/p.total*100) : 0 };
   }).sort((a,b) => b.pct - a.pct || b.total - a.total);
 }
-function abrirDash() {
+function renderDash() {
   const data = getData();
   const ranking = calcularRanking(data);
   const wrap = document.getElementById('pv_dash_lista');
+  if (!wrap) return;
   if (!ranking.length) {
     wrap.innerHTML = `<div class="tr-comentarios-empty">Ninguém respondeu nenhuma prova ainda.</div>`;
   } else {
@@ -6954,10 +6955,6 @@ function abrirDash() {
       </div>`;
     }).join('');
   }
-  document.getElementById('pvDashOverlay').classList.add('open');
-}
-function fecharDash() {
-  document.getElementById('pvDashOverlay').classList.remove('open');
 }
 
 window.PROVAS.render = render;
@@ -6972,8 +6969,8 @@ window.PROVAS.fecharTake = fecharTake;
 window.PROVAS.marcarResposta = marcarResposta;
 window.PROVAS.refazer = refazer;
 window.PROVAS.enviar = enviar;
-window.PROVAS.abrirDash = abrirDash;
-window.PROVAS.fecharDash = fecharDash;
+window.PROVAS.abrirDash = renderDash;
+window.PROVAS.renderDash = renderDash;
 })();
 </script>
 
