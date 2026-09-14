@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pós-Venda · Ello Solar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -630,6 +631,17 @@ body {
 .pvd-heat-name { color:var(--text); font-weight:600; padding:6px 10px !important; text-align:left !important; white-space:nowrap; }
 .pvd-heat-cell { width:26px; height:26px; border-radius:6px; margin:3px auto; }
 .pvd-heat-empty { width:26px; height:26px; }
+.pvd-card { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; margin-bottom:22px; }
+.pvd-pessoa-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:6px; }
+.pvd-pessoa-card { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; }
+.pvd-pessoa-nome { font-size:13px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.pvd-termo-card { display:flex; gap:14px; overflow-x:auto; padding-bottom:4px; margin-bottom:22px; }
+.pvd-termo-item { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; width:120px; flex-shrink:0; text-align:center; }
+.pvd-termo-track { position:relative; height:130px; width:34px; margin:0 auto; border-radius:8px; background:rgba(255,255,255,0.07); overflow:hidden; }
+.pvd-termo-fill { position:absolute; bottom:0; left:0; width:100%; border-radius:8px; }
+.pvd-termo-linha { position:absolute; left:-4px; right:-4px; height:1px; border-top:1px dashed rgba(255,255,255,0.35); }
+.pvd-termo-pct { font-size:16px; font-weight:700; margin-top:8px; }
+.pvd-termo-legenda { display:flex; gap:12px; font-size:10px; color:var(--muted2); flex-wrap:wrap; margin-bottom:22px; }
 .tr-prova-item { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:14px; margin-bottom:12px; }
 .tr-prova-item-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .tr-prova-item-num { font-size:10.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; }
@@ -1686,8 +1698,16 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
   <div class="wrap">
     <div id="pv_dash_kpis" class="pvd-kpi-row"></div>
+    <div id="pv_dash_termo_wrap" style="display:none;">
+      <div class="pvd-section-title">Desempenho da prova</div>
+      <div id="pv_dash_termo" class="pvd-termo-card"></div>
+    </div>
+    <div class="pvd-section-title">Evolução do time ao longo do tempo</div>
+    <div class="pvd-card">
+      <div style="position:relative; height:180px;"><canvas id="pv_dash_evolucao"></canvas></div>
+    </div>
     <div class="pvd-section-title">Por pessoa</div>
-    <div id="pv_dash_lista" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div id="pv_dash_lista" class="pvd-pessoa-grid"></div>
     <div class="pvd-section-title" id="pv_dash_heat_title" style="display:none;">Onde o time mais erra</div>
     <div id="pv_dash_heat" style="overflow-x:auto;"></div>
   </div>
@@ -7136,6 +7156,62 @@ function enviar() {
   render();
 }
 
+let dashEvolucaoChart = null;
+function mesLabel(ts) {
+  const d = new Date(ts);
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return meses[d.getMonth()] + '/' + String(d.getFullYear()).slice(2);
+}
+function renderEvolucao(provasParaHeat) {
+  const canvas = document.getElementById('pv_dash_evolucao');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const porMes = {};
+  provasParaHeat.forEach(p => {
+    const resultados = p.resultados || {};
+    Object.keys(resultados).forEach(nome => {
+      const r = resultados[nome];
+      if (!r.ts) return;
+      const key = mesLabel(r.ts);
+      porMes[key] = porMes[key] || { ts: r.ts, acertos: 0, total: 0 };
+      porMes[key].acertos += r.acertos;
+      porMes[key].total += r.total;
+      if (r.ts < porMes[key].ts) porMes[key].ts = r.ts;
+    });
+  });
+  const meses = Object.keys(porMes).sort((a,b) => porMes[a].ts - porMes[b].ts);
+  const valores = meses.map(m => porMes[m].total ? Math.round(porMes[m].acertos/porMes[m].total*100) : 0);
+
+  if (dashEvolucaoChart) { dashEvolucaoChart.destroy(); dashEvolucaoChart = null; }
+  if (meses.length < 1) {
+    canvas.parentElement.innerHTML = '<div class="tr-comentarios-empty" style="padding:20px 0;">Ainda não há dados suficientes pra mostrar evolução.</div>';
+    return;
+  }
+  dashEvolucaoChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [{
+        label: 'Média do time',
+        data: valores,
+        borderColor: '#FD7400',
+        backgroundColor: 'rgba(253,116,0,0.12)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: '#FD7400'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: { min:0, max:100, ticks: { color:'#A8A8A5', callback: v => v + '%' }, grid: { color:'rgba(255,255,255,0.06)' } },
+        x: { ticks: { color:'#A8A8A5' }, grid: { display:false } }
+      },
+      plugins: { legend: { display:false } }
+    }
+  });
+}
+
 function calcularRanking(data, provaFiltro) {
   const porPessoa = {};
   const provas = provaFiltro ? data.provas.filter(p => p.id === provaFiltro) : data.provas;
@@ -7169,6 +7245,38 @@ function popularSeletorDash(data) {
   ).join('');
   if (atual && provas.some(p => p.id === atual)) sel.value = atual;
 }
+function renderTermometro(provaFiltro, data) {
+  const wrap = document.getElementById('pv_dash_termo_wrap');
+  const box = document.getElementById('pv_dash_termo');
+  if (!wrap || !box) return;
+  if (!provaFiltro) { wrap.style.display = 'none'; return; }
+  const p = data.provas.find(x => x.id === provaFiltro);
+  if (!p) { wrap.style.display = 'none'; return; }
+  const resultados = p.resultados || {};
+  const nomes = Object.keys(resultados);
+  let acertos = 0, total = 0;
+  nomes.forEach(n => { acertos += resultados[n].acertos; total += resultados[n].total; });
+  const pct = total ? Math.round(acertos/total*100) : 0;
+  const cor = pctCor(pct);
+  wrap.style.display = 'block';
+  box.innerHTML = `
+    <div class="pvd-termo-item">
+      <div class="pvd-termo-track">
+        <div class="pvd-termo-linha" style="bottom:60%;"></div>
+        <div class="pvd-termo-linha" style="bottom:80%;"></div>
+        <div class="pvd-termo-linha" style="bottom:95%;"></div>
+        <div class="pvd-termo-fill" style="height:${pct}%; background:${cor};"></div>
+      </div>
+      <div class="pvd-termo-pct" style="color:${cor};">${pct}%</div>
+      <div style="font-size:10px; color:var(--muted2);">${nomes.length} respondeu(ram)</div>
+    </div>
+    <div class="pvd-termo-legenda" style="align-items:center; padding-left:4px;">
+      <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#E24B4A;margin-right:4px;"></i>Mínima 60%</span>
+      <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#FD7400;margin-right:4px;"></i>Ideal 80%</span>
+      <span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#1F8A70;margin-right:4px;"></i>Ótimo 95%</span>
+    </div>
+  `;
+}
 function renderDash() {
   const data = getData();
   popularSeletorDash(data);
@@ -7181,6 +7289,10 @@ function renderDash() {
   const heatTitle = document.getElementById('pv_dash_heat_title');
   const heatWrap = document.getElementById('pv_dash_heat');
   if (!wrap || !kpiWrap) return;
+
+  renderTermometro(provaFiltro, data);
+  const provasParaHeat = provaFiltro ? data.provas.filter(p => p.id === provaFiltro) : data.provas;
+  renderEvolucao(provasParaHeat);
 
   if (!ranking.length) {
     kpiWrap.innerHTML = '';
@@ -7195,7 +7307,6 @@ function renderDash() {
   const mediaGeral = totalPerguntasResp ? Math.round(totalAcertos/totalPerguntasResp*100) : 0;
 
   let piorPerguntaHTML = '<div class="pvd-kpi-value">–</div><div class="pvd-kpi-sub">sem dados</div>';
-  const provasParaHeat = provaFiltro ? data.provas.filter(p => p.id === provaFiltro) : data.provas;
   const errosPorPergunta = {};
   provasParaHeat.forEach(p => {
     const resultados = p.resultados || {};
@@ -7239,15 +7350,16 @@ function renderDash() {
 
   wrap.innerHTML = ranking.map((r) => {
     const cor = pctCor(r.pct);
-    return `<div class="tr-resposta-card">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;">
-        <span class="tr-resposta-nome" style="margin:0;">${escapeHTML(r.nome)}</span>
-        <span style="font-size:14px; font-weight:700; color:${cor};">${r.pct}%</span>
+    return `<div class="pvd-pessoa-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
+        <span class="pvd-pessoa-nome">${escapeHTML(r.nome)}</span>
+        <span style="font-size:15px; font-weight:700; color:${cor};">${r.pct}%</span>
       </div>
       <div style="display:flex; align-items:center; gap:10px;">
         <div class="pvd-person-bar-track"><div class="pvd-person-bar-fill" style="width:${r.pct}%; background:${cor};"></div></div>
         <span style="font-size:11px; color:var(--muted2); white-space:nowrap;">${r.acertos}/${r.total}</span>
       </div>
+      <div style="font-size:10px; color:var(--muted2); margin-top:6px;">${r.provas} prova${r.provas>1?'s':''} respondida${r.provas>1?'s':''}</div>
     </div>`;
   }).join('');
 
