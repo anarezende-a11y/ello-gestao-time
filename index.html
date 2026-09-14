@@ -616,6 +616,20 @@ body {
 .tr-remove-x:hover { color:var(--laranja); }
 .tr-add-btn { padding:9px 16px; background:transparent; border:1px dashed var(--border2); border-radius:11px; color:var(--muted); font-family:'Stilu','Nunito Sans',sans-serif; font-size:11px; font-weight:700; cursor:pointer; transition:all .18s; }
 .tr-add-btn:hover { border-color:var(--laranja); color:var(--laranja); background:rgba(253,116,0,.04); }
+.pvd-kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:22px; }
+.pvd-kpi-card { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px 16px; }
+.pvd-kpi-label { font-size:11px; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; font-weight:700; margin-bottom:6px; }
+.pvd-kpi-value { font-size:24px; font-weight:700; color:var(--text); }
+.pvd-kpi-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.pvd-section-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:22px 0 10px; }
+.pvd-person-bar-track { flex:1; height:8px; border-radius:5px; background:rgba(255,255,255,0.08); overflow:hidden; }
+.pvd-person-bar-fill { height:100%; border-radius:5px; }
+.pvd-heat-table { border-collapse:collapse; width:100%; font-size:11px; }
+.pvd-heat-table th { text-align:left; color:var(--muted2); font-weight:700; padding:6px 8px; white-space:nowrap; }
+.pvd-heat-table td { padding:0; text-align:center; }
+.pvd-heat-name { color:var(--text); font-weight:600; padding:6px 10px !important; text-align:left !important; white-space:nowrap; }
+.pvd-heat-cell { width:26px; height:26px; border-radius:6px; margin:3px auto; }
+.pvd-heat-empty { width:26px; height:26px; }
 .tr-prova-item { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:14px; margin-bottom:12px; }
 .tr-prova-item-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .tr-prova-item-num { font-size:10.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.05em; }
@@ -1572,6 +1586,7 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="tool-subbar">
     <span class="sb-title">📝 Provas</span>
     <span class="save-ind" id="saveInd_pv">✓ Salvo</span>
+    <button class="tr-add-btn admin-only" onclick="window.PROVAS.abrirQuick()">✏️ Adicionar correções</button>
     <button class="btn btn-amber admin-only" onclick="window.PROVAS.novaProva()">+ Nova prova</button>
   </div>
   <div class="wrap">
@@ -1619,6 +1634,36 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<!-- Modal: adicionar correção rápida (admin, via topo) -->
+<div class="tr-modal-overlay" id="pvQuickOverlay" onclick="if(event.target===this) window.PROVAS.fecharQuick()">
+  <div class="tr-modal" style="max-width:420px;">
+    <div class="tr-modal-head">
+      <div class="tr-modal-title-input" style="pointer-events:none; opacity:.9;">Adicionar correção</div>
+      <button class="tr-modal-close" onclick="window.PROVAS.fecharQuick()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div class="tr-field">
+        <label>Prova</label>
+        <select class="tr-text-input" id="pvq_prova" onchange="window.PROVAS.quickProvaChange()"></select>
+      </div>
+      <div class="tr-field">
+        <label>Pessoa</label>
+        <select class="tr-text-input" id="pvq_pessoa"></select>
+      </div>
+      <div class="tr-field">
+        <label>Resultado</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" class="tr-text-input" id="pvq_nota" placeholder="Acertos" min="0" style="width:100px;">
+          <span id="pvq_de_texto" style="font-size:12px; color:var(--muted); white-space:nowrap;"></span>
+        </div>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="btn btn-amber" onclick="window.PROVAS.salvarQuick()">💾 Salvar nota</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: responder prova (todos) -->
 <div class="tr-modal-overlay" id="pvTakeOverlay" onclick="if(event.target===this) window.PROVAS.fecharTake()">
   <div class="tr-pergunta-modal">
@@ -1637,10 +1682,14 @@ window.APPAUTH = window.APPAUTH || {};
 <div class="tool-view tool-provas" id="view_dashboard">
   <div class="tool-subbar">
     <span class="sb-title">📊 Dashboard de provas</span>
+    <select class="tr-text-input" id="pvd_prova_sel" style="max-width:220px;" onchange="window.PROVAS.renderDash()"></select>
   </div>
   <div class="wrap">
-    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Ranking geral de acertos, somando todas as provas respondidas por cada pessoa.</div>
+    <div id="pv_dash_kpis" class="pvd-kpi-row"></div>
+    <div class="pvd-section-title">Por pessoa</div>
     <div id="pv_dash_lista" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div class="pvd-section-title" id="pv_dash_heat_title" style="display:none;">Onde o time mais erra</div>
+    <div id="pv_dash_heat" style="overflow-x:auto;"></div>
   </div>
 </div>
 
@@ -6873,13 +6922,62 @@ function salvarLancamento() {
   let acertos = 0;
   perguntas.forEach(q => { if (lancamentoRespostas[q.id]) acertos++; });
   p.resultados = p.resultados || {};
-  p.resultados[pessoa] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  p.resultados[pessoa] = { acertos: acertos, total: perguntas.length, ts: Date.now(), respostas: Object.assign({}, lancamentoRespostas) };
   setData(data);
   showSaved();
   renderResultados(p);
   render();
   document.getElementById('pv_lancar_perguntas').style.display = 'none';
   document.getElementById('pv_lancar_perguntas').innerHTML = '';
+}
+
+function listaPessoasTime() {
+  try {
+    if (window.EQUIPE && Array.isArray(window.EQUIPE.lista)) return window.EQUIPE.lista.map(u => u.nome).filter(Boolean);
+  } catch(e) {}
+  return ['Thiago','Sharon','Kuka','Amanda','Cheila','Adriele','Felipe'];
+}
+function abrirQuick() {
+  const data = getData();
+  const provas = data.provas.slice().sort((a,b) => (b.criadoEm||0) - (a.criadoEm||0));
+  if (!provas.length) { alert('Crie uma prova antes de lançar correções.'); return; }
+  const selProva = document.getElementById('pvq_prova');
+  selProva.innerHTML = provas.map(p => `<option value="${p.id}">${escapeHTML(p.titulo||'Sem título')}</option>`).join('');
+  document.getElementById('pvq_nota').value = '';
+  quickProvaChange();
+  document.getElementById('pvQuickOverlay').classList.add('open');
+}
+function quickProvaChange() {
+  const data = getData();
+  const id = document.getElementById('pvq_prova').value;
+  const p = data.provas.find(x => x.id === id);
+  const total = p ? (p.perguntas||[]).length : 0;
+  document.getElementById('pvq_de_texto').textContent = 'de ' + total + ' pergunta' + (total!==1?'s':'');
+  const selPessoa = document.getElementById('pvq_pessoa');
+  selPessoa.innerHTML = listaPessoasTime().map(n => `<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join('');
+}
+function fecharQuick() {
+  document.getElementById('pvQuickOverlay').classList.remove('open');
+}
+function salvarQuick() {
+  const data = getData();
+  const id = document.getElementById('pvq_prova').value;
+  const p = data.provas.find(x => x.id === id);
+  if (!p) return;
+  const perguntas = p.perguntas || [];
+  const pessoa = document.getElementById('pvq_pessoa').value;
+  const notaInput = document.getElementById('pvq_nota');
+  const acertos = parseInt(notaInput.value, 10);
+  if (isNaN(acertos) || acertos < 0 || acertos > perguntas.length) {
+    alert('Digite um número de acertos válido, de 0 até ' + perguntas.length + '.');
+    return;
+  }
+  p.resultados = p.resultados || {};
+  p.resultados[pessoa] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  setData(data);
+  showSaved();
+  render();
+  fecharQuick();
 }
 
 function novaProva() {
@@ -7025,11 +7123,12 @@ function enviar() {
     return;
   }
   let acertos = 0;
-  perguntas.forEach(q => { if (emAndamento[q.id] === q.correta) acertos++; });
+  const respostasDetalhe = {};
+  perguntas.forEach(q => { const ok = emAndamento[q.id] === q.correta; respostasDetalhe[q.id] = ok; if (ok) acertos++; });
   const user = window.APPAUTH.usuarioAtual;
   const meuNome = (user && user.nome) || 'Anônimo';
   p.resultados = p.resultados || {};
-  p.resultados[meuNome] = { acertos: acertos, total: perguntas.length, ts: Date.now() };
+  p.resultados[meuNome] = { acertos: acertos, total: perguntas.length, ts: Date.now(), respostas: respostasDetalhe };
   refazendo = false;
   setData(data);
   showSaved();
@@ -7037,9 +7136,10 @@ function enviar() {
   render();
 }
 
-function calcularRanking(data) {
+function calcularRanking(data, provaFiltro) {
   const porPessoa = {};
-  data.provas.forEach(p => {
+  const provas = provaFiltro ? data.provas.filter(p => p.id === provaFiltro) : data.provas;
+  provas.forEach(p => {
     const resultados = p.resultados || {};
     Object.keys(resultados).forEach(nome => {
       const r = resultados[nome];
@@ -7054,27 +7154,117 @@ function calcularRanking(data) {
     return { nome: p.nome, provas: p.provas, acertos: p.acertos, total: p.total, pct: p.total ? Math.round(p.acertos/p.total*100) : 0 };
   }).sort((a,b) => b.pct - a.pct || b.total - a.total);
 }
+function pctCor(pct) {
+  if (pct >= 90) return '#1F8A70';
+  if (pct >= 70) return '#FD7400';
+  return '#E24B4A';
+}
+function popularSeletorDash(data) {
+  const sel = document.getElementById('pvd_prova_sel');
+  if (!sel) return;
+  const atual = sel.value;
+  const provas = data.provas.slice().sort((a,b) => (b.criadoEm||0) - (a.criadoEm||0));
+  sel.innerHTML = `<option value="">Todas as provas</option>` + provas.map(p =>
+    `<option value="${p.id}">${escapeHTML(p.titulo||'Sem título')}</option>`
+  ).join('');
+  if (atual && provas.some(p => p.id === atual)) sel.value = atual;
+}
 function renderDash() {
   const data = getData();
-  const ranking = calcularRanking(data);
+  popularSeletorDash(data);
+  const sel = document.getElementById('pvd_prova_sel');
+  const provaFiltro = sel ? sel.value : '';
+  const ranking = calcularRanking(data, provaFiltro || null);
+
+  const kpiWrap = document.getElementById('pv_dash_kpis');
   const wrap = document.getElementById('pv_dash_lista');
-  if (!wrap) return;
+  const heatTitle = document.getElementById('pv_dash_heat_title');
+  const heatWrap = document.getElementById('pv_dash_heat');
+  if (!wrap || !kpiWrap) return;
+
   if (!ranking.length) {
+    kpiWrap.innerHTML = '';
     wrap.innerHTML = `<div class="tr-comentarios-empty">Ninguém respondeu nenhuma prova ainda.</div>`;
+    heatTitle.style.display = 'none';
+    heatWrap.innerHTML = '';
+    return;
+  }
+
+  const totalAcertos = ranking.reduce((s,r) => s + r.acertos, 0);
+  const totalPerguntasResp = ranking.reduce((s,r) => s + r.total, 0);
+  const mediaGeral = totalPerguntasResp ? Math.round(totalAcertos/totalPerguntasResp*100) : 0;
+
+  let piorPerguntaHTML = '<div class="pvd-kpi-value">–</div><div class="pvd-kpi-sub">sem dados</div>';
+  const provasParaHeat = provaFiltro ? data.provas.filter(p => p.id === provaFiltro) : data.provas;
+  const errosPorPergunta = {};
+  provasParaHeat.forEach(p => {
+    const resultados = p.resultados || {};
+    Object.keys(resultados).forEach(nome => {
+      const r = resultados[nome];
+      if (!r.respostas) return;
+      (p.perguntas||[]).forEach(q => {
+        if (r.respostas[q.id] === undefined) return;
+        const key = p.id + '::' + q.id;
+        errosPorPergunta[key] = errosPorPergunta[key] || { texto: q.texto, erros: 0, total: 0 };
+        errosPorPergunta[key].total++;
+        if (!r.respostas[q.id]) errosPorPergunta[key].erros++;
+      });
+    });
+  });
+  const perguntasOrdenadas = Object.values(errosPorPergunta)
+    .map(x => ({ texto: x.texto, pct: x.total ? Math.round(x.erros/x.total*100) : 0 }))
+    .sort((a,b) => b.pct - a.pct);
+  if (perguntasOrdenadas.length) {
+    const pior = perguntasOrdenadas[0];
+    piorPerguntaHTML = `<div class="pvd-kpi-value" style="color:${pctCor(100-pior.pct)};">${pior.pct}% erro</div>
+      <div class="pvd-kpi-sub" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(pior.texto||'')}</div>`;
+  }
+
+  kpiWrap.innerHTML = `
+    <div class="pvd-kpi-card">
+      <div class="pvd-kpi-label">Média geral</div>
+      <div class="pvd-kpi-value" style="color:${pctCor(mediaGeral)};">${mediaGeral}%</div>
+      <div class="pvd-kpi-sub">${totalAcertos}/${totalPerguntasResp} acertos somados</div>
+    </div>
+    <div class="pvd-kpi-card">
+      <div class="pvd-kpi-label">Já responderam</div>
+      <div class="pvd-kpi-value">${ranking.length}</div>
+      <div class="pvd-kpi-sub">pessoa${ranking.length>1?'s':''}</div>
+    </div>
+    <div class="pvd-kpi-card">
+      <div class="pvd-kpi-label">Pior pergunta</div>
+      ${piorPerguntaHTML}
+    </div>
+  `;
+
+  wrap.innerHTML = ranking.map((r) => {
+    const cor = pctCor(r.pct);
+    return `<div class="tr-resposta-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;">
+        <span class="tr-resposta-nome" style="margin:0;">${escapeHTML(r.nome)}</span>
+        <span style="font-size:14px; font-weight:700; color:${cor};">${r.pct}%</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="pvd-person-bar-track"><div class="pvd-person-bar-fill" style="width:${r.pct}%; background:${cor};"></div></div>
+        <span style="font-size:11px; color:var(--muted2); white-space:nowrap;">${r.acertos}/${r.total}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (!perguntasOrdenadas.length) {
+    heatTitle.style.display = 'none';
+    heatWrap.innerHTML = '';
   } else {
-    wrap.innerHTML = ranking.map((r, i) => {
-      const medalha = i===0 ? '🥇' : i===1 ? '🥈' : i===2 ? '🥉' : (i+1) + 'º';
-      return `<div class="tr-resposta-card" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <span style="font-size:15px; font-weight:700; color:var(--muted2); min-width:30px;">${medalha}</span>
-          <span class="tr-resposta-nome" style="margin:0;">${escapeHTML(r.nome)}</span>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:16px; font-weight:700; color:var(--laranja);">${r.pct}%</div>
-          <div style="font-size:11px; color:var(--muted2);">${r.acertos}/${r.total} acertos · ${r.provas} prova${r.provas>1?'s':''}</div>
-        </div>
-      </div>`;
-    }).join('');
+    heatTitle.style.display = 'block';
+    const top = perguntasOrdenadas.slice(0, 8);
+    heatWrap.innerHTML = `<table class="pvd-heat-table"><tbody>` + top.map(q => {
+      const cor = q.pct >= 40 ? '#E24B4A' : q.pct >= 15 ? '#FD7400' : '#1F8A70';
+      return `<tr>
+        <td class="pvd-heat-name" style="max-width:220px; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(q.texto||'')}</td>
+        <td style="width:90%;"><div class="pvd-person-bar-track"><div class="pvd-person-bar-fill" style="width:${q.pct}%; background:${cor};"></div></div></td>
+        <td style="padding:6px 8px !important; color:${cor}; font-weight:700; white-space:nowrap;">${q.pct}%</td>
+      </tr>`;
+    }).join('') + `</tbody></table>`;
   }
 }
 
@@ -7088,6 +7278,11 @@ window.PROVAS.addPergunta = addPergunta;
 window.PROVAS.carregarSeguroSolar = carregarSeguroSolar;
 window.PROVAS.iniciarLancamento = iniciarLancamento;
 window.PROVAS.salvarNotaRapida = salvarNotaRapida;
+window.PROVAS.abrirQuick = abrirQuick;
+window.PROVAS.fecharQuick = fecharQuick;
+window.PROVAS.quickProvaChange = quickProvaChange;
+window.PROVAS.salvarQuick = salvarQuick;
+window.PROVAS.renderDash = renderDash;
 window.PROVAS.marcarManual = marcarManual;
 window.PROVAS.salvarLancamento = salvarLancamento;
 window.PROVAS.abrirTake = abrirTake;
