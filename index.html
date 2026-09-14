@@ -51,24 +51,24 @@
 }
 :root {
   /* Paleta oficial Ello Solar */
-  --azul:#004358; --azul-2:#0A5A73; --laranja:#FD7400; --lima:#BEDB39; --verde:#1F8A70; --azul-claro:#58AFDA;
-  --bg-grad-1:#0E2C38; --bg-grad-2:#081820;
+  --azul:#1C1C1C; --azul-2:#262626; --laranja:#FD7400; --lima:#FFC72C; --verde:#1F8A70; --azul-claro:#FD7400;
+  --bg-grad-1:#121212; --bg-grad-2:#0A0A0A;
 
-  --bg:var(--bg-grad-1); --surface:#123340; --card:#173B49; --card2:#153542;
+  --bg:var(--bg-grad-1); --surface:#1A1A1A; --card:#1F1F1F; --card2:#1C1C1C;
   --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
   --amber:var(--laranja); --amber-dim:rgba(253,116,0,0.18); --amber-mid:rgba(253,116,0,0.32);
   --green:var(--verde); --green-dim:rgba(31,138,112,0.18);
-  --text:#EAF4F7; --muted:#9FC1CC; --muted2:#6D8E99; --white:#FFFFFF;
+  --text:#F2F2F0; --muted:#A8A8A5; --muted2:#787876; --white:#FFFFFF;
   --laranja-dim:rgba(253,116,0,0.18);
   --verde-dim:rgba(31,138,112,0.18);
-  --lima-dim:rgba(190,219,57,0.22);
+  --lima-dim:rgba(255,199,44,0.22);
 }
 body {
   font-family:'Stilu','Nunito Sans',sans-serif;
   background:
-    radial-gradient(900px 500px at 8% -8%, rgba(253,116,0,0.22), transparent 60%),
-    radial-gradient(800px 600px at 100% 8%, rgba(88,175,218,0.24), transparent 60%),
-    radial-gradient(1000px 700px at 45% 105%, rgba(31,138,112,0.22), transparent 60%),
+    radial-gradient(900px 500px at 8% -8%, rgba(253,116,0,0.16), transparent 60%),
+    radial-gradient(800px 600px at 100% 8%, rgba(253,199,44,0.10), transparent 60%),
+    radial-gradient(1000px 700px at 45% 105%, rgba(253,116,0,0.10), transparent 60%),
     linear-gradient(160deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%);
   background-attachment:fixed;
   color:var(--text);
@@ -78,7 +78,7 @@ body {
 /* ===== TELA DE LOGIN ===== */
 #authScreen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
 .auth-card { width:100%; max-width:380px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:36px 30px; box-shadow:0 30px 70px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset; text-align:center; }
-.auth-logo { width:56px; height:56px; border-radius:16px; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; font-size:26px; background:linear-gradient(155deg, #045870 0%, #004358 60%); box-shadow:0 4px 14px rgba(0,20,28,0.4); }
+.auth-logo { width:56px; height:56px; border-radius:16px; margin:0 auto 18px; display:flex; align-items:center; justify-content:center; font-size:26px; background:linear-gradient(155deg, #045870 0%, #1C1C1C 60%); box-shadow:0 4px 14px rgba(0,20,28,0.4); }
 .auth-title { font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; }
 .auth-sub { font-size:12px; color:var(--muted); margin-bottom:22px; }
 #authScreen .tr-field { text-align:left; margin-bottom:14px; }
@@ -97,7 +97,7 @@ body {
 .hamburger.open span:nth-child(2) { opacity:0; }
 .hamburger.open span:nth-child(3) { transform:translateY(-7.5px) rotate(-45deg); }
 .main-header .nav-brand { display:flex; align-items:center; gap:12px; }
-.main-header .nav-logo { width:40px; height:40px; border-radius:13px; position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,20,28,0.4), inset 0 0 0 1px rgba(255,255,255,0.14), inset 0 1px 0 rgba(255,255,255,0.25); overflow:hidden; background:linear-gradient(155deg, #045870 0%, #004358 60%); }
+.main-header .nav-logo { width:40px; height:40px; border-radius:13px; position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,20,28,0.4), inset 0 0 0 1px rgba(255,255,255,0.14), inset 0 1px 0 rgba(255,255,255,0.25); overflow:hidden; background:linear-gradient(155deg, #045870 0%, #1C1C1C 60%); }
 .main-header .nav-logo img { width:100%; height:100%; object-fit:cover; }
 .main-header .nav-brand-name { font-size:15px; font-weight:700; color:#fff; letter-spacing:.2px; }
 .main-header .nav-brand-sub { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--lima); margin-top:1px; }
@@ -110,7 +110,7 @@ body {
 .drawer::before { content:''; position:absolute; top:-80px; right:-80px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(253,116,0,0.14), transparent 70%); pointer-events:none; }
 .drawer.open { left:0; }
 .drawer-head { padding:26px 20px 22px; border-bottom:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
-.drawer-head .nav-logo { width:46px; height:46px; border-radius:15px; position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,20,28,0.45), inset 0 0 0 1px rgba(255,255,255,0.14), inset 0 1px 0 rgba(255,255,255,0.25); overflow:hidden; background:linear-gradient(155deg, #045870 0%, #004358 60%); }
+.drawer-head .nav-logo { width:46px; height:46px; border-radius:15px; position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,20,28,0.45), inset 0 0 0 1px rgba(255,255,255,0.14), inset 0 1px 0 rgba(255,255,255,0.25); overflow:hidden; background:linear-gradient(155deg, #045870 0%, #1C1C1C 60%); }
 .drawer-head .nav-logo img { width:100%; height:100%; object-fit:cover; }
 .drawer-title { font-size:15px; font-weight:700; color:#fff; }
 .drawer-sub { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--lima); margin-top:2px; }
@@ -136,7 +136,7 @@ body {
 .home-desc { font-size:13px; color:rgba(255,255,255,0.82); line-height:1.6; max-width:480px; position:relative; }
 .home-cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:620px) { .home-cards { grid-template-columns:1fr; } }
-.home-card { background:#173B49; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:24px 22px; cursor:pointer; transition:all .18s ease; text-align:left; font-family:inherit; position:relative; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+.home-card { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:24px 22px; cursor:pointer; transition:all .18s ease; text-align:left; font-family:inherit; position:relative; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
 .home-card:hover { border-color:rgba(253,116,0,0.4); box-shadow:0 4px 12px rgba(0,0,0,0.2); }
 .home-card .hc-icon { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:23px; margin-bottom:16px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -2px 4px rgba(0,0,0,0.25); }
 .home-card.c-reuniao .hc-icon { background:linear-gradient(155deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); }
@@ -522,7 +522,7 @@ body {
 .tr-pergunta-titulo { position:relative; z-index:1; font-size:24px; font-weight:700; color:var(--text); line-height:1.25; margin-bottom:2px; padding-right:32px; }
 .tr-pergunta-desc-wrap { padding:0 28px; }
 .tr-pergunta-desc { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
-.tr-pergunta-minha { background:#0F2A36; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; box-shadow:0 1px 0 rgba(255,255,255,0.03) inset; }
+.tr-pergunta-minha { background:#181818; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; box-shadow:0 1px 0 rgba(255,255,255,0.03) inset; }
 .tr-pergunta-minha label { display:block; font-size:10.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
 .tr-pergunta-minha textarea { margin-bottom:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border2); border-radius:12px; color:var(--text); min-height:130px; }
 .tr-privado-toggle { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; margin-bottom:14px; cursor:pointer; }
@@ -557,7 +557,7 @@ body {
 .wrap { max-width:900px; margin:0 auto; padding:28px 20px 80px; }
 .tr-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:680px) { .tr-grid { grid-template-columns:1fr; } }
-.tr-card { background:#173B49; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:20px 20px 18px; cursor:pointer; transition:all .18s ease; text-align:left; font-family:inherit; display:block; width:100%; position:relative; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+.tr-card { background:#1F1F1F; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:20px 20px 18px; cursor:pointer; transition:all .18s ease; text-align:left; font-family:inherit; display:block; width:100%; position:relative; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
 .feed-seletor-row { display:flex!important; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
 .feed-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
 .feed-card { border-left:4px solid var(--laranja); }
@@ -627,7 +627,7 @@ body {
 .tr-prova-resultado-card { background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:18px; text-align:center; margin-top:18px; margin-bottom:24px; }
 .tr-prova-resultado-titulo { font-size:11.5px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
 .tr-prova-resultado-nota { font-size:26px; font-weight:700; color:var(--laranja); margin-bottom:14px; }
-.tr-prova-form { background:#0F2A36; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; }
+.tr-prova-form { background:#181818; border:1px solid var(--border2); border-radius:16px; padding:16px; margin-top:18px; margin-bottom:24px; }
 .tr-prova-form-titulo { font-size:13px; font-weight:700; color:var(--text); margin-bottom:14px; }
 .tr-prova-pergunta-take { margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
 .tr-prova-pergunta-take:last-of-type { border-bottom:none; padding-bottom:0; margin-bottom:14px; }
@@ -648,7 +648,7 @@ body {
 
 /* ===== TOOL: CAMPANHA ===== */
 .camp-list { display:flex; flex-direction:column; gap:16px; }
-.camp-card { background:linear-gradient(165deg, #15394A 0%, #0F2A36 100%); border:1px solid var(--border); border-radius:8px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); position:relative; overflow:hidden; }
+.camp-card { background:linear-gradient(165deg, #15394A 0%, #181818 100%); border:1px solid var(--border); border-radius:8px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,0.15), 0 10px 24px rgba(0,0,0,0.18); position:relative; overflow:hidden; }
 .camp-card::after { content:''; position:absolute; inset:0; border-radius:8px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06); pointer-events:none; }
 .camp-card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:4px; }
 .camp-card-title { font-size:16px; font-weight:700; color:var(--text); }
@@ -813,7 +813,7 @@ body {
 }
 #rcoPrintArea { display:none; }
 #rcoPrintArea.show { display:block; background:#fff; color:#111; padding:30px; font-family:'Stilu','Nunito Sans',sans-serif; }
-#rcoPrintArea h1 { font-size:20px; color:#004358; margin-bottom:4px; }
+#rcoPrintArea h1 { font-size:20px; color:#1C1C1C; margin-bottom:4px; }
 #rcoPrintArea .rp-meta { font-size:12px; color:#555; margin-bottom:20px; }
 #rcoPrintArea h2 { font-size:13px; color:#FD7400; text-transform:uppercase; letter-spacing:.05em; margin:20px 0 8px; border-bottom:1px solid #ddd; padding-bottom:4px; }
 #rcoPrintArea ul { margin:0 0 6px 18px; }
@@ -823,10 +823,10 @@ body {
 #feedPrintArea { display:none; }
 #feedPrintArea.show { display:block; background:#fff; color:#111; padding:30px; font-family:'Stilu','Nunito Sans',sans-serif; }
 #feedPrintArea .fp-header { display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #FD7400; padding-bottom:14px; margin-bottom:20px; }
-#feedPrintArea .fp-brand { font-size:16px; font-weight:700; color:#004358; }
+#feedPrintArea .fp-brand { font-size:16px; font-weight:700; color:#1C1C1C; }
 #feedPrintArea .fp-brand-sub { font-size:10px; color:#888; text-transform:uppercase; letter-spacing:.08em; }
-#feedPrintArea .fp-tag { font-size:11px; font-weight:700; color:#fff; background:#004358; padding:5px 12px; border-radius:8px; }
-#feedPrintArea h1 { font-size:19px; color:#004358; margin-bottom:4px; }
+#feedPrintArea .fp-tag { font-size:11px; font-weight:700; color:#fff; background:#1C1C1C; padding:5px 12px; border-radius:8px; }
+#feedPrintArea h1 { font-size:19px; color:#1C1C1C; margin-bottom:4px; }
 #feedPrintArea .rp-meta { font-size:12px; color:#555; margin-bottom:20px; }
 #feedPrintArea .fp-body { font-size:13.5px; line-height:1.7; white-space:pre-wrap; border:1px solid #ddd; border-radius:10px; padding:16px; margin-bottom:16px; }
 #feedPrintArea h2 { font-size:12px; color:#FD7400; text-transform:uppercase; letter-spacing:.05em; margin:18px 0 8px; border-bottom:1px solid #ddd; padding-bottom:4px; }
@@ -842,7 +842,7 @@ body {
 .check-pessoa-card { flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border2); border-radius:16px; padding:12px 16px; cursor:pointer; transition:all .15s; min-width:78px; }
 .check-pessoa-card:hover { border-color:rgba(253,116,0,0.35); }
 .check-pessoa-card.active { background:linear-gradient(160deg, rgba(253,116,0,0.16), rgba(253,116,0,0.04)); border-color:var(--laranja); }
-.check-pessoa-avatar { width:36px; height:36px; border-radius:11px; background:linear-gradient(155deg, #045870, #004358); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+.check-pessoa-avatar { width:36px; height:36px; border-radius:11px; background:linear-gradient(155deg, #045870, #1C1C1C); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
 .check-pessoa-card.active .check-pessoa-avatar { background:linear-gradient(155deg, #FF9130, var(--laranja)); }
 .check-pessoa-nome { font-size:11.5px; font-weight:700; color:var(--text); white-space:nowrap; }
 .check-datas-row { display:flex; align-items:center; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:18px; }
@@ -861,9 +861,9 @@ body {
 .tool-checklist .check-daylabel { font-size:13px; font-weight:700; color:#fff; margin-bottom:14px; }
 .check-block { background:var(--card2); border:1px solid var(--border); border-radius:12px; margin-bottom:14px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.18); }
 .check-block-atual { border:2px solid var(--lima); box-shadow:0 8px 28px rgba(190,219,57,.22); }
-.check-atual-badge { margin-left:auto; font-size:11px; font-weight:700; color:#0E2A36; background:var(--lima); padding:4px 10px; border-radius:8px; white-space:nowrap; }
+.check-atual-badge { margin-left:auto; font-size:11px; font-weight:700; color:#181818; background:var(--lima); padding:4px 10px; border-radius:8px; white-space:nowrap; }
 .check-block-head { display:flex; align-items:center; gap:12px; padding:15px 18px; border-bottom:1px solid var(--border); }
-.check-time-chip { background:var(--lima); color:#0E2A36; font-weight:700; font-size:12.5px; padding:6px 11px; border-radius:11px; white-space:nowrap; }
+.check-time-chip { background:var(--lima); color:#181818; font-weight:700; font-size:12.5px; padding:6px 11px; border-radius:11px; white-space:nowrap; }
 .check-time-chip.meeting { background:var(--laranja); color:#fff; }
 .check-block-title { font-weight:700; font-size:14.5px; color:#fff; }
 .check-block-body { padding:6px 14px 12px; }
@@ -884,7 +884,7 @@ body {
 .check-stepper-val { min-width:38px; text-align:center; font-size:16px; font-weight:900; color:#fff; }
 .check-mini-bar { height:5px; width:100%; border-radius:6px; background:rgba(255,255,255,.14); margin-top:6px; overflow:hidden; }
 .check-mini-bar-fill { height:100%; border-radius:6px; background:linear-gradient(90deg, var(--verde), var(--lima)); }
-.check-hint { display:inline-block; margin-top:4px; font-size:11px; font-weight:700; color:#0E2A36; background:var(--lima); padding:3px 9px; border-radius:8px; }
+.check-hint { display:inline-block; margin-top:4px; font-size:11px; font-weight:700; color:#181818; background:var(--lima); padding:3px 9px; border-radius:8px; }
 .check-goals { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
 .check-goal-card { background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:15px; padding:10px; }
 .check-goal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted2); }
@@ -1590,7 +1590,10 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-field">
         <label>Perguntas</label>
         <div id="pv_prova_list"></div>
-        <button class="tr-add-btn" onclick="window.PROVAS.addPergunta()">+ Adicionar pergunta</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="tr-add-btn" onclick="window.PROVAS.addPergunta()">+ Adicionar pergunta</button>
+          <button class="tr-add-btn" onclick="window.PROVAS.carregarSeguroSolar()">📥 Carregar as 10 perguntas do Seguro Solar</button>
+        </div>
       </div>
       <div class="tr-field" id="pv_resultados_field" style="display:none;">
         <label>Resultados</label>
@@ -5351,10 +5354,10 @@ function desenharRoleta(premios, rotacaoAtual) {
     const meio = (a0 + a1) / 2;
     const tx = cx + (r*0.62) * Math.cos(meio), ty = cy + (r*0.62) * Math.sin(meio);
     const rotDeg = (i * fatia + fatia/2);
-    paths += `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${CORES_ROLETA[i % CORES_ROLETA.length]}" stroke="#0F2A36" stroke-width="2"/>
+    paths += `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${CORES_ROLETA[i % CORES_ROLETA.length]}" stroke="#181818" stroke-width="2"/>
       <text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" fill="#fff" font-size="12" font-weight="800" font-family="Nunito Sans, sans-serif" text-anchor="middle" transform="rotate(${rotDeg.toFixed(1)} ${tx.toFixed(2)} ${ty.toFixed(2)})">${escapeHTML(premios[i])}</text>`;
   }
-  svg.innerHTML = paths + `<circle cx="${cx}" cy="${cy}" r="14" fill="#0F2A36" stroke="#fff" stroke-width="2"/>`;
+  svg.innerHTML = paths + `<circle cx="${cx}" cy="${cy}" r="14" fill="#181818" stroke="#fff" stroke-width="2"/>`;
   svg.style.transition = 'none';
   svg.style.transform = `rotate(${rotacaoAtual || 0}deg)`;
   // força reflow antes de permitir nova transição
@@ -6645,6 +6648,18 @@ window.DESAFIO.fecharView = fecharView;
 window.PROVAS = window.PROVAS || {};
 (function(){
 const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const SEGURO_SOLAR_PERGUNTAS = [
+  { texto: 'Qual a diferença central entre garantia e seguro?', opcoes: ['Garantia cobre defeitos de fabricação; seguro cobre danos de causa externa', 'Garantia e seguro cobrem exatamente as mesmas coisas', 'Seguro só cobre defeito de fabricação', 'Garantia cobre roubo e furto; seguro não'], correta: 0 },
+  { texto: 'SITUAÇÃO: o cliente diz "Tenho garantia do fabricante, não preciso disso." Como você responde?', opcoes: ['Concordar e desistir da oferta', 'Explicar que garantia cobre defeitos internos e seguro protege contra eventos externos, como granizo, vendaval, raio ou roubo', 'Dizer que a garantia do fabricante não vale nada', 'Oferecer um desconto grande para compensar'], correta: 1 },
+  { texto: 'SITUAÇÃO: o cliente diz "Está caro." Como você conduz a conversa?', opcoes: ['Dar desconto imediatamente sem entender a objeção', 'Concordar que é caro e encerrar a conversa', 'Comparar o valor anual do seguro com o prejuízo potencial de perder a usina inteira', 'Insistir sem apresentar nenhum argumento novo'], correta: 2 },
+  { texto: 'Qual é a forma CORRETA de usar os casos reais de indenização numa conversa de venda?', opcoes: ['Enviar os casos reais para todo mundo antes de qualquer coisa, como propaganda', 'Usar como prova social no momento em que o cliente demonstrar dúvida', 'Nunca mencionar casos reais de outros clientes', 'Só mostrar depois que o cliente já contratou'], correta: 1 },
+  { texto: 'Em caso de perda total do sistema, como funciona a franquia?', opcoes: ['O cliente paga o dobro da franquia normal', 'Não há desconto de franquia — a indenização é integral', 'A franquia é sempre de 50%', 'O seguro não cobre perda total'], correta: 1 },
+  { texto: 'Qual dessas frases é a forma CORRETA de iniciar a abordagem com o cliente?', opcoes: ['"Tenho um seguro para vender."', '"Estamos entrando em contato para apresentar uma forma de proteger o investimento no seu sistema."', '"Você precisa contratar um seguro agora."', '"Nosso seguro é o mais barato do mercado."'], correta: 1 },
+  { texto: 'Por que a carteira de clientes antigos é considerada prioritária?', opcoes: ['Cliente que instalou o sistema na semana passada', 'Cliente que já cancelou o seguro duas vezes', 'Cliente instalado em 2021/2022/2023, sem seguro vigente', 'Cliente fora da carteira da Ello Solar'], correta: 2 },
+  { texto: 'Depois de enviar a tabela de coberturas, qual é o próximo passo do fluxo de venda?', opcoes: ['Enviar a declaração de seguro já assinada', 'Pedir indicação de outro cliente', 'Perguntar se o cliente quer dar continuidade à contratação', 'Encerrar a conversa'], correta: 2 },
+  { texto: 'Qual é o prazo de análise do sinistro após o envio do último documento solicitado?', opcoes: ['48 horas', '7 dias úteis', 'Até 30 dias corridos', '90 dias'], correta: 2 },
+  { texto: 'No processo interno do pós-vendas, o que vem logo depois de enviar a apresentação ao cliente?', opcoes: ['Pedir indicação', 'Registrar o interesse e as objeções no CRM', 'Fechar a venda direto', 'Nada, o processo acaba no envio da apresentação'], correta: 1 },
+];
 let cachedData = null;
 let listenerAtivo = false;
 let modalId = null;
@@ -6753,6 +6768,11 @@ function addPergunta() {
   const d = document.createElement('div');
   d.innerHTML = provaItemHTML(null);
   list.appendChild(d.firstElementChild);
+}
+function carregarSeguroSolar() {
+  if (document.querySelectorAll('#pv_prova_list .tr-prova-item').length &&
+      !confirm('Isso vai substituir as perguntas atuais do formulário pelas 10 perguntas prontas do Seguro Solar. Continuar?')) return;
+  renderPerguntas(SEGURO_SOLAR_PERGUNTAS);
 }
 function coletarPerguntas() {
   const perguntas = [];
@@ -7037,6 +7057,7 @@ window.PROVAS.fecharModal = fecharModal;
 window.PROVAS.salvarProva = salvarProva;
 window.PROVAS.excluirProva = excluirProva;
 window.PROVAS.addPergunta = addPergunta;
+window.PROVAS.carregarSeguroSolar = carregarSeguroSolar;
 window.PROVAS.iniciarLancamento = iniciarLancamento;
 window.PROVAS.marcarManual = marcarManual;
 window.PROVAS.salvarLancamento = salvarLancamento;
