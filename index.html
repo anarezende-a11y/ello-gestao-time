@@ -1079,6 +1079,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_contratos" onclick="mostrarTool('contratos')">
     <span class="di-icon">📁</span> Contratos
   </button>
+  <button class="drawer-item admin-only" id="di_atualizacoes" onclick="mostrarTool('atualizacoes')">
+    <span class="di-icon">📈</span> Atualizações
+  </button>
   <button class="drawer-item" id="di_desafio" onclick="mostrarTool('desafioreuniao')">
     <span class="di-icon">🎯</span> Desafio Reunião
   </button>
@@ -1534,6 +1537,59 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<!-- ================= TOOL: ATUALIZAÇÕES ================= -->
+<div class="tool-view tool-contratos" id="view_atualizacoes">
+  <div class="tool-subbar">
+    <span class="sb-title">📈 Atualizações</span>
+    <span class="save-ind" id="saveInd_atual">✓ Salvo</span>
+    <button class="btn btn-amber" onclick="window.ATUAL.novoRegistro()">+ Novo registro</button>
+  </div>
+  <div class="wrap">
+    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Histórico de atualizações por pessoa — aumento salarial, promoção, mudança de cargo etc. Visível só pra você.</div>
+    <div id="atual_seletorWrap" style="margin-bottom:16px;"></div>
+    <div id="atual_lista"></div>
+  </div>
+</div>
+
+<!-- Modal: criar/editar atualização -->
+<div class="tr-modal-overlay" id="atualModalOverlay" onclick="if(event.target===this) window.ATUAL.fecharModal()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" style="padding-top:8px;">Atualização</span>
+      <button class="tr-modal-close" onclick="window.ATUAL.fecharModal()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div style="display:flex; gap:12px;">
+        <div class="tr-field" style="flex:1;">
+          <label>Pessoa</label>
+          <select class="tr-text-input" id="atual_pessoa"></select>
+        </div>
+        <div class="tr-field" style="flex:1;">
+          <label>Tipo</label>
+          <select class="tr-text-input" id="atual_tipo">
+            <option value="salario">💰 Aumento salarial</option>
+            <option value="promocao">🚀 Promoção</option>
+            <option value="cargo">🧾 Mudança de cargo</option>
+            <option value="outro">📌 Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="tr-field">
+        <label>Data</label>
+        <input type="date" class="tr-text-input" id="atual_data">
+      </div>
+      <div class="tr-field">
+        <label>Detalhes</label>
+        <textarea class="tr-text-input" id="atual_detalhes" rows="3" placeholder="Ex: de R$ 2.200 para R$ 2.500"></textarea>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="atual_delete_btn" onclick="window.ATUAL.excluirRegistro()">🗑️ Excluir</button>
+      <button class="btn btn-amber" onclick="window.ATUAL.salvarRegistro()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= TOOL: DESAFIO REUNIÃO ================= -->
 <div class="tool-view tool-desafio" id="view_desafioreuniao">
   <div class="tool-subbar">
@@ -1981,9 +2037,9 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard' };
-  var adminOnly = ['reuniao','oneone','rco','dashboard'];
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard', atualizacoes:'Atualizações' };
+  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
@@ -2011,6 +2067,7 @@ function mostrarTool(nome) {
   if (nome === 'desafioreuniao' && window.DESAFIO) window.DESAFIO.render();
   if (nome === 'provas' && window.PROVAS) window.PROVAS.render();
   if (nome === 'dashboard' && window.PROVAS) window.PROVAS.renderDash();
+  if (nome === 'atualizacoes' && window.ATUAL) window.ATUAL.render();
   window.scrollTo(0, 0);
 }
 
@@ -6480,6 +6537,156 @@ window.CONTR.excluirDocumento = excluirDocumento;
 window.CONTR.aceitarDocumento = aceitarDocumento;
 })();
 </script>
+
+<!-- ===== JS: Atualizações (admin-only, escopo isolado) ===== -->
+<script>
+window.ATUAL = window.ATUAL || {};
+(function(){
+const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const TIPOS = { salario:'💰 Aumento salarial', promocao:'🚀 Promoção', cargo:'🧾 Mudança de cargo', outro:'📌 Outro' };
+
+let cachedData = null;
+let listenerAtivo = false;
+let modalId = null;
+let pessoaFiltro = 'todos';
+
+function defaultData() { return { lista: [] }; }
+function getData() { return cachedData || defaultData(); }
+
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function salvar() {
+  if (!window.fb) return;
+  const d = getData();
+  const ind = document.getElementById('saveInd_atual');
+  if (ind) { ind.textContent = 'Salvando...'; }
+  window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'atualizacoes'), d)
+    .then(() => { if (ind) { ind.textContent = '✓ Salvo'; } })
+    .catch(e => console.error('ATUAL save error', e));
+}
+
+function carregar() {
+  if (!window.fb || listenerAtivo) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'atualizacoes'), (snap) => {
+    cachedData = snap.exists() ? snap.data() : defaultData();
+    if (!cachedData.lista) cachedData.lista = [];
+    render();
+  }, err => console.error('ATUAL snapshot error', err));
+}
+
+function formatarDataBR(d) {
+  return d ? d.split('-').reverse().join('/') : '';
+}
+
+function render() {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user || user.role !== 'admin') return;
+  if (!listenerAtivo) { carregar(); return; }
+  const lista = getData().lista || [];
+  const seletorWrap = document.getElementById('atual_seletorWrap');
+  const listaWrap = document.getElementById('atual_lista');
+  if (!seletorWrap || !listaWrap) return;
+
+  seletorWrap.innerHTML = `<div class="feed-seletor-row">${['todos'].concat(MEMBROS).map(p => `
+    <button class="check-pessoa-card${p===pessoaFiltro?' active':''}" style="min-width:64px; padding:9px 14px;" onclick="window.ATUAL.filtrarPessoa('${p}')">
+      <div class="check-pessoa-nome">${p==='todos'?'Todos':escapeHTML(p)}</div>
+    </button>`).join('')}</div>`;
+
+  const filtrada = (pessoaFiltro==='todos' ? lista : lista.filter(f => f.pessoa===pessoaFiltro))
+    .slice().sort((a,b) => (b.data||'').localeCompare(a.data||''));
+
+  if (!filtrada.length) {
+    const quem = pessoaFiltro !== 'todos' ? ` para ${escapeHTML(pessoaFiltro)}` : '';
+    listaWrap.innerHTML = `<div class="feed-empty">
+      <div class="fe-icon">📈</div>
+      <div class="fe-title">Nenhuma atualização registrada${quem}</div>
+      <div class="fe-desc">Use o botão "+ Novo registro" no topo pra registrar a primeira.</div>
+    </div>`;
+    return;
+  }
+  listaWrap.innerHTML = `<div class="feed-grid">${filtrada.map(f => `
+    <button class="tr-card feed-card" onclick="window.ATUAL.abrirModal('${f.id}')">
+      <div class="tr-card-cat">${TIPOS[f.tipo] || 'Atualização'}</div>
+      <div class="tr-card-title">${escapeHTML(f.pessoa)}</div>
+      <div class="tr-card-desc" style="-webkit-line-clamp:3;">${escapeHTML(f.detalhes) || ''}</div>
+      <div class="tr-card-meta"><span>${formatarDataBR(f.data)}</span></div>
+    </button>`).join('')}</div>`;
+}
+
+function filtrarPessoa(p) { pessoaFiltro = p; render(); }
+
+function novoRegistro() {
+  modalId = null;
+  document.getElementById('atual_pessoa').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('atual_tipo').value = 'salario';
+  document.getElementById('atual_data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('atual_detalhes').value = '';
+  document.getElementById('atual_delete_btn').style.display = 'none';
+  document.getElementById('atualModalOverlay').classList.add('open');
+}
+
+function abrirModal(id) {
+  const f = (getData().lista || []).find(x => x.id === id);
+  if (!f) return;
+  modalId = id;
+  document.getElementById('atual_pessoa').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('atual_pessoa').value = f.pessoa;
+  document.getElementById('atual_tipo').value = f.tipo || 'salario';
+  document.getElementById('atual_data').value = f.data || '';
+  document.getElementById('atual_detalhes').value = f.detalhes || '';
+  document.getElementById('atual_delete_btn').style.display = 'inline-block';
+  document.getElementById('atualModalOverlay').classList.add('open');
+}
+
+function fecharModal() {
+  document.getElementById('atualModalOverlay').classList.remove('open');
+  modalId = null;
+}
+
+function salvarRegistro() {
+  const pessoa = document.getElementById('atual_pessoa').value;
+  const tipo = document.getElementById('atual_tipo').value;
+  const data = document.getElementById('atual_data').value;
+  const detalhes = document.getElementById('atual_detalhes').value.trim();
+  if (!pessoa || !data) { alert('Escolhe a pessoa e a data.'); return; }
+  const d = getData();
+  if (!d.lista) d.lista = [];
+  if (modalId) {
+    const item = d.lista.find(x => x.id === modalId);
+    if (item) { item.pessoa = pessoa; item.tipo = tipo; item.data = data; item.detalhes = detalhes; }
+  } else {
+    d.lista.push({ id: 'a_' + Date.now(), pessoa, tipo, data, detalhes, criadoEm: Date.now() });
+  }
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+function excluirRegistro() {
+  if (!modalId) return;
+  if (!confirm('Excluir essa atualização?')) return;
+  const d = getData();
+  d.lista = (d.lista || []).filter(x => x.id !== modalId);
+  cachedData = d;
+  salvar();
+  fecharModal();
+  render();
+}
+
+window.ATUAL.render = render;
+window.ATUAL.filtrarPessoa = filtrarPessoa;
+window.ATUAL.novoRegistro = novoRegistro;
+window.ATUAL.abrirModal = abrirModal;
+window.ATUAL.fecharModal = fecharModal;
+window.ATUAL.salvarRegistro = salvarRegistro;
+window.ATUAL.excluirRegistro = excluirRegistro;
+})();
+</script>
+
 
 <!-- ===== JS: Desafio Reunião (escopo isolado) ===== -->
 <script>
