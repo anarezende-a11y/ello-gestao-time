@@ -1000,6 +1000,8 @@ window.APPAUTH = window.APPAUTH || {};
         document.getElementById('appShell').style.display = 'block';
         const info = document.getElementById('drawerUserInfo');
         if (info) info.textContent = (perfil.role === 'admin' ? '👑 ' : '') + user.email;
+        const fixBtn = document.getElementById('fixAdminBtn');
+        if (fixBtn) fixBtn.style.display = (perfil.role !== 'admin' && user.email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase()) ? 'flex' : 'none';
         if (window.aplicarPermissoes) window.aplicarPermissoes(perfil.role);
         window.dispatchEvent(new CustomEvent('userAuthed', { detail: window.APPAUTH.usuarioAtual }));
       } else {
@@ -1010,8 +1012,22 @@ window.APPAUTH = window.APPAUTH || {};
     });
   });
 
+  async function corrigirAdmin() {
+    if (!window.fb || !window.fb.auth.currentUser) return;
+    const u = window.fb.auth.currentUser;
+    if (u.email.trim().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      alert('Esse botão só funciona pra conta admin (' + ADMIN_EMAIL + ').');
+      return;
+    }
+    const ref = window.fb.doc(window.fb.db, 'usuarios', u.uid);
+    await window.fb.setDoc(ref, { role: 'admin' }, { merge: true });
+    alert('Prontinho! Sua conta agora está como admin. Saia e entre de novo (ou recarregue a página) pra tudo atualizar.');
+    document.getElementById('fixAdminBtn').style.display = 'none';
+  }
+
   window.APPAUTH.entrar = entrar;
   window.APPAUTH.sair = sair;
+  window.APPAUTH.corrigirAdmin = corrigirAdmin;
 })();
 </script>
 
@@ -1094,6 +1110,7 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
   <div class="drawer-foot">
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
+    <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
   </div>
 </nav>
