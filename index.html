@@ -3119,8 +3119,8 @@ function renderGrid(data) {
     });
     if (nomesRespostas.length) metaBits.push('💬 ' + nomesRespostas.length);
 
-    return `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.TR.abrirPergunta('${m.id}')">
-      ${isAdmin ? `<button class="tr-card-edit-icon" onclick="event.stopPropagation(); window.TR.abrirModulo('${m.id}')" title="Editar módulo">✏️</button>` : ''}
+    return `<div class="tr-card" style="position:relative; cursor:pointer;" onclick="window.TR.${isAdmin ? 'abrirModulo' : 'abrirPergunta'}('${m.id}')">
+      ${isAdmin ? `<button class="tr-card-edit-icon" onclick="event.stopPropagation(); window.TR.abrirPergunta('${m.id}')" title="Ver comentários">💬</button>` : ''}
       <div class="tr-card-cat">${escapeHTML(m.categoria||'')}</div>
       <div class="tr-card-title">${escapeHTML(m.titulo||'Sem título')}</div>
       <div class="tr-card-desc">${escapeHTML(m.descricao||'')}</div>
