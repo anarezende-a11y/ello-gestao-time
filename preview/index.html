@@ -578,6 +578,29 @@ body {
 .cargo-etapa-titulo { font-size:13px; font-weight:700; color:var(--text); line-height:1.35; }
 .cargo-etapa-card.done .cargo-etapa-titulo { color:var(--muted); text-decoration:line-through; }
 .cargo-etapa-secao-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:10px; }
+.rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
+.rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
+.rcf-section-title:first-child { margin-top:0; }
+.rcf-missao { font-size:14px; line-height:1.6; color:var(--text); padding:16px 18px; background:var(--card2); border-left:3px solid var(--laranja); border-radius:0 10px 10px 0; font-style:italic; }
+.rcf-callout { font-size:13px; line-height:1.55; color:var(--text); padding:14px 16px; border-radius:10px; background:rgba(253,116,0,0.08); border:1px solid rgba(253,116,0,0.22); }
+.rcf-callout.muted { background:var(--card2); border-color:var(--border2); color:var(--muted); }
+.rcf-callout.aviso { background:rgba(220,53,69,0.1); border-color:rgba(220,53,69,0.28); }
+.rcf-2col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rcf-2col-head { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding-bottom:6px; }
+.rcf-2col-item { font-size:12.5px; line-height:1.5; color:var(--text); padding:10px 12px; border-radius:9px; background:var(--card2); border:1px solid var(--border2); margin-bottom:8px; }
+.rcf-frente { margin-bottom:16px; padding:16px 18px; background:var(--card2); border:1px solid var(--border2); border-radius:12px; }
+.rcf-frente-titulo { font-size:13.5px; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.rcf-frente-num { width:22px; height:22px; border-radius:7px; background:rgba(253,116,0,0.16); color:var(--laranja); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.rcf-frente-bullets { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; }
+.rcf-frente-bullets li { font-size:12.5px; line-height:1.5; color:var(--muted); padding-left:16px; position:relative; }
+.rcf-frente-bullets li::before { content:'–'; position:absolute; left:0; color:var(--muted2); }
+.rcf-indicadores { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.rcf-indicadores li { font-size:12.5px; color:var(--text); display:flex; align-items:flex-start; gap:8px; }
+.rcf-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.rcf-chip { font-size:11.5px; font-weight:600; color:var(--text); background:var(--card2); border:1px solid var(--border2); padding:6px 12px; border-radius:999px; }
+.rcf-prereq-row { display:flex; gap:8px; font-size:12.5px; margin-bottom:6px; }
+.rcf-prereq-row b { color:var(--muted); font-weight:700; min-width:100px; flex-shrink:0; }
 .tr-card:hover { border-color:rgba(253,116,0,0.4); box-shadow:0 4px 12px rgba(0,0,0,0.2); }
 .tr-card-cat { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--azul-claro); background:rgba(255,255,255,0.08); padding:4px 10px; border-radius:8px; margin-bottom:10px; }
 .tr-card-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; line-height:1.3; }
@@ -1586,9 +1609,9 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="wrap" id="cargos_conteudo"></div>
 </div>
 
-<!-- Modal RCF -->
+<!-- Modal RCF (edição — admin) -->
 <div class="tr-modal-overlay" id="rcfModalOverlay" onclick="if(event.target===this) window.CARGOS.fecharModalRcf()">
-  <div class="tr-modal" style="max-width:640px;">
+  <div class="tr-modal" style="max-width:680px;">
     <div class="tr-modal-head">
       <input type="text" class="tr-modal-title-input" id="rcf_nome" placeholder="Nome do cargo (ex: Triagem N1)...">
       <button class="tr-modal-close" onclick="window.CARGOS.fecharModalRcf()">✕</button>
@@ -1600,12 +1623,26 @@ window.APPAUTH = window.APPAUTH || {};
           <input type="text" class="tr-text-input" id="rcf_area" placeholder="Ex: Pós-vendas">
         </div>
         <div class="tr-field" style="flex:1; min-width:160px;">
-          <label>Subordinação direta</label>
-          <input type="text" class="tr-text-input" id="rcf_subordinacao" placeholder="Ex: Ana - Gestora do Pós-vendas">
+          <label>Responde a</label>
+          <input type="text" class="tr-text-input" id="rcf_subordinacao" placeholder="Ex: Ana (gestora do Pós-vendas)">
         </div>
         <div class="tr-field" style="flex:1; min-width:140px;">
           <label>Última revisão</label>
           <input type="date" class="tr-text-input" id="rcf_revisao">
+        </div>
+      </div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div class="tr-field" style="flex:1; min-width:160px;">
+          <label>Tipo de carreira</label>
+          <input type="text" class="tr-text-input" id="rcf_tipoCarreira" placeholder="Ex: Operacional, sem comissão...">
+        </div>
+        <div class="tr-field" style="flex:1; min-width:140px;">
+          <label>Subordinados diretos</label>
+          <input type="text" class="tr-text-input" id="rcf_subordinadosDiretos" placeholder="Ex: Nenhum">
+        </div>
+        <div class="tr-field" style="flex:1; min-width:140px;">
+          <label>Vagas</label>
+          <input type="text" class="tr-text-input" id="rcf_vagas" placeholder="Ex: 2 vagas">
         </div>
       </div>
       <div class="tr-field">
@@ -1613,12 +1650,36 @@ window.APPAUTH = window.APPAUTH || {};
         <textarea class="q-input" id="rcf_missao" rows="2"></textarea>
       </div>
       <div class="tr-field">
-        <label>Indicadores do cargo (um por linha)</label>
+        <label>O que É / o que NÃO é — uma linha por par, formato: É: texto | Não é: texto</label>
+        <textarea class="q-input" id="rcf_eNaoE" rows="5" placeholder="É: a primeira resposta ao cliente | Não é: quem faz análise técnica"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Regra de ouro</label>
+        <textarea class="q-input" id="rcf_regraOuro" rows="2"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Nota sobre a carreira</label>
+        <textarea class="q-input" id="rcf_notaCarreira" rows="2"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>As frentes do cargo — título com ## na frente, bullets com - na frente, separe frentes por linha em branco</label>
+        <textarea class="q-input" id="rcf_frentes" rows="8" placeholder="## Atendimento de primeira linha&#10;- Responder o cliente no WhatsApp...&#10;- Identificar o cliente...&#10;&#10;## Triagem e escalada&#10;- Classificar a demanda..."></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Limites de autonomia — uma linha por par, formato: Decide: texto | Escala: texto</label>
+        <textarea class="q-input" id="rcf_limitesAutonomia" rows="5" placeholder="Decide: responder dúvidas do roteiro | Escala: cliente bravo ou falando em cancelar"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Como medir o sucesso — indicadores (um por linha)</label>
         <textarea class="q-input" id="rcf_indicadores" rows="4"></textarea>
       </div>
       <div class="tr-field">
-        <label>Atividades desempenhadas (uma por linha)</label>
-        <textarea class="q-input" id="rcf_atividades" rows="6"></textarea>
+        <label>Anti-meta</label>
+        <textarea class="q-input" id="rcf_antiMeta" rows="2"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Competências esperadas (uma por linha)</label>
+        <textarea class="q-input" id="rcf_competencias" rows="4"></textarea>
       </div>
       <div style="display:flex; gap:12px;">
         <div class="tr-field" style="flex:1;">
@@ -1642,6 +1703,21 @@ window.APPAUTH = window.APPAUTH || {};
     <div class="tr-modal-foot">
       <button class="tr-btn-delete admin-only" id="rcf_delete_btn" onclick="window.CARGOS.excluirRcf()">🗑️ Excluir RCF</button>
       <button class="btn btn-amber admin-only" id="rcf_salvar_btn" onclick="window.CARGOS.salvarRcf()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal RCF (visualização — documento) -->
+<div class="tr-modal-overlay" id="rcfViewOverlay" onclick="if(event.target===this) window.CARGOS.fecharViewRcf()">
+  <div class="tr-modal rcf-doc" style="max-width:760px;">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" id="rcfview_titulo" style="padding-top:8px;">RCF</span>
+      <button class="tr-modal-close" onclick="window.CARGOS.fecharViewRcf()">✕</button>
+    </div>
+    <div class="tr-modal-body" id="rcfview_body"></div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete admin-only" onclick="window.CARGOS.excluirRcfDoView()">🗑️ Excluir</button>
+      <button class="btn btn-amber admin-only" onclick="window.CARGOS.editarRcfDoView()">✏️ Editar</button>
     </div>
   </div>
 </div>
@@ -6759,7 +6835,7 @@ window.CONTR.aceitarDocumento = aceitarDocumento;
 <script>
 window.CARGOS = window.CARGOS || {};
 (function(){
-var SEED_RCF = {"id": "cargo_triagem_n1", "nome": "Triagem N1", "area": "Pós-vendas", "subordinacao": "Ana - Gestora do Pós-vendas", "ultimaRevisao": "2026-09-23", "missao": "Ser a primeira resposta do cliente Ello depois da venda: atender no WhatsApp, resolver o básico na hora e entregar ao N2, à CS ou ao Gestor de Usinas um caso já mastigado, com tudo que a pessoa precisa para decidir.", "indicadores": ["Tempo de primeira resposta ao cliente dentro do horário de atendimento (diário)", "Clientes sem resposta acima do SLA no painel Concierge — meta: zero (diário)", "Casos resolvidos no N1 sem escalar (semanal)", "Casos devolvidos pelo N2, CS ou Gestor por falta de informação — meta: zero (semanal)", "Aprovação na prova do mês (mensal)"], "atividades": ["Responder o cliente no WhatsApp e demais canais dentro do horário de atendimento, em até definir minutos;", "Identificar o cliente e a etapa da jornada no 360 antes de responder;", "Resolver as dúvidas básicas: status da jornada, app do cliente, leitura de geração, fatura e compensação, agendamentos;", "Registrar cada atendimento como chamado no 360, com o que foi perguntado e o que foi respondido;", "Classificar a demanda: dúvida, geração, manutenção, venda, entrega ou reclamação;", "Captar o que a análise vai precisar: fatura, foto do medidor, print do SolarZ, fotos do local e o relato do cliente;", "Encaminhar mastigado: análise e venda para o N2, cliente de carteira para o Gestor de Usinas, entrega e NPS para a CS, obra e projeto como pendência para Operacional e Engenharia;", "Regra de ouro: nenhum caso sobe sem estar mastigado — escalar é entregar cliente, contexto, dados e pergunta clara;", "Acompanhar o caso escalado até a resposta voltar ao cliente e fechar o chamado;", "Manter o 360 e o CRM atualizados com todo contato do cliente;", "Alimentar a lista de perguntas frequentes com as respostas validadas pelo N2 e pela CS;", "Apontar à gestora as dúvidas que se repetem, para virarem material do app do cliente ou do bot;", "Pedir documentos, fotos e prints ao cliente antes de escalar o caso;", "Fechar o chamado somente depois que a resposta chegou ao cliente;", "Escalar para a gestora: cliente bravo ou falando em cancelar, qualquer promessa de prazo/visita/valor, caso escalado sem resposta há mais de definir horas;", "Cumprir o programa de treinamento de 3 meses, com prova ao fim de cada mês;", "Manter comunicação escrita clara e cordial em todos os atendimentos;"], "formacao": "Ensino médio completo.", "experiencia": "Não exigida (desejável: atendimento ao cliente).", "treinamentos": "Programa de 3 meses do Pós-vendas com as 3 provas; plataforma Ello 360 e app do cliente; roteiro de atendimento e perguntas frequentes.", "planoTemplate": [{"id": "pt_0", "categoria": "Integração", "atividade": "Acolhida", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_1", "categoria": "Integração", "atividade": "Apresentação ao time", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_2", "categoria": "Integração", "atividade": "Kit de boas-vindas", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_3", "categoria": "Integração", "atividade": "Reunião de alinhamento com o time", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_4", "categoria": "Integração", "atividade": "Alinhamento de cultura", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_5", "categoria": "RH", "atividade": "Controle Cartão ponto", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_6", "categoria": "RH", "atividade": "Controle Banco de horas", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_7", "categoria": "RH", "atividade": "Controle documentos, contratação, demissão", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_8", "categoria": "RH", "atividade": "Controle abertura de contas salário", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_9", "categoria": "RH", "atividade": "Controle documentos ASO", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_10", "categoria": "RH", "atividade": "Controle de dados holerites", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_11", "categoria": "RH", "atividade": "Controle de termo uniforme e material", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_12", "categoria": "RH", "atividade": "Alinhamento do Plano + RCF", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_13", "categoria": "RH", "atividade": "Foto crachá", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_14", "categoria": "Sistema", "atividade": "Introdução ao sistema 360 / Gronner", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_15", "categoria": "Sistema", "atividade": "Introdução ao Drive", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_16", "categoria": "Sistema", "atividade": "Introdução SolarZ", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_17", "categoria": "Sistema", "atividade": "Introdução ao Painel Concierge (SLA e fila de atendimento)", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_18", "categoria": "Sistema", "atividade": "Introdução ao roteiro de atendimento e perguntas frequentes", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_19", "categoria": "Sistema", "atividade": "Treinamento Mês 1 — energia solar, produtos e jornada do cliente", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_20", "categoria": "Sistema", "atividade": "Treinamento Mês 1 — plataforma e processos", "semanaInicio": 3, "semanaFim": 4}, {"id": "pt_21", "categoria": "Sistema", "atividade": "Prova do Mês 1", "semanaInicio": 4, "semanaFim": 4}, {"id": "pt_22", "categoria": "Sistema", "atividade": "Treinamento Mês 2 — inversores e leitura de geração", "semanaInicio": 6, "semanaFim": 7}, {"id": "pt_23", "categoria": "Sistema", "atividade": "Treinamento Mês 2 — diagnóstico de queda e leitura de fatura", "semanaInicio": 7, "semanaFim": 8}, {"id": "pt_24", "categoria": "Sistema", "atividade": "Prova do Mês 2", "semanaInicio": 8, "semanaFim": 8}, {"id": "pt_25", "categoria": "Sistema", "atividade": "Treinamento Mês 3 — comunicação com o cliente e gestão de conflitos", "semanaInicio": 9, "semanaFim": 10}, {"id": "pt_26", "categoria": "Sistema", "atividade": "Treinamento Mês 3 — simulações reais de atendimento", "semanaInicio": 10, "semanaFim": 11}, {"id": "pt_27", "categoria": "Sistema", "atividade": "Prova do Mês 3 e definição de trilha (N2, CS ou Gestor de Usinas)", "semanaInicio": 12, "semanaFim": 12}, {"id": "pt_28", "categoria": "Operacional comercial / técnico", "atividade": "Orientação no roteiro de atendimento (WhatsApp e demais canais)", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_29", "categoria": "Operacional comercial / técnico", "atividade": "Identificação do cliente e da etapa da jornada no 360", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_30", "categoria": "Operacional comercial / técnico", "atividade": "Dúvidas básicas: status da jornada e app do cliente", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_31", "categoria": "Operacional comercial / técnico", "atividade": "Leitura de geração, fatura e compensação", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_32", "categoria": "Operacional comercial / técnico", "atividade": "Registro do atendimento como chamado no 360", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_33", "categoria": "Endomarketing", "atividade": "Planejamento dos treinamentos", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_34", "categoria": "Endomarketing", "atividade": "Organização de vídeos e materiais de treinamento", "semanaInicio": 3, "semanaFim": 4}, {"id": "pt_35", "categoria": "Operacional financeiro", "atividade": "Classificar a demanda (dúvida, geração, manutenção, venda, entrega, reclamação)", "semanaInicio": 5, "semanaFim": 5}, {"id": "pt_36", "categoria": "Operacional financeiro", "atividade": "Captar dados para análise (fatura, foto medidor, print SolarZ, fotos, relato)", "semanaInicio": 5, "semanaFim": 5}, {"id": "pt_37", "categoria": "Operacional financeiro", "atividade": "Encaminhar mastigado (N2, Gestor de Usinas, CS, Operacional/Engenharia)", "semanaInicio": 5, "semanaFim": 6}, {"id": "pt_38", "categoria": "Operacional financeiro", "atividade": "Acompanhar o caso até a resposta voltar ao cliente e fechar o chamado", "semanaInicio": 6, "semanaFim": 6}, {"id": "pt_39", "categoria": "Contábil", "atividade": "Manter o 360 e o CRM atualizados e alimentar a lista de perguntas frequentes", "semanaInicio": 9, "semanaFim": 9}, {"id": "pt_40", "categoria": "Contábil", "atividade": "Apontar à gestora as dúvidas que se repetem", "semanaInicio": 9, "semanaFim": 9}], "criadoEm": 0};
+var SEED_RCF = {"id": "cargo_triagem_n1", "nome": "Triagem — Nível 1 (N1)", "area": "Pós-vendas", "subordinacao": "Ana (gestora do Pós-vendas)", "tipoCarreira": "Operacional (início de carreira) — sem comissão; progressão por mérito após as 3 provas do programa de treinamento", "subordinadosDiretos": "Nenhum", "vagas": "3 vagas (definir colaboradores)", "ultimaRevisao": "2026-09-23", "missao": "Ser a primeira resposta do cliente Ello depois da venda: atender no WhatsApp, resolver o básico na hora e entregar ao N2, à CS ou ao Gestor de Usinas um caso já mastigado, com tudo que a pessoa precisa para decidir.", "eNaoE": [{"e": "A primeira resposta ao cliente, principalmente no WhatsApp, mas em qualquer canal por onde ele chegue", "naoE": "Quem faz análise técnica: geração, fatura e diagnóstico são do N2."}, {"e": "O filtro da demanda: resolve a dúvida básica e capta toda a informação da que não é básica", "naoE": "Quem vende: preventiva, seguro, expansão e manutenção são do N2 e do Gestor de Usinas."}, {"e": "Quem monta o caso antes de escalar: cliente, etapa, fatura, foto, print de geração e a pergunta clara", "naoE": "Dono de carteira: o N1 não tem carteira, atende quem chega."}, {"e": "Quem registra o atendimento no 360 e acompanha o caso até o cliente receber a resposta", "naoE": "Quem promete prazo, visita ou valor ao cliente."}, {"e": "Aluno do programa de 3 meses, com prova no fim de cada mês", "naoE": "Quem decide sozinho o que vira OS ou visita técnica."}], "regraOuro": "Nenhum caso sobe sem estar mastigado. Escalar é entregar cliente, contexto, dados e pergunta clara, não repassar a mensagem do cliente.", "notaCarreira": "Todo novo contratado do Pós-vendas entra no N1, sem exceção. O N1 não recebe comissão; o incentivo é a carreira. Aprovado nas 3 provas mensais, escolhe a trilha (N2, CS ou Gestor de Usinas) ou aguarda vaga. O programa de treinamento é um documento à parte.", "frentes": [{"titulo": "Atendimento de primeira linha", "bullets": ["Responder o cliente no WhatsApp e nos demais canais dentro do horário de atendimento, em até definir minutos.", "Identificar o cliente e a etapa da jornada no 360 antes de responder.", "Resolver as dúvidas básicas: status da jornada, app do cliente, como ler a geração, fatura e compensação, agendamentos.", "Registrar cada atendimento como chamado no 360, com o que foi perguntado e o que foi respondido."]}, {"titulo": "Triagem e escalada", "bullets": ["Classificar a demanda: dúvida, geração, manutenção, venda, entrega ou reclamação.", "Captar o que a análise vai precisar: fatura, foto do medidor, print do SolarZ, fotos do local e o relato do cliente.", "Encaminhar mastigado: análise e venda para o N2; cliente de carteira para o Gestor de Usinas; entrega e NPS para a CS; obra e projeto como pendência para Operacional e Engenharia.", "Acompanhar o caso escalado até a resposta voltar ao cliente e fechar o chamado."]}, {"titulo": "Registro e base de conhecimento", "bullets": ["Manter o 360 e o CRM atualizados com todo contato do cliente.", "Alimentar a lista de perguntas frequentes com as respostas validadas pelo N2 e pela CS.", "Apontar à gestora as dúvidas que se repetem, para virarem material do app do cliente ou do bot."]}, {"titulo": "Programa de treinamento (3 meses)", "bullets": ["Mês 1: energia solar, produtos, jornada do cliente, plataforma e processos.", "Mês 2: parte técnica: inversores, leitura de geração, diagnóstico de queda, fatura.", "Mês 3: comunicação com o cliente, gestão de conflitos e simulações reais de atendimento.", "Prova ao fim de cada mês; aprovação obrigatória para avançar. Treinamento em paralelo com a função, com acompanhamento."]}], "limitesAutonomia": [{"decide": "Responder dúvidas que estão no roteiro de atendimento.", "escala": "Cliente bravo ou falando em cancelar."}, {"decide": "Pedir documentos, fotos e prints ao cliente.", "escala": "Qualquer promessa de prazo, visita ou valor."}, {"decide": "Classificar a demanda e escolher para quem escalar.", "escala": "Caso escalado sem resposta há mais de definir horas."}, {"decide": "Fechar o chamado depois que a resposta chegou ao cliente.", "escala": "Demanda fora do roteiro ou que envolva outra área."}], "indicadores": ["Tempo de primeira resposta ao cliente dentro do horário de atendimento (diário)", "Clientes sem resposta acima do SLA no painel Concierge — meta: zero (diário)", "Casos resolvidos no N1 sem escalar (semanal)", "Casos devolvidos pelo N2, CS ou Gestor por falta de informação — meta: zero (semanal)", "Atendimentos registrados como chamado no 360 (semanal)", "Aprovação na prova do mês (mensal)"], "antiMeta": "Virar um encaminhador. Se o N2 precisa voltar ao cliente para perguntar o básico, a triagem não aconteceu.", "competencias": ["Comunicação escrita clara e cordial.", "Facilidade com softwares (360, CRM, SolarZ, WhatsApp).", "Organização de fila e registro.", "Paciente.", "Curioso pela parte técnica.", "Disciplinado com o registro."], "formacao": "Ensino médio completo.", "experiencia": "Não exigida. Desejável: atendimento ao cliente.", "treinamentos": "Programa de 3 meses do Pós-vendas, com as 3 provas. Plataforma Ello 360 e app do cliente. Roteiro de atendimento e perguntas frequentes.", "criadoEm": 0, "planoTemplate": [{"id": "pt_0", "categoria": "Integração", "atividade": "Acolhida", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_1", "categoria": "Integração", "atividade": "Apresentação ao time", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_2", "categoria": "Integração", "atividade": "Kit de boas-vindas", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_3", "categoria": "Integração", "atividade": "Reunião de alinhamento com o time", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_4", "categoria": "Integração", "atividade": "Alinhamento de cultura", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_5", "categoria": "RH", "atividade": "Controle Cartão ponto", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_6", "categoria": "RH", "atividade": "Controle Banco de horas", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_7", "categoria": "RH", "atividade": "Controle documentos, contratação, demissão", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_8", "categoria": "RH", "atividade": "Controle abertura de contas salário", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_9", "categoria": "RH", "atividade": "Controle documentos ASO", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_10", "categoria": "RH", "atividade": "Controle de dados holerites", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_11", "categoria": "RH", "atividade": "Controle de termo uniforme e material", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_12", "categoria": "RH", "atividade": "Alinhamento do Plano + RCF", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_13", "categoria": "RH", "atividade": "Foto crachá", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_14", "categoria": "Sistema", "atividade": "Introdução ao sistema 360 / Gronner", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_15", "categoria": "Sistema", "atividade": "Introdução ao Drive", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_16", "categoria": "Sistema", "atividade": "Introdução SolarZ", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_17", "categoria": "Sistema", "atividade": "Introdução ao Painel Concierge (SLA e fila de atendimento)", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_18", "categoria": "Sistema", "atividade": "Introdução ao roteiro de atendimento e perguntas frequentes", "semanaInicio": 1, "semanaFim": 1}, {"id": "pt_19", "categoria": "Sistema", "atividade": "Treinamento Mês 1 — energia solar, produtos e jornada do cliente", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_20", "categoria": "Sistema", "atividade": "Treinamento Mês 1 — plataforma e processos", "semanaInicio": 3, "semanaFim": 4}, {"id": "pt_21", "categoria": "Sistema", "atividade": "Prova do Mês 1", "semanaInicio": 4, "semanaFim": 4}, {"id": "pt_22", "categoria": "Sistema", "atividade": "Treinamento Mês 2 — inversores e leitura de geração", "semanaInicio": 6, "semanaFim": 7}, {"id": "pt_23", "categoria": "Sistema", "atividade": "Treinamento Mês 2 — diagnóstico de queda e leitura de fatura", "semanaInicio": 7, "semanaFim": 8}, {"id": "pt_24", "categoria": "Sistema", "atividade": "Prova do Mês 2", "semanaInicio": 8, "semanaFim": 8}, {"id": "pt_25", "categoria": "Sistema", "atividade": "Treinamento Mês 3 — comunicação com o cliente e gestão de conflitos", "semanaInicio": 9, "semanaFim": 10}, {"id": "pt_26", "categoria": "Sistema", "atividade": "Treinamento Mês 3 — simulações reais de atendimento", "semanaInicio": 10, "semanaFim": 11}, {"id": "pt_27", "categoria": "Sistema", "atividade": "Prova do Mês 3 e definição de trilha (N2, CS ou Gestor de Usinas)", "semanaInicio": 12, "semanaFim": 12}, {"id": "pt_28", "categoria": "Operacional comercial / técnico", "atividade": "Orientação no roteiro de atendimento (WhatsApp e demais canais)", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_29", "categoria": "Operacional comercial / técnico", "atividade": "Identificação do cliente e da etapa da jornada no 360", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_30", "categoria": "Operacional comercial / técnico", "atividade": "Dúvidas básicas: status da jornada e app do cliente", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_31", "categoria": "Operacional comercial / técnico", "atividade": "Leitura de geração, fatura e compensação", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_32", "categoria": "Operacional comercial / técnico", "atividade": "Registro do atendimento como chamado no 360", "semanaInicio": 2, "semanaFim": 2}, {"id": "pt_33", "categoria": "Endomarketing", "atividade": "Planejamento dos treinamentos", "semanaInicio": 3, "semanaFim": 3}, {"id": "pt_34", "categoria": "Endomarketing", "atividade": "Organização de vídeos e materiais de treinamento", "semanaInicio": 3, "semanaFim": 4}, {"id": "pt_35", "categoria": "Operacional financeiro", "atividade": "Classificar a demanda (dúvida, geração, manutenção, venda, entrega, reclamação)", "semanaInicio": 5, "semanaFim": 5}, {"id": "pt_36", "categoria": "Operacional financeiro", "atividade": "Captar dados para análise (fatura, foto medidor, print SolarZ, fotos, relato)", "semanaInicio": 5, "semanaFim": 5}, {"id": "pt_37", "categoria": "Operacional financeiro", "atividade": "Encaminhar mastigado (N2, Gestor de Usinas, CS, Operacional/Engenharia)", "semanaInicio": 5, "semanaFim": 6}, {"id": "pt_38", "categoria": "Operacional financeiro", "atividade": "Acompanhar o caso até a resposta voltar ao cliente e fechar o chamado", "semanaInicio": 6, "semanaFim": 6}, {"id": "pt_39", "categoria": "Contábil", "atividade": "Manter o 360 e o CRM atualizados e alimentar a lista de perguntas frequentes", "semanaInicio": 9, "semanaFim": 9}, {"id": "pt_40", "categoria": "Contábil", "atividade": "Apontar à gestora as dúvidas que se repetem", "semanaInicio": 9, "semanaFim": 9}]};
 
 let cachedRcf = null;
 let cachedPlanos = null;
@@ -6767,6 +6843,7 @@ let listenerRcfAtivo = false;
 let listenerPlanoAtivo = false;
 let abaAtiva = 'rcf';
 let modalRcfId = null;
+let viewRcfId = null;
 let modalPlanoVerId = null;
 let pessoaFiltroPlano = 'todos';
 
@@ -6877,12 +6954,37 @@ function renderRcf() {
     return;
   }
   wrap.innerHTML = `<div class="feed-grid">${lista.map(r => `
-    <button class="tr-card" onclick="window.CARGOS.abrirModalRcf('${r.id}')">
+    <button class="tr-card" onclick="window.CARGOS.abrirViewRcf('${r.id}')">
       <div class="tr-card-cat">${escapeHTML(r.area || 'Cargo')}</div>
       <div class="tr-card-title">${escapeHTML(r.nome)}</div>
       <div class="tr-card-desc">${escapeHTML(r.missao || '')}</div>
-      <div class="tr-card-meta"><span>Subordinação: ${escapeHTML(r.subordinacao || '-')}</span></div>
+      <div class="tr-card-meta"><span>Responde a: ${escapeHTML(r.subordinacao || '-')}</span></div>
     </button>`).join('')}</div>`;
+}
+
+// ---------- helpers de parsing/serialização dos campos estruturados ----------
+
+function parseParesTexto(txt, chaveA, chaveB) {
+  return (txt || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const partes = l.split('|');
+    const a = (partes[0] || '').replace(/^[^:]*:\s*/, '').trim();
+    const b = (partes[1] || '').replace(/^[^:]*:\s*/, '').trim();
+    const obj = {}; obj[chaveA] = a; obj[chaveB] = b; return obj;
+  }).filter(o => o[chaveA] || o[chaveB]);
+}
+function serializeParesTexto(lista, chaveA, chaveB, rotuloA, rotuloB) {
+  return (lista || []).map(o => `${rotuloA}: ${o[chaveA] || ''} | ${rotuloB}: ${o[chaveB] || ''}`).join('\n');
+}
+function parseFrentesTexto(txt) {
+  return (txt || '').split(/\n\s*\n/).map(bloco => bloco.trim()).filter(Boolean).map(bloco => {
+    const linhas = bloco.split('\n').map(l => l.trim()).filter(Boolean);
+    const titulo = (linhas[0] || '').replace(/^##\s*/, '');
+    const bullets = linhas.slice(1).map(l => l.replace(/^-\s*/, '')).filter(Boolean);
+    return { titulo, bullets };
+  }).filter(f => f.titulo);
+}
+function serializeFrentesTexto(frentes) {
+  return (frentes || []).map(f => `## ${f.titulo}\n` + (f.bullets || []).map(b => `- ${b}`).join('\n')).join('\n\n');
 }
 
 function novoRcf() {
@@ -6890,15 +6992,23 @@ function novoRcf() {
   document.getElementById('rcf_nome').value = '';
   document.getElementById('rcf_area').value = '';
   document.getElementById('rcf_subordinacao').value = '';
+  document.getElementById('rcf_tipoCarreira').value = '';
+  document.getElementById('rcf_subordinadosDiretos').value = '';
+  document.getElementById('rcf_vagas').value = '';
   document.getElementById('rcf_revisao').value = new Date().toISOString().slice(0,10);
   document.getElementById('rcf_missao').value = '';
+  document.getElementById('rcf_eNaoE').value = '';
+  document.getElementById('rcf_regraOuro').value = '';
+  document.getElementById('rcf_notaCarreira').value = '';
+  document.getElementById('rcf_frentes').value = '';
+  document.getElementById('rcf_limitesAutonomia').value = '';
   document.getElementById('rcf_indicadores').value = '';
-  document.getElementById('rcf_atividades').value = '';
+  document.getElementById('rcf_antiMeta').value = '';
+  document.getElementById('rcf_competencias').value = '';
   document.getElementById('rcf_formacao').value = '';
   document.getElementById('rcf_experiencia').value = '';
   document.getElementById('rcf_treinamentos').value = '';
   document.getElementById('rcf_planoTemplate').value = '';
-  aplicarPermissoesRcfModal();
   document.getElementById('rcf_delete_btn').style.display = 'none';
   document.getElementById('rcfModalOverlay').classList.add('open');
 }
@@ -6910,27 +7020,25 @@ function abrirModalRcf(id) {
   document.getElementById('rcf_nome').value = r.nome || '';
   document.getElementById('rcf_area').value = r.area || '';
   document.getElementById('rcf_subordinacao').value = r.subordinacao || '';
+  document.getElementById('rcf_tipoCarreira').value = r.tipoCarreira || '';
+  document.getElementById('rcf_subordinadosDiretos').value = r.subordinadosDiretos || '';
+  document.getElementById('rcf_vagas').value = r.vagas || '';
   document.getElementById('rcf_revisao').value = r.ultimaRevisao || '';
   document.getElementById('rcf_missao').value = r.missao || '';
+  document.getElementById('rcf_eNaoE').value = serializeParesTexto(r.eNaoE, 'e', 'naoE', 'É', 'Não é');
+  document.getElementById('rcf_regraOuro').value = r.regraOuro || '';
+  document.getElementById('rcf_notaCarreira').value = r.notaCarreira || '';
+  document.getElementById('rcf_frentes').value = serializeFrentesTexto(r.frentes);
+  document.getElementById('rcf_limitesAutonomia').value = serializeParesTexto(r.limitesAutonomia, 'decide', 'escala', 'Decide', 'Escala');
   document.getElementById('rcf_indicadores').value = (r.indicadores || []).join('\n');
-  document.getElementById('rcf_atividades').value = (r.atividades || []).join('\n');
+  document.getElementById('rcf_antiMeta').value = r.antiMeta || '';
+  document.getElementById('rcf_competencias').value = (r.competencias || []).join('\n');
   document.getElementById('rcf_formacao').value = r.formacao || '';
   document.getElementById('rcf_experiencia').value = r.experiencia || '';
   document.getElementById('rcf_treinamentos').value = r.treinamentos || '';
   document.getElementById('rcf_planoTemplate').value = (r.planoTemplate || []).map(t => `${t.categoria} | ${t.atividade} | ${t.semanaInicio} | ${t.semanaFim}`).join('\n');
-  aplicarPermissoesRcfModal();
-  const isAdmin = (window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin');
-  document.getElementById('rcf_delete_btn').style.display = isAdmin ? 'inline-block' : 'none';
+  document.getElementById('rcf_delete_btn').style.display = 'inline-block';
   document.getElementById('rcfModalOverlay').classList.add('open');
-}
-
-function aplicarPermissoesRcfModal() {
-  const isAdmin = (window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin');
-  ['rcf_nome','rcf_area','rcf_subordinacao','rcf_revisao','rcf_missao','rcf_indicadores','rcf_atividades','rcf_formacao','rcf_experiencia','rcf_treinamentos','rcf_planoTemplate'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.readOnly = !isAdmin;
-  });
-  document.getElementById('rcf_salvar_btn').style.display = isAdmin ? 'inline-block' : 'none';
 }
 
 function parsePlanoTemplateTexto(txt) {
@@ -6955,10 +7063,19 @@ function salvarRcf() {
     nome,
     area: document.getElementById('rcf_area').value.trim(),
     subordinacao: document.getElementById('rcf_subordinacao').value.trim(),
+    tipoCarreira: document.getElementById('rcf_tipoCarreira').value.trim(),
+    subordinadosDiretos: document.getElementById('rcf_subordinadosDiretos').value.trim(),
+    vagas: document.getElementById('rcf_vagas').value.trim(),
     ultimaRevisao: document.getElementById('rcf_revisao').value,
     missao: document.getElementById('rcf_missao').value.trim(),
+    eNaoE: parseParesTexto(document.getElementById('rcf_eNaoE').value, 'e', 'naoE'),
+    regraOuro: document.getElementById('rcf_regraOuro').value.trim(),
+    notaCarreira: document.getElementById('rcf_notaCarreira').value.trim(),
+    frentes: parseFrentesTexto(document.getElementById('rcf_frentes').value),
+    limitesAutonomia: parseParesTexto(document.getElementById('rcf_limitesAutonomia').value, 'decide', 'escala'),
     indicadores: document.getElementById('rcf_indicadores').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    atividades: document.getElementById('rcf_atividades').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    antiMeta: document.getElementById('rcf_antiMeta').value.trim(),
+    competencias: document.getElementById('rcf_competencias').value.split('\n').map(s=>s.trim()).filter(Boolean),
     formacao: document.getElementById('rcf_formacao').value.trim(),
     experiencia: document.getElementById('rcf_experiencia').value.trim(),
     treinamentos: document.getElementById('rcf_treinamentos').value.trim(),
@@ -6974,6 +7091,7 @@ function salvarRcf() {
   persistirRcf();
   fecharModalRcf();
   renderRcf();
+  if (viewRcfId) abrirViewRcf(viewRcfId);
 }
 
 function fecharModalRcf() {
@@ -6989,7 +7107,99 @@ function excluirRcf() {
   cachedRcf = d;
   window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'cargos'), d).catch(e => console.error('CARGOS rcf save error', e));
   fecharModalRcf();
+  fecharViewRcf();
   renderRcf();
+}
+
+// ---------- RCF: visualização em documento ----------
+
+function abrirViewRcf(id) {
+  const r = (getRcf().lista || []).find(x => x.id === id);
+  if (!r) return;
+  viewRcfId = id;
+  document.getElementById('rcfview_titulo').textContent = r.nome || 'RCF';
+  document.getElementById('rcfview_body').innerHTML = renderRcfDoc(r);
+  document.getElementById('rcfViewOverlay').classList.add('open');
+}
+
+function fecharViewRcf() {
+  document.getElementById('rcfViewOverlay').classList.remove('open');
+  viewRcfId = null;
+}
+
+function editarRcfDoView() {
+  if (!viewRcfId) return;
+  abrirModalRcf(viewRcfId);
+}
+
+function excluirRcfDoView() {
+  if (!viewRcfId) return;
+  modalRcfId = viewRcfId;
+  excluirRcf();
+}
+
+function renderRcfDoc(r) {
+  const metaChips = [
+    r.area ? `Área: ${r.area}` : '',
+    r.subordinacao ? `Responde a: ${r.subordinacao}` : '',
+    r.tipoCarreira ? r.tipoCarreira : '',
+    r.subordinadosDiretos ? `Subordinados diretos: ${r.subordinadosDiretos}` : '',
+    r.vagas ? r.vagas : '',
+    r.ultimaRevisao ? `Revisado em ${r.ultimaRevisao.split('-').reverse().join('/')}` : ''
+  ].filter(Boolean);
+
+  let html = `<div class="rcf-meta-row">${metaChips.map(c => `<span class="rcf-meta-chip">${escapeHTML(c)}</span>`).join('')}</div>`;
+
+  if (r.missao) html += `<div class="rcf-missao">${escapeHTML(r.missao)}</div>`;
+
+  if (r.eNaoE && r.eNaoE.length) {
+    html += `<div class="rcf-section-title">O que é / o que não é</div>
+      <div class="rcf-2col">
+        <div><div class="rcf-2col-head" style="color:#5FD9B4;">É</div>${r.eNaoE.map(p => `<div class="rcf-2col-item">${escapeHTML(p.e)}</div>`).join('')}</div>
+        <div><div class="rcf-2col-head" style="color:#FF9D6E;">Não é</div>${r.eNaoE.map(p => `<div class="rcf-2col-item">${escapeHTML(p.naoE)}</div>`).join('')}</div>
+      </div>`;
+  }
+
+  if (r.regraOuro) html += `<div class="rcf-section-title">Regra de ouro</div><div class="rcf-callout">🏆 ${escapeHTML(r.regraOuro)}</div>`;
+  if (r.notaCarreira) html += `<div class="rcf-callout muted" style="margin-top:10px;">${escapeHTML(r.notaCarreira)}</div>`;
+
+  if (r.frentes && r.frentes.length) {
+    html += `<div class="rcf-section-title">As frentes do cargo</div>`;
+    html += r.frentes.map((f, i) => `
+      <div class="rcf-frente">
+        <div class="rcf-frente-titulo"><span class="rcf-frente-num">${i+1}</span>${escapeHTML(f.titulo)}</div>
+        <ul class="rcf-frente-bullets">${(f.bullets || []).map(b => `<li>${escapeHTML(b)}</li>`).join('')}</ul>
+      </div>`).join('');
+  }
+
+  if (r.limitesAutonomia && r.limitesAutonomia.length) {
+    html += `<div class="rcf-section-title">Limites de autonomia</div>
+      <div class="rcf-2col">
+        <div><div class="rcf-2col-head" style="color:#5FD9B4;">Decide sozinho</div>${r.limitesAutonomia.map(p => `<div class="rcf-2col-item">${escapeHTML(p.decide)}</div>`).join('')}</div>
+        <div><div class="rcf-2col-head" style="color:#FFAF63;">Escala para a gestora</div>${r.limitesAutonomia.map(p => `<div class="rcf-2col-item">${escapeHTML(p.escala)}</div>`).join('')}</div>
+      </div>`;
+  }
+
+  if ((r.indicadores && r.indicadores.length) || r.antiMeta) {
+    html += `<div class="rcf-section-title">Como medir o sucesso</div>`;
+    if (r.indicadores && r.indicadores.length) {
+      html += `<ul class="rcf-indicadores">${r.indicadores.map(i => `<li>📊 ${escapeHTML(i)}</li>`).join('')}</ul>`;
+    }
+    if (r.antiMeta) html += `<div class="rcf-callout aviso" style="margin-top:10px;">⚠️ Anti-meta: ${escapeHTML(r.antiMeta)}</div>`;
+  }
+
+  if (r.competencias && r.competencias.length) {
+    html += `<div class="rcf-section-title">Competências esperadas</div><div class="rcf-chips">${r.competencias.map(c => `<span class="rcf-chip">${escapeHTML(c)}</span>`).join('')}</div>`;
+  }
+
+  if (r.formacao || r.experiencia || r.treinamentos) {
+    html += `<div class="rcf-section-title">Pré-requisitos</div>`;
+    if (r.formacao) html += `<div class="rcf-prereq-row"><b>Formação</b><span>${escapeHTML(r.formacao)}</span></div>`;
+    if (r.experiencia) html += `<div class="rcf-prereq-row"><b>Experiência</b><span>${escapeHTML(r.experiencia)}</span></div>`;
+    if (r.treinamentos) html += `<div class="rcf-prereq-row"><b>Treinamentos</b><span>${escapeHTML(r.treinamentos)}</span></div>`;
+  }
+
+  return html;
 }
 
 // ---------- Plano de Integração ----------
@@ -7171,6 +7381,10 @@ window.CARGOS.abrirModalRcf = abrirModalRcf;
 window.CARGOS.fecharModalRcf = fecharModalRcf;
 window.CARGOS.salvarRcf = salvarRcf;
 window.CARGOS.excluirRcf = excluirRcf;
+window.CARGOS.abrirViewRcf = abrirViewRcf;
+window.CARGOS.fecharViewRcf = fecharViewRcf;
+window.CARGOS.editarRcfDoView = editarRcfDoView;
+window.CARGOS.excluirRcfDoView = excluirRcfDoView;
 window.CARGOS.filtrarPessoaPlano = filtrarPessoaPlano;
 window.CARGOS.abrirModalNovoPlano = abrirModalNovoPlano;
 window.CARGOS.fecharModalNovoPlano = fecharModalNovoPlano;
