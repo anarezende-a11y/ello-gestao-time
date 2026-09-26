@@ -585,6 +585,19 @@ body {
 .etapa-nota-item { padding:10px 12px; border-radius:10px; background:var(--card2); border:1px solid var(--border2); margin-bottom:8px; }
 .etapa-nota-meta { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
 .etapa-nota-texto { font-size:13px; color:var(--text); line-height:1.5; white-space:pre-wrap; }
+.etapa-timeline { position:relative; padding-left:16px; }
+.etapa-timeline::before { content:''; position:absolute; left:4px; top:4px; bottom:4px; width:2px; background:var(--border2); }
+.etapa-timeline-item { position:relative; margin-bottom:12px; }
+.etapa-timeline-item::before { content:''; position:absolute; left:-16px; top:5px; width:8px; height:8px; border-radius:50%; background:var(--laranja); border:2px solid var(--card); box-sizing:content-box; }
+.etapa-campos-lista { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.etapa-campo-row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--card2); border:1px solid var(--border2); border-radius:10px; }
+.etapa-campo-nome { font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.etapa-campo-valor { font-size:13px; color:var(--text); margin-top:3px; white-space:pre-wrap; }
+.etapa-campo-acoes { display:flex; gap:2px; flex-shrink:0; }
+.etapa-campo-btn { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:3px 6px; border-radius:6px; }
+.etapa-campo-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+.etapa-campo-add-row { display:flex; gap:8px; }
+.etapa-campo-add-row input { flex:1; }
 .rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
 .rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
 .rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
@@ -1699,15 +1712,24 @@ window.APPAUTH = window.APPAUTH || {};
 
 <!-- Modal: detalhe da etapa (follow-up) -->
 <div class="tr-modal-overlay" id="etapaModalOverlay" onclick="if(event.target===this) window.CARGOS.fecharEtapaDetalhe()">
-  <div class="tr-modal">
+  <div class="tr-modal" style="max-width:600px;">
     <div class="tr-modal-head">
       <span class="tr-modal-title-input" id="etapa_titulo" style="padding-top:8px;">Etapa</span>
       <button class="tr-modal-close" onclick="window.CARGOS.fecharEtapaDetalhe()">✕</button>
     </div>
     <div class="tr-modal-body">
       <div id="etapa_semana" style="margin-bottom:16px;"></div>
-      <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="margin-bottom:20px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
+      <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="margin-bottom:22px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
       <div class="tr-field">
+        <label>Campos personalizados</label>
+        <div id="etapa_campos_lista" class="etapa-campos-lista"></div>
+        <div class="etapa-campo-add-row">
+          <input type="text" class="tr-text-input" id="etapa_campo_nome" placeholder="Nome do campo (ex: Nota da prova)">
+          <input type="text" class="tr-text-input" id="etapa_campo_valor" placeholder="Valor">
+          <button class="btn btn-amber" style="white-space:nowrap;" onclick="window.CARGOS.adicionarCampoEtapa()">+ Campo</button>
+        </div>
+      </div>
+      <div class="tr-field" style="margin-top:22px;">
         <label>Follow-up — como foi, o que o(a) colaborador(a) aprendeu</label>
         <div id="etapa_notas_lista" style="margin-bottom:10px;"></div>
         <textarea class="q-input" id="etapa_nova_nota" rows="3" placeholder="Escreva uma nota sobre essa etapa..."></textarea>
@@ -7192,6 +7214,8 @@ function abrirEtapaDetalhe(itemId) {
   document.getElementById('etapa_titulo').textContent = item.atividade;
   document.getElementById('etapa_semana').innerHTML = `<span class="rcf-meta-chip">Sem ${item.semanaInicio}${item.semanaFim!==item.semanaInicio?'–'+item.semanaFim:''}</span> <span class="rcf-meta-chip">${escapeHTML(item.categoria||'')}</span>`;
   document.getElementById('etapa_nova_nota').value = '';
+  document.getElementById('etapa_campo_nome').value = '';
+  document.getElementById('etapa_campo_valor').value = '';
   renderEtapaDetalhe(item);
   document.getElementById('etapaModalOverlay').classList.add('open');
 }
@@ -7199,10 +7223,73 @@ function abrirEtapaDetalhe(itemId) {
 function renderEtapaDetalhe(item) {
   const btn = document.getElementById('etapa_toggle_btn');
   btn.textContent = item.done ? '↩️ Desfazer' : '✅ Marcar como feito';
+
+  const campos = item.campos || [];
+  document.getElementById('etapa_campos_lista').innerHTML = campos.length
+    ? campos.map(c => `<div class="etapa-campo-row">
+        <div><div class="etapa-campo-nome">${escapeHTML(c.nome)}</div><div class="etapa-campo-valor">${escapeHTML(c.valor)}</div></div>
+        <div class="etapa-campo-acoes">
+          <button class="etapa-campo-btn" onclick="window.CARGOS.editarCampoEtapa('${c.id}')" title="Editar">✏️</button>
+          <button class="etapa-campo-btn" onclick="window.CARGOS.excluirCampoEtapa('${c.id}')" title="Excluir">🗑️</button>
+        </div>
+      </div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted);">Nenhum campo ainda.</div>`;
+
   const notas = item.notas || [];
   document.getElementById('etapa_notas_lista').innerHTML = notas.length
-    ? notas.slice().reverse().map(n => `<div class="etapa-nota-item"><div class="etapa-nota-meta">${escapeHTML(n.autor||'')} · ${formatarDataHora(n.criadoEm)}</div><div class="etapa-nota-texto">${escapeHTML(n.texto)}</div></div>`).join('')
+    ? `<div class="etapa-timeline">${notas.slice().reverse().map(n => `<div class="etapa-timeline-item"><div class="etapa-nota-item"><div class="etapa-nota-meta">${escapeHTML(n.autor||'')} · ${formatarDataHora(n.criadoEm)}</div><div class="etapa-nota-texto">${escapeHTML(n.texto)}</div></div></div>`).join('')}</div>`
     : `<div style="font-size:12px; color:var(--muted);">Nenhuma nota ainda.</div>`;
+}
+
+function adicionarCampoEtapa() {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const nomeEl = document.getElementById('etapa_campo_nome');
+  const valorEl = document.getElementById('etapa_campo_valor');
+  const nome = nomeEl.value.trim();
+  const valor = valorEl.value.trim();
+  if (!nome) { alert('Dá um nome pro campo :)'); return; }
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  if (!item.campos) item.campos = [];
+  item.campos.push({ id: 'campo_' + Date.now(), nome, valor });
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  nomeEl.value = '';
+  valorEl.value = '';
+  renderEtapaDetalhe(item);
+}
+
+function editarCampoEtapa(campoId) {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  const campo = (item.campos || []).find(c => c.id === campoId);
+  if (!campo) return;
+  const novoValor = prompt(`Novo valor pra "${campo.nome}":`, campo.valor);
+  if (novoValor === null) return;
+  campo.valor = novoValor.trim();
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  renderEtapaDetalhe(item);
+}
+
+function excluirCampoEtapa(campoId) {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  item.campos = (item.campos || []).filter(c => c.id !== campoId);
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  renderEtapaDetalhe(item);
 }
 
 function toggleDoneEtapaDetalhe() {
@@ -7275,6 +7362,9 @@ window.CARGOS.abrirEtapaDetalhe = abrirEtapaDetalhe;
 window.CARGOS.fecharEtapaDetalhe = fecharEtapaDetalhe;
 window.CARGOS.toggleDoneEtapaDetalhe = toggleDoneEtapaDetalhe;
 window.CARGOS.adicionarNotaEtapa = adicionarNotaEtapa;
+window.CARGOS.adicionarCampoEtapa = adicionarCampoEtapa;
+window.CARGOS.editarCampoEtapa = editarCampoEtapa;
+window.CARGOS.excluirCampoEtapa = excluirCampoEtapa;
 window.CARGOS.excluirPlano = excluirPlano;
 })();
 </script>
