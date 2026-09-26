@@ -608,7 +608,14 @@ body {
 .etapa-arquivo-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 12px; background:var(--card2); border:1px solid var(--border2); border-radius:9px; }
 .etapa-arquivo-link { font-size:12.5px; color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
 .etapa-arquivo-acoes { display:flex; gap:2px; flex-shrink:0; }
-.rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+.home-dashboard { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:14px; margin-bottom:28px; }
+.hd-kpi { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; gap:8px; }
+.hd-kpi-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.hd-kpi-value { font-size:26px; font-weight:800; color:var(--text); letter-spacing:-0.02em; }
+.hd-kpi-sub { font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px; width:fit-content; padding:2px 9px; border-radius:7px; }
+.hd-kpi-sub.ok { background:rgba(31,138,112,0.16); color:#5FD9B4; }
+.hd-kpi-sub.alerta { background:rgba(253,116,0,0.14); color:#FFAF63; }
+.hd-kpi-sub.neutro { background:var(--card); color:var(--muted); }
 .rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
 .rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
 .rcf-section-title:first-child { margin-top:0; }
@@ -1185,6 +1192,7 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="home-title">Central de Gestão do Time</div>
       <div class="home-desc">Suas ferramentas de liderança num só lugar: conduza a reunião semanal do time, registre one-on-ones, organize os treinamentos e acompanhe as sessões de role play — tudo com histórico salvo.</div>
     </div>
+    <div id="home_dashboard" class="home-dashboard"></div>
     <div class="home-cards">
       <button class="home-card c-reuniao admin-only" onclick="mostrarTool('reuniao')">
         <div class="hc-icon">🤝</div>
@@ -8564,5 +8572,81 @@ window.PROVAS.renderDash = renderDash;
 </script>
 
 </div>
+<!-- ===== JS: Dashboard da Home (KPIs reais, escopo isolado) ===== -->
+<script>
+(function(){
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let dadosFeedbacks = null;
+let dadosIntegracoes = null;
+let listenersAtivos = false;
+
+function getMensagensFeedback(f) {
+  if (f.respostas && f.respostas.length) return f.respostas;
+  if (f.resposta) return [{ de: 'liderado', texto: f.resposta }];
+  return [];
+}
+
+function render() {
+  const wrap = document.getElementById('home_dashboard');
+  if (!wrap || !window.APPAUTH || !window.APPAUTH.usuarioAtual) return;
+
+  const feedbacksLista = (dadosFeedbacks && dadosFeedbacks.lista) || [];
+  const pendentes = feedbacksLista.filter(f => {
+    const msgs = getMensagensFeedback(f);
+    return msgs.length && msgs[msgs.length - 1].de === 'liderado';
+  }).length;
+
+  const planosLista = (dadosIntegracoes && dadosIntegracoes.lista) || [];
+  const planosAtivos = planosLista.length;
+  let progressoMedio = 0;
+  if (planosAtivos) {
+    const somaPct = planosLista.reduce((acc, p) => {
+      const ativs = p.atividades || [];
+      if (!ativs.length) return acc;
+      const feitas = ativs.filter(a => a.done).length;
+      return acc + (feitas / ativs.length);
+    }, 0);
+    progressoMedio = Math.round((somaPct / planosAtivos) * 100);
+  }
+
+  wrap.innerHTML = `
+    <div class="hd-kpi">
+      <span class="hd-kpi-label">Feedbacks</span>
+      <span class="hd-kpi-value">${pendentes}</span>
+      <span class="hd-kpi-sub ${pendentes ? 'alerta' : 'ok'}">${pendentes ? '🔴 aguardando sua resposta' : '✓ tudo em dia'}</span>
+    </div>
+    <div class="hd-kpi">
+      <span class="hd-kpi-label">Planos de integração</span>
+      <span class="hd-kpi-value">${planosAtivos}</span>
+      <span class="hd-kpi-sub neutro">ativos agora</span>
+    </div>
+    <div class="hd-kpi">
+      <span class="hd-kpi-label">Progresso médio dos planos</span>
+      <span class="hd-kpi-value">${planosAtivos ? progressoMedio + '%' : '—'}</span>
+      <div class="tr-progress-bar" style="margin-top:2px;"><div class="tr-progress-fill" style="width:${progressoMedio}%"></div></div>
+    </div>`;
+}
+
+function iniciar() {
+  if (listenersAtivos || !window.fb || !window.APPAUTH || !window.APPAUTH.usuarioAtual) return;
+  listenersAtivos = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'feedbacks'), (snap) => {
+    dadosFeedbacks = snap.exists() ? snap.data() : { lista: [] };
+    render();
+  }, err => console.error('HOME dashboard feedbacks error', err));
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), (snap) => {
+    dadosIntegracoes = snap.exists() ? snap.data() : { lista: [] };
+    render();
+  }, err => console.error('HOME dashboard integracoes error', err));
+}
+
+window.addEventListener('userAuthed', iniciar);
+if (window.APPAUTH && window.APPAUTH.usuarioAtual) iniciar();
+})();
+</script>
+
 </body>
 </html>
