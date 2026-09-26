@@ -578,6 +578,13 @@ body {
 .cargo-etapa-titulo { font-size:13px; font-weight:700; color:var(--text); line-height:1.35; }
 .cargo-etapa-card.done .cargo-etapa-titulo { color:var(--muted); text-decoration:line-through; }
 .cargo-etapa-secao-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:10px; }
+.cargo-etapa-checkbtn { width:22px; height:22px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.22); background:transparent; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; padding:0; }
+.cargo-etapa-checkbtn:hover { border-color:#1F8A70; }
+.cargo-etapa-card.done .cargo-etapa-checkbtn { background:#1F8A70; border-color:#1F8A70; }
+.cargo-etapa-nota-count { font-size:10.5px; color:var(--muted2); display:flex; align-items:center; gap:4px; margin-top:2px; }
+.etapa-nota-item { padding:10px 12px; border-radius:10px; background:var(--card2); border:1px solid var(--border2); margin-bottom:8px; }
+.etapa-nota-meta { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+.etapa-nota-texto { font-size:13px; color:var(--text); line-height:1.5; white-space:pre-wrap; }
 .rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
 .rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
 .rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
@@ -1686,6 +1693,26 @@ window.APPAUTH = window.APPAUTH || {};
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete admin-only" id="planover_delete_btn" onclick="window.CARGOS.excluirPlano()">🗑️ Excluir plano</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: detalhe da etapa (follow-up) -->
+<div class="tr-modal-overlay" id="etapaModalOverlay" onclick="if(event.target===this) window.CARGOS.fecharEtapaDetalhe()">
+  <div class="tr-modal">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" id="etapa_titulo" style="padding-top:8px;">Etapa</span>
+      <button class="tr-modal-close" onclick="window.CARGOS.fecharEtapaDetalhe()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div id="etapa_semana" style="margin-bottom:16px;"></div>
+      <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="margin-bottom:20px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
+      <div class="tr-field">
+        <label>Follow-up — como foi, o que o(a) colaborador(a) aprendeu</label>
+        <div id="etapa_notas_lista" style="margin-bottom:10px;"></div>
+        <textarea class="q-input" id="etapa_nova_nota" rows="3" placeholder="Escreva uma nota sobre essa etapa..."></textarea>
+        <button class="btn btn-amber" style="margin-top:8px;" onclick="window.CARGOS.adicionarNotaEtapa()">+ Adicionar nota</button>
+      </div>
     </div>
   </div>
 </div>
@@ -6769,6 +6796,7 @@ let abaAtiva = 'rcf';
 let modalRcfId = null;
 let viewRcfId = null;
 let modalPlanoVerId = null;
+let etapaAtualId = null;
 let pessoaFiltroPlano = 'todos';
 
 function defaultRcfData() { return { lista: [SEED_RCF] }; }
@@ -6778,6 +6806,11 @@ function getPlanos() { return cachedPlanos || defaultPlanoData(); }
 
 function escapeHTML(s) {
   return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatarDataHora(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('pt-BR');
 }
 
 function normalizarNome(s) {
@@ -7120,12 +7153,13 @@ function renderConteudoVerPlano(p) {
       <div class="cargo-etapa-secao-label">${escapeHTML(cat)}</div>
       <div class="cargo-etapa-grid">
         ${grupos[cat].map(a => `
-          <button type="button" class="cargo-etapa-card${a.done?' done':''}" onclick="window.CARGOS.marcarItem('${a.id}', ${!a.done})">
+          <button type="button" class="cargo-etapa-card${a.done?' done':''}" onclick="window.CARGOS.abrirEtapaDetalhe('${a.id}')">
             <div class="cargo-etapa-top">
               <span class="cargo-etapa-semana">Sem ${a.semanaInicio}${a.semanaFim!==a.semanaInicio?'–'+a.semanaFim:''}</span>
-              ${a.done ? '<span class="cargo-etapa-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : ''}
+              <span class="cargo-etapa-checkbtn" onclick="event.stopPropagation(); window.CARGOS.marcarItem('${a.id}', ${!a.done})">${a.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}</span>
             </div>
             <div class="cargo-etapa-titulo">${escapeHTML(a.atividade)}</div>
+            ${(a.notas && a.notas.length) ? `<div class="cargo-etapa-nota-count">📝 ${a.notas.length} nota${a.notas.length>1?'s':''}</div>` : ''}
           </button>`).join('')}
       </div>
     </div>`).join('');
@@ -7143,6 +7177,66 @@ function marcarItem(itemId, checked) {
   window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
   renderConteudoVerPlano(p);
   renderPlano();
+  if (etapaAtualId === itemId) renderEtapaDetalhe(item);
+}
+
+// ---------- Detalhe da etapa (follow-up) ----------
+
+function abrirEtapaDetalhe(itemId) {
+  if (!modalPlanoVerId) return;
+  const p = (getPlanos().lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === itemId);
+  if (!item) return;
+  etapaAtualId = itemId;
+  document.getElementById('etapa_titulo').textContent = item.atividade;
+  document.getElementById('etapa_semana').innerHTML = `<span class="rcf-meta-chip">Sem ${item.semanaInicio}${item.semanaFim!==item.semanaInicio?'–'+item.semanaFim:''}</span> <span class="rcf-meta-chip">${escapeHTML(item.categoria||'')}</span>`;
+  document.getElementById('etapa_nova_nota').value = '';
+  renderEtapaDetalhe(item);
+  document.getElementById('etapaModalOverlay').classList.add('open');
+}
+
+function renderEtapaDetalhe(item) {
+  const btn = document.getElementById('etapa_toggle_btn');
+  btn.textContent = item.done ? '↩️ Desfazer' : '✅ Marcar como feito';
+  const notas = item.notas || [];
+  document.getElementById('etapa_notas_lista').innerHTML = notas.length
+    ? notas.slice().reverse().map(n => `<div class="etapa-nota-item"><div class="etapa-nota-meta">${escapeHTML(n.autor||'')} · ${formatarDataHora(n.criadoEm)}</div><div class="etapa-nota-texto">${escapeHTML(n.texto)}</div></div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted);">Nenhuma nota ainda.</div>`;
+}
+
+function toggleDoneEtapaDetalhe() {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const p = (getPlanos().lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  marcarItem(etapaAtualId, !item.done);
+}
+
+function adicionarNotaEtapa() {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const texto = document.getElementById('etapa_nova_nota').value.trim();
+  if (!texto) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  if (!item.notas) item.notas = [];
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  const autor = (user && (user.nome || user.email)) || 'Alguém';
+  item.notas.push({ texto, autor, criadoEm: Date.now() });
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  document.getElementById('etapa_nova_nota').value = '';
+  renderEtapaDetalhe(item);
+  renderConteudoVerPlano(p);
+}
+
+function fecharEtapaDetalhe() {
+  document.getElementById('etapaModalOverlay').classList.remove('open');
+  etapaAtualId = null;
 }
 
 function fecharModalVerPlano() {
@@ -7177,6 +7271,10 @@ window.CARGOS.criarPlano = criarPlano;
 window.CARGOS.abrirModalVerPlano = abrirModalVerPlano;
 window.CARGOS.fecharModalVerPlano = fecharModalVerPlano;
 window.CARGOS.marcarItem = marcarItem;
+window.CARGOS.abrirEtapaDetalhe = abrirEtapaDetalhe;
+window.CARGOS.fecharEtapaDetalhe = fecharEtapaDetalhe;
+window.CARGOS.toggleDoneEtapaDetalhe = toggleDoneEtapaDetalhe;
+window.CARGOS.adicionarNotaEtapa = adicionarNotaEtapa;
 window.CARGOS.excluirPlano = excluirPlano;
 })();
 </script>
