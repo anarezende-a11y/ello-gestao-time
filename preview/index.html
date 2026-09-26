@@ -582,22 +582,29 @@ body {
 .cargo-etapa-checkbtn:hover { border-color:#1F8A70; }
 .cargo-etapa-card.done .cargo-etapa-checkbtn { background:#1F8A70; border-color:#1F8A70; }
 .cargo-etapa-nota-count { font-size:10.5px; color:var(--muted2); display:flex; align-items:center; gap:4px; margin-top:2px; }
-.etapa-nota-item { padding:10px 12px; border-radius:10px; background:var(--card2); border:1px solid var(--border2); margin-bottom:8px; }
-.etapa-nota-meta { font-size:10px; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
-.etapa-nota-texto { font-size:13px; color:var(--text); line-height:1.5; white-space:pre-wrap; }
-.etapa-timeline { position:relative; padding-left:16px; }
-.etapa-timeline::before { content:''; position:absolute; left:4px; top:4px; bottom:4px; width:2px; background:var(--border2); }
-.etapa-timeline-item { position:relative; margin-bottom:12px; }
-.etapa-timeline-item::before { content:''; position:absolute; left:-16px; top:5px; width:8px; height:8px; border-radius:50%; background:var(--laranja); border:2px solid var(--card); box-sizing:content-box; }
-.etapa-campos-lista { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
-.etapa-campo-row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--card2); border:1px solid var(--border2); border-radius:10px; }
-.etapa-campo-nome { font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-.etapa-campo-valor { font-size:13px; color:var(--text); margin-top:3px; white-space:pre-wrap; }
-.etapa-campo-acoes { display:flex; gap:2px; flex-shrink:0; }
-.etapa-campo-btn { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:13px; padding:3px 6px; border-radius:6px; }
+.etapa-badges-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+.etapa-badge { font-size:11px; font-weight:700; padding:5px 11px; border-radius:999px; }
+.etapa-badge.semana { background:rgba(253,116,0,0.16); color:#FFAF63; }
+.etapa-badge.categoria { background:var(--card2); color:var(--muted); border:1px solid var(--border2); }
+.etapa-badge.feito { background:rgba(31,138,112,0.18); color:#5FD9B4; }
+.etapa-badge.pendente { background:rgba(220,53,69,0.14); color:#FF8A8A; }
+.etapa-panel { border:1px solid var(--border2); border-radius:12px; padding:16px 18px; margin-bottom:20px; }
+.etapa-panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.etapa-panel-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted2); }
+.etapa-campos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:16px; margin-bottom:14px; }
+.etapa-campo-cell { display:flex; flex-direction:column; gap:3px; }
+.etapa-campo-nome { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted2); }
+.etapa-campo-valor { font-size:14px; color:var(--text); font-weight:600; }
+.etapa-campo-acoes { display:flex; gap:2px; margin-top:4px; }
+.etapa-campo-btn { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:11px; padding:2px 5px; border-radius:6px; }
 .etapa-campo-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
-.etapa-campo-add-row { display:flex; gap:8px; }
+.etapa-campo-add-row { display:flex; gap:8px; padding-top:6px; border-top:1px solid var(--border2); }
 .etapa-campo-add-row input { flex:1; }
+.etapa-step { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px dashed var(--border2); }
+.etapa-step:last-child { border-bottom:none; }
+.etapa-step-icon { width:22px; height:22px; border-radius:50%; background:var(--card2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; font-size:11px; }
+.etapa-step-titulo { font-size:13px; font-weight:700; color:var(--text); }
+.etapa-step-sub { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; white-space:pre-wrap; }
 .rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
 .rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
 .rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
@@ -1714,26 +1721,30 @@ window.APPAUTH = window.APPAUTH || {};
 <div class="tr-modal-overlay" id="etapaModalOverlay" onclick="if(event.target===this) window.CARGOS.fecharEtapaDetalhe()">
   <div class="tr-modal" style="max-width:600px;">
     <div class="tr-modal-head">
-      <span class="tr-modal-title-input" id="etapa_titulo" style="padding-top:8px;">Etapa</span>
+      <span class="tr-modal-title-input" id="etapa_titulo" style="padding-top:8px; font-weight:800;">Etapa</span>
       <button class="tr-modal-close" onclick="window.CARGOS.fecharEtapaDetalhe()">✕</button>
     </div>
     <div class="tr-modal-body">
-      <div id="etapa_semana" style="margin-bottom:16px;"></div>
-      <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="margin-bottom:22px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
-      <div class="tr-field">
-        <label>Campos personalizados</label>
-        <div id="etapa_campos_lista" class="etapa-campos-lista"></div>
+      <div id="etapa_semana" class="etapa-badges-row"></div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head">
+          <span class="etapa-panel-label">Campos personalizados</span>
+          <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="padding:7px 14px; font-size:12px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
+        </div>
+        <div id="etapa_campos_lista" class="etapa-campos-grid"></div>
         <div class="etapa-campo-add-row">
           <input type="text" class="tr-text-input" id="etapa_campo_nome" placeholder="Nome do campo (ex: Nota da prova)">
           <input type="text" class="tr-text-input" id="etapa_campo_valor" placeholder="Valor">
           <button class="btn btn-amber" style="white-space:nowrap;" onclick="window.CARGOS.adicionarCampoEtapa()">+ Campo</button>
         </div>
       </div>
-      <div class="tr-field" style="margin-top:22px;">
-        <label>Follow-up — como foi, o que o(a) colaborador(a) aprendeu</label>
-        <div id="etapa_notas_lista" style="margin-bottom:10px;"></div>
-        <textarea class="q-input" id="etapa_nova_nota" rows="3" placeholder="Escreva uma nota sobre essa etapa..."></textarea>
-        <button class="btn btn-amber" style="margin-top:8px;" onclick="window.CARGOS.adicionarNotaEtapa()">+ Adicionar nota</button>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Follow-up</span></div>
+        <div id="etapa_notas_lista"></div>
+        <div style="display:flex; gap:8px; padding-top:10px; margin-top:6px; border-top:1px solid var(--border2);">
+          <textarea class="q-input" id="etapa_nova_nota" rows="2" placeholder="Escreva uma nota sobre essa etapa..." style="flex:1;"></textarea>
+          <button class="btn btn-amber" style="align-self:flex-end; white-space:nowrap;" onclick="window.CARGOS.adicionarNotaEtapa()">+ Nota</button>
+        </div>
       </div>
     </div>
   </div>
@@ -7212,7 +7223,7 @@ function abrirEtapaDetalhe(itemId) {
   if (!item) return;
   etapaAtualId = itemId;
   document.getElementById('etapa_titulo').textContent = item.atividade;
-  document.getElementById('etapa_semana').innerHTML = `<span class="rcf-meta-chip">Sem ${item.semanaInicio}${item.semanaFim!==item.semanaInicio?'–'+item.semanaFim:''}</span> <span class="rcf-meta-chip">${escapeHTML(item.categoria||'')}</span>`;
+  document.getElementById('etapa_semana').innerHTML = `<span class="etapa-badge semana">Sem ${item.semanaInicio}${item.semanaFim!==item.semanaInicio?'–'+item.semanaFim:''}</span> <span class="etapa-badge categoria">${escapeHTML(item.categoria||'')}</span> <span class="etapa-badge ${item.done?'feito':'pendente'}" id="etapa_status_badge">${item.done?'✓ Feito':'Pendente'}</span>`;
   document.getElementById('etapa_nova_nota').value = '';
   document.getElementById('etapa_campo_nome').value = '';
   document.getElementById('etapa_campo_valor').value = '';
@@ -7221,24 +7232,33 @@ function abrirEtapaDetalhe(itemId) {
 }
 
 function renderEtapaDetalhe(item) {
+  const statusBadge = document.getElementById('etapa_status_badge');
+  if (statusBadge) {
+    statusBadge.textContent = item.done ? '✓ Feito' : 'Pendente';
+    statusBadge.className = 'etapa-badge ' + (item.done ? 'feito' : 'pendente');
+  }
   const btn = document.getElementById('etapa_toggle_btn');
   btn.textContent = item.done ? '↩️ Desfazer' : '✅ Marcar como feito';
 
   const campos = item.campos || [];
   document.getElementById('etapa_campos_lista').innerHTML = campos.length
-    ? campos.map(c => `<div class="etapa-campo-row">
-        <div><div class="etapa-campo-nome">${escapeHTML(c.nome)}</div><div class="etapa-campo-valor">${escapeHTML(c.valor)}</div></div>
+    ? campos.map(c => `<div class="etapa-campo-cell">
+        <span class="etapa-campo-nome">${escapeHTML(c.nome)}</span>
+        <span class="etapa-campo-valor">${escapeHTML(c.valor)}</span>
         <div class="etapa-campo-acoes">
-          <button class="etapa-campo-btn" onclick="window.CARGOS.editarCampoEtapa('${c.id}')" title="Editar">✏️</button>
-          <button class="etapa-campo-btn" onclick="window.CARGOS.excluirCampoEtapa('${c.id}')" title="Excluir">🗑️</button>
+          <button class="etapa-campo-btn" onclick="window.CARGOS.editarCampoEtapa('${c.id}')" title="Editar">✏️ editar</button>
+          <button class="etapa-campo-btn" onclick="window.CARGOS.excluirCampoEtapa('${c.id}')" title="Excluir">🗑️ excluir</button>
         </div>
       </div>`).join('')
-    : `<div style="font-size:12px; color:var(--muted);">Nenhum campo ainda.</div>`;
+    : `<div style="font-size:12px; color:var(--muted); grid-column:1/-1;">Nenhum campo ainda.</div>`;
 
   const notas = item.notas || [];
   document.getElementById('etapa_notas_lista').innerHTML = notas.length
-    ? `<div class="etapa-timeline">${notas.slice().reverse().map(n => `<div class="etapa-timeline-item"><div class="etapa-nota-item"><div class="etapa-nota-meta">${escapeHTML(n.autor||'')} · ${formatarDataHora(n.criadoEm)}</div><div class="etapa-nota-texto">${escapeHTML(n.texto)}</div></div></div>`).join('')}</div>`
-    : `<div style="font-size:12px; color:var(--muted);">Nenhuma nota ainda.</div>`;
+    ? notas.slice().reverse().map(n => `<div class="etapa-step">
+        <div class="etapa-step-icon">📝</div>
+        <div><div class="etapa-step-titulo">${escapeHTML(n.autor||'')} <span style="font-weight:400; color:var(--muted2); font-size:11px;">· ${formatarDataHora(n.criadoEm)}</span></div><div class="etapa-step-sub">${escapeHTML(n.texto)}</div></div>
+      </div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted); padding:6px 0;">Nenhuma nota ainda.</div>`;
 }
 
 function adicionarCampoEtapa() {
