@@ -605,6 +605,9 @@ body {
 .etapa-step-icon { width:22px; height:22px; border-radius:50%; background:var(--card2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; font-size:11px; }
 .etapa-step-titulo { font-size:13px; font-weight:700; color:var(--text); }
 .etapa-step-sub { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; white-space:pre-wrap; }
+.etapa-arquivo-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 12px; background:var(--card2); border:1px solid var(--border2); border-radius:9px; }
+.etapa-arquivo-link { font-size:12.5px; color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+.etapa-arquivo-acoes { display:flex; gap:2px; flex-shrink:0; }
 .rcf-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
 .rcf-meta-chip { font-size:11px; font-weight:700; color:var(--muted); background:var(--card2); border:1px solid var(--border2); padding:5px 11px; border-radius:8px; }
 .rcf-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--laranja); margin:26px 0 12px 0; display:flex; align-items:center; gap:8px; }
@@ -1662,8 +1665,8 @@ window.APPAUTH = window.APPAUTH || {};
         <div id="rcf_link_preview" class="pop-passo-preview"></div>
       </div>
       <div class="tr-field">
-        <label>Template do plano de integração — uma atividade por linha, formato: Categoria | Atividade | Semana início | Semana fim</label>
-        <textarea class="q-input" id="rcf_planoTemplate" rows="8" placeholder="Integração | Acolhida | 1 | 1"></textarea>
+        <label>Template do plano de integração — uma atividade por linha, formato: Categoria | Atividade | Descrição (o que é) | Semana início | Semana fim</label>
+        <textarea class="q-input" id="rcf_planoTemplate" rows="8" placeholder="Integração | Acolhida | O que é essa etapa | 1 | 1"></textarea>
       </div>
     </div>
     <div class="tr-modal-foot">
@@ -1728,9 +1731,25 @@ window.APPAUTH = window.APPAUTH || {};
       <div id="etapa_semana" class="etapa-badges-row"></div>
       <div class="etapa-panel">
         <div class="etapa-panel-head">
-          <span class="etapa-panel-label">Campos personalizados</span>
+          <span class="etapa-panel-label">O que é</span>
           <button type="button" class="btn btn-amber" id="etapa_toggle_btn" style="padding:7px 14px; font-size:12px;" onclick="window.CARGOS.toggleDoneEtapaDetalhe()">✅ Marcar como feito</button>
         </div>
+        <div id="etapa_descricao" style="font-size:13px; color:var(--muted); line-height:1.5;"></div>
+      </div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Data</span></div>
+        <input type="date" class="tr-text-input" id="etapa_data" onchange="window.CARGOS.salvarDataEtapa()" style="max-width:200px;">
+      </div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Arquivos</span></div>
+        <div id="etapa_arquivos_lista" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+        <div class="etapa-campo-add-row">
+          <input type="text" class="tr-text-input" id="etapa_arquivo_link" placeholder="Cole aqui o link do arquivo (Drive, PDF, foto...)">
+          <button class="btn btn-amber" style="white-space:nowrap;" onclick="window.CARGOS.adicionarArquivoEtapa()">+ Arquivo</button>
+        </div>
+      </div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Campos personalizados</span></div>
         <div id="etapa_campos_lista" class="etapa-campos-grid"></div>
         <div class="etapa-campo-add-row">
           <input type="text" class="tr-text-input" id="etapa_campo_nome" placeholder="Nome do campo (ex: Nota da prova)">
@@ -1739,7 +1758,7 @@ window.APPAUTH = window.APPAUTH || {};
         </div>
       </div>
       <div class="etapa-panel">
-        <div class="etapa-panel-head"><span class="etapa-panel-label">Follow-up</span></div>
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Nota do funcionário / follow-up</span></div>
         <div id="etapa_notas_lista"></div>
         <div style="display:flex; gap:8px; padding-top:10px; margin-top:6px; border-top:1px solid var(--border2);">
           <textarea class="q-input" id="etapa_nova_nota" rows="2" placeholder="Escreva uma nota sobre essa etapa..." style="flex:1;"></textarea>
@@ -6985,7 +7004,7 @@ function abrirModalRcf(id) {
   document.getElementById('rcf_descricao').value = r.descricao || '';
   document.getElementById('rcf_link').value = r.link || '';
   document.getElementById('rcf_link_preview').innerHTML = renderPopLinkPreview(r.link || '');
-  document.getElementById('rcf_planoTemplate').value = (r.planoTemplate || []).map(t => `${t.categoria} | ${t.atividade} | ${t.semanaInicio} | ${t.semanaFim}`).join('\n');
+  document.getElementById('rcf_planoTemplate').value = (r.planoTemplate || []).map(t => `${t.categoria} | ${t.atividade} | ${t.descricao||''} | ${t.semanaInicio} | ${t.semanaFim}`).join('\n');
   document.getElementById('rcf_nome').readOnly = !isAdmin;
   document.getElementById('rcf_area').readOnly = !isAdmin;
   document.getElementById('rcf_subordinacao').readOnly = !isAdmin;
@@ -7005,12 +7024,22 @@ function atualizarPreviewRcf() {
 function parsePlanoTemplateTexto(txt) {
   return (txt || '').split('\n').map(l => l.trim()).filter(Boolean).map((l, i) => {
     const partes = l.split('|').map(p => p.trim());
+    // formato novo: Categoria | Atividade | Descrição | SemInicio | SemFim (5 partes)
+    // formato antigo, ainda aceito: Categoria | Atividade | SemInicio | SemFim (4 partes)
+    let categoria, atividade, descricao, semIni, semFim;
+    if (partes.length >= 5) {
+      [categoria, atividade, descricao, semIni, semFim] = partes;
+    } else {
+      [categoria, atividade, semIni, semFim] = partes;
+      descricao = '';
+    }
     return {
       id: 'pt_' + Date.now() + '_' + i,
-      categoria: partes[0] || '',
-      atividade: partes[1] || '',
-      semanaInicio: parseInt(partes[2], 10) || 1,
-      semanaFim: parseInt(partes[3], 10) || (parseInt(partes[2], 10) || 1)
+      categoria: categoria || '',
+      atividade: atividade || '',
+      descricao: descricao || '',
+      semanaInicio: parseInt(semIni, 10) || 1,
+      semanaFim: parseInt(semFim, 10) || (parseInt(semIni, 10) || 1)
     };
   });
 }
@@ -7137,8 +7166,8 @@ function criarPlano() {
   const d = getPlanos();
   if (!d.lista) d.lista = [];
   const atividades = (cargo.planoTemplate || []).map(t => ({
-    id: t.id, categoria: t.categoria, atividade: t.atividade,
-    semanaInicio: t.semanaInicio, semanaFim: t.semanaFim, done: false
+    id: t.id, categoria: t.categoria, atividade: t.atividade, descricao: t.descricao || '',
+    semanaInicio: t.semanaInicio, semanaFim: t.semanaFim, done: false, data: '', arquivos: [], campos: [], notas: []
   }));
   d.lista.push({
     id: 'plano_' + Date.now(),
@@ -7227,6 +7256,9 @@ function abrirEtapaDetalhe(itemId) {
   document.getElementById('etapa_nova_nota').value = '';
   document.getElementById('etapa_campo_nome').value = '';
   document.getElementById('etapa_campo_valor').value = '';
+  document.getElementById('etapa_arquivo_link').value = '';
+  document.getElementById('etapa_descricao').textContent = item.descricao || 'Sem descrição cadastrada pra essa etapa (edite o RCF pra adicionar).';
+  document.getElementById('etapa_data').value = item.data || '';
   renderEtapaDetalhe(item);
   document.getElementById('etapaModalOverlay').classList.add('open');
 }
@@ -7239,6 +7271,17 @@ function renderEtapaDetalhe(item) {
   }
   const btn = document.getElementById('etapa_toggle_btn');
   btn.textContent = item.done ? '↩️ Desfazer' : '✅ Marcar como feito';
+
+  const arquivos = item.arquivos || [];
+  document.getElementById('etapa_arquivos_lista').innerHTML = arquivos.length
+    ? arquivos.map(a => `<div class="etapa-arquivo-row">
+        <span class="etapa-arquivo-link">📎 ${escapeHTML(a.url)}</span>
+        <div class="etapa-arquivo-acoes">
+          <a class="etapa-campo-btn" href="${escapeHTML(a.url)}" target="_blank" rel="noopener">↗ abrir</a>
+          <button class="etapa-campo-btn" onclick="window.CARGOS.excluirArquivoEtapa('${a.id}')">🗑️ excluir</button>
+        </div>
+      </div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted);">Nenhum arquivo anexado.</div>`;
 
   const campos = item.campos || [];
   document.getElementById('etapa_campos_lista').innerHTML = campos.length
@@ -7307,6 +7350,49 @@ function excluirCampoEtapa(campoId) {
   const item = (p.atividades || []).find(a => a.id === etapaAtualId);
   if (!item) return;
   item.campos = (item.campos || []).filter(c => c.id !== campoId);
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  renderEtapaDetalhe(item);
+}
+
+function salvarDataEtapa() {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  item.data = document.getElementById('etapa_data').value;
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+}
+
+function adicionarArquivoEtapa() {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const linkEl = document.getElementById('etapa_arquivo_link');
+  const url = linkEl.value.trim();
+  if (!url) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  if (!item.arquivos) item.arquivos = [];
+  item.arquivos.push({ id: 'arq_' + Date.now(), url });
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  linkEl.value = '';
+  renderEtapaDetalhe(item);
+}
+
+function excluirArquivoEtapa(arquivoId) {
+  if (!modalPlanoVerId || !etapaAtualId) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const item = (p.atividades || []).find(a => a.id === etapaAtualId);
+  if (!item) return;
+  item.arquivos = (item.arquivos || []).filter(a => a.id !== arquivoId);
   cachedPlanos = d;
   window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
   renderEtapaDetalhe(item);
@@ -7385,6 +7471,9 @@ window.CARGOS.adicionarNotaEtapa = adicionarNotaEtapa;
 window.CARGOS.adicionarCampoEtapa = adicionarCampoEtapa;
 window.CARGOS.editarCampoEtapa = editarCampoEtapa;
 window.CARGOS.excluirCampoEtapa = excluirCampoEtapa;
+window.CARGOS.salvarDataEtapa = salvarDataEtapa;
+window.CARGOS.adicionarArquivoEtapa = adicionarArquivoEtapa;
+window.CARGOS.excluirArquivoEtapa = excluirArquivoEtapa;
 window.CARGOS.excluirPlano = excluirPlano;
 })();
 </script>
