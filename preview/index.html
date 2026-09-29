@@ -85,8 +85,17 @@ body {
 
 
 /* ===== SHELL / HEADER + HAMBURGUER ===== */
-.main-header { background:var(--azul-2); border-bottom:1px solid var(--border2); padding:0 20px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:60; height:62px; }
-.hamburger { width:42px; height:42px; border:none; background:transparent; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:11px; transition:background .18s; flex-shrink:0; }
+#appShell { display:none; flex-direction:column; height:100vh; overflow:hidden; }
+#appShell.shown { display:flex; }
+.app-body { display:flex; flex:1; min-height:0; }
+.main-content { flex:1; min-width:0; overflow-y:auto; display:flex; flex-direction:column; }
+.main-header { background:
+    radial-gradient(ellipse 420px 200px at 6% 20%, rgba(94,234,212,0.45), transparent 65%),
+    radial-gradient(ellipse 420px 220px at 42% 85%, rgba(168,85,247,0.4), transparent 65%),
+    radial-gradient(ellipse 480px 260px at 92% 30%, rgba(253,116,0,0.5), transparent 65%),
+    var(--azul-2);
+  border-bottom:1px solid var(--border2); padding:0 20px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:60; height:72px; }
+.hamburger { width:42px; height:42px; border:none; background:transparent; cursor:pointer; display:none; flex-direction:column; align-items:center; justify-content:center; gap:5px; border-radius:11px; transition:background .18s; flex-shrink:0; }
 .hamburger:hover { background:rgba(255,255,255,0.12); }
 .hamburger span { display:block; width:22px; height:2.5px; background:#fff; border-radius:2px; transition:all .25s; }
 .hamburger.open span:nth-child(1) { transform:translateY(7.5px) rotate(45deg); }
@@ -100,9 +109,8 @@ body {
 .header-crumb { margin-left:auto; color:rgba(255,255,255,0.85); font-size:12px; font-weight:700; background:transparent; padding:6px 14px; border:1px solid var(--border2); border-radius:8px; }
 
 /* DRAWER (menu vertical) */
-.drawer-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:70; opacity:0; pointer-events:none; transition:opacity .2s; }
-.drawer-overlay.open { opacity:1; pointer-events:auto; }
-.drawer { position:fixed; top:0; left:-300px; width:280px; height:100vh; background:var(--azul); border-right:1px solid var(--border2); z-index:80; transition:left .22s ease; display:flex; flex-direction:column; overflow:hidden; }
+.drawer-overlay { display:none !important; }
+.drawer { position:static; width:76px; flex-shrink:0; height:100%; background:var(--azul); border-right:1px solid var(--border2); display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; }
 .drawer::before { content:none; }
 .drawer.open { left:0; }
 .drawer-head { padding:26px 20px 22px; border-bottom:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
@@ -111,16 +119,18 @@ body {
 .drawer-title { font-size:15px; font-weight:700; color:#fff; }
 .drawer-sub { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--lima); margin-top:2px; }
 .drawer-section-label { padding:18px 20px 8px; font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.45); position:relative; z-index:1; }
-.drawer-item { display:flex; align-items:center; gap:12px; width:100%; padding:13px 20px; background:transparent; border:none; border-left:3px solid transparent; color:rgba(255,255,255,0.78); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; text-align:left; transition:all .18s; position:relative; z-index:1; }
+.drawer-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; padding:12px 2px; background:transparent; border:none; border-left:3px solid transparent; color:rgba(255,255,255,0.7); font-family:inherit; font-size:8.5px; font-weight:700; line-height:1.15; cursor:pointer; text-align:center; transition:all .18s; position:relative; z-index:1; }
 .drawer-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
 .drawer-item.active { background:rgba(253,116,0,0.12); border-left-color:var(--laranja); color:#fff; }
-.drawer-item .di-icon { font-size:17px; width:24px; text-align:center; }
+.drawer-item .di-icon { font-size:19px; width:auto; }
 .drawer-body { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding-bottom:8px; position:relative; z-index:1; }
 .drawer-body::-webkit-scrollbar { width:6px; }
 .drawer-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.18); border-radius:3px; }
 .drawer-body::-webkit-scrollbar-track { background:transparent; }
 .liderado-only { display:none; }
-.drawer-foot { margin-top:auto; padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; position:relative; z-index:1; }
+.drawer-foot { margin-top:auto; padding:10px 4px; border-top:1px solid rgba(255,255,255,0.1); font-size:10px; color:rgba(255,255,255,0.4); line-height:1.5; position:relative; z-index:1; }
+.drawer-foot #drawerUserInfo { display:none; }
+.drawer-foot .tr-btn-delete { font-size:8px; padding:8px 2px; gap:2px; white-space:normal; }
 
 /* MENU PRINCIPAL (home) */
 .home-view { max-width:760px; margin:0 auto; padding:44px 20px 80px; }
@@ -898,9 +908,11 @@ body {
   .tool-view { display:block!important; }
   .tool-view.print-hide { display:none!important; }
   #view_home { display:none!important; }
-  body.rco-print-mode #appShell > *:not(#rcoPrintArea) { display:none!important; }
+  body.rco-print-mode .main-header, body.rco-print-mode .drawer { display:none!important; }
+  body.rco-print-mode .main-content > *:not(#rcoPrintArea) { display:none!important; }
   #rcoPrintArea.show { display:block!important; }
-  body.feed-print-mode #appShell > *:not(#feedPrintArea) { display:none!important; }
+  body.feed-print-mode .main-header, body.feed-print-mode .drawer { display:none!important; }
+  body.feed-print-mode .main-content > *:not(#feedPrintArea) { display:none!important; }
   #feedPrintArea.show { display:block!important; }
 }
 #rcoPrintArea { display:none; }
@@ -1063,7 +1075,7 @@ window.APPAUTH = window.APPAUTH || {};
         const perfil = await garantirUsuario(user);
         window.APPAUTH.usuarioAtual = { uid: user.uid, email: user.email, role: perfil.role, nome: perfil.nome };
         document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('appShell').style.display = 'block';
+        document.getElementById('appShell').classList.add('shown');
         const info = document.getElementById('drawerUserInfo');
         if (info) info.textContent = (perfil.role === 'admin' ? '👑 ' : '') + user.email;
         const fixBtn = document.getElementById('fixAdminBtn');
@@ -1073,7 +1085,7 @@ window.APPAUTH = window.APPAUTH || {};
       } else {
         window.APPAUTH.usuarioAtual = null;
         document.getElementById('authScreen').style.display = 'flex';
-        document.getElementById('appShell').style.display = 'none';
+        document.getElementById('appShell').classList.remove('shown');
       }
     });
   });
@@ -1097,7 +1109,7 @@ window.APPAUTH = window.APPAUTH || {};
 })();
 </script>
 
-<div id="appShell" style="display:none;">
+<div id="appShell">
 
 <div class="main-header">
   <button class="hamburger" id="hamburgerBtn" onclick="toggleDrawer()" aria-label="Abrir menu">
@@ -1113,6 +1125,7 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="header-crumb" id="headerCrumb">Menu Principal</div>
 </div>
 
+<div class="app-body">
 <div class="drawer-overlay" id="drawerOverlay" onclick="fecharDrawer()"></div>
 <nav class="drawer" id="drawer">
   <div class="drawer-head">
@@ -1183,6 +1196,8 @@ window.APPAUTH = window.APPAUTH || {};
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
   </div>
 </nav>
+
+<div class="main-content">
 
 <!-- ================= MENU PRINCIPAL ================= -->
 <div class="tool-view active" id="view_home">
@@ -6957,15 +6972,6 @@ function render() {
 
 // ---------- RCF ----------
 
-// Preview do arquivo do RCF (cópia local: a versão do módulo POP não é visível neste escopo)
-function renderPopLinkPreview(url) {
-  if (!url) return '';
-  let embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
-  if (embed.includes('tr-video-link')) embed = '';
-  const botao = `<a class="pop-abrir-arquivo-btn" href="${escapeHTML(url)}" target="_blank" rel="noopener">↗ Abrir arquivo em nova aba</a>`;
-  return embed + botao;
-}
-
 function renderRcf() {
   const isAdmin = (window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin');
   const lista = getRcf().lista || [];
@@ -8580,6 +8586,8 @@ window.PROVAS.renderDash = renderDash;
 })();
 </script>
 
+</div>
+</div>
 </div>
 <!-- ===== JS: Dashboard da Home (KPIs reais, escopo isolado) ===== -->
 <script>
