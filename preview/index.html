@@ -589,6 +589,11 @@ body {
 .cargo-etapa-titulo { font-size:13px; font-weight:700; color:var(--text); line-height:1.35; }
 .cargo-etapa-card.done .cargo-etapa-titulo { color:var(--muted); text-decoration:line-through; }
 .cargo-etapa-secao-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:10px; }
+.pdl-criterio-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--card2); border:1px solid var(--border2); border-radius:10px; }
+.pdl-criterio-nome { font-size:13px; font-weight:600; color:var(--text); }
+.pdl-criterio-nota { font-size:13px; font-weight:800; color:var(--laranja); white-space:nowrap; }
+.pdl-criterio-del { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:12px; padding:2px 6px; }
+.pdl-criterio-del:hover { color:var(--text); }
 .cargo-etapa-checkbtn { width:22px; height:22px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.22); background:transparent; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; padding:0; }
 .cargo-etapa-checkbtn:hover { border-color:#1F8A70; }
 .cargo-etapa-card.done .cargo-etapa-checkbtn { background:#1F8A70; border-color:#1F8A70; }
@@ -1181,6 +1186,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_cargos" onclick="mostrarTool('cargos')">
     <span class="di-icon">🧾</span> Cargos
   </button>
+  <button class="drawer-item admin-only" id="di_pdl" onclick="mostrarTool('pdl')">
+    <span class="di-icon">👑</span> PDL
+  </button>
   <button class="drawer-item admin-only" id="di_atualizacoes" onclick="mostrarTool('atualizacoes')">
     <span class="di-icon">📈</span> Atualizações
   </button>
@@ -1283,6 +1291,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-icon">🧾</div>
         <div class="hc-title">Cargos</div>
         <div class="hc-desc">RCF de cada cargo e plano de integração de 90 dias pra novos colaboradores.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-pdl admin-only" onclick="mostrarTool('pdl')">
+        <div class="hc-icon">👑</div>
+        <div class="hc-title">PDL</div>
+        <div class="hc-desc">Processo de Desenvolvimento de Liderança — treinamento e avaliação dos candidatos a braço direito.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
       <button class="home-card c-desafio" onclick="mostrarTool('desafioreuniao')">
@@ -1796,6 +1810,51 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<!-- ================= TOOL: PDL ================= -->
+<div class="tool-view" id="view_pdl">
+  <div class="tool-subbar">
+    <span class="sb-title">👑 PDL</span>
+    <span class="save-ind" id="saveInd_pdl">✓ Salvo</span>
+    <button class="btn btn-amber admin-only" onclick="window.PDL.novoCandidato()">+ Novo candidato</button>
+  </div>
+  <div class="wrap" id="pdl_conteudo"></div>
+</div>
+
+<!-- Modal: detalhe do candidato PDL -->
+<div class="tr-modal-overlay" id="pdlDetalheOverlay" onclick="if(event.target===this) window.PDL.fecharDetalhe()">
+  <div class="tr-modal" style="max-width:640px;">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" id="pdl_titulo" style="padding-top:8px; font-weight:800;">Candidato</span>
+      <button class="tr-modal-close" onclick="window.PDL.fecharDetalhe()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div id="pdl_score_row" class="etapa-badges-row"></div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Critérios de avaliação</span></div>
+        <div id="pdl_criterios_lista" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
+        <div class="etapa-campo-add-row">
+          <input type="text" class="tr-text-input" id="pdl_criterio_nome" placeholder="Ex: Comunicação, Organização, Resultado técnico...">
+          <select class="tr-text-input" id="pdl_criterio_nota" style="max-width:80px;">
+            <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+          <button class="btn btn-amber" style="white-space:nowrap;" onclick="window.PDL.adicionarCriterio()">+ Critério</button>
+        </div>
+      </div>
+      <div class="etapa-panel">
+        <div class="etapa-panel-head"><span class="etapa-panel-label">Follow-up — como está indo o treinamento</span></div>
+        <div id="pdl_notas_lista"></div>
+        <div style="display:flex; gap:8px; padding-top:10px; margin-top:6px; border-top:1px solid var(--border2);">
+          <textarea class="q-input" id="pdl_nova_nota" rows="2" placeholder="Escreva uma nota sobre a evolução dele(a)..." style="flex:1;"></textarea>
+          <button class="btn btn-amber" style="align-self:flex-end; white-space:nowrap;" onclick="window.PDL.adicionarNota()">+ Nota</button>
+        </div>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete admin-only" onclick="window.PDL.excluirCandidato()">🗑️ Excluir candidato</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= TOOL: ATUALIZAÇÕES ================= -->
 <div class="tool-view tool-contratos" id="view_atualizacoes">
   <div class="tool-subbar">
@@ -2296,8 +2355,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard', atualizacoes:'Atualizações' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', pdl:'view_pdl', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', pdl:'PDL', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard', atualizacoes:'Atualizações' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -2324,6 +2383,7 @@ function mostrarTool(nome) {
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   if (nome === 'cargos' && window.CARGOS) window.CARGOS.render();
+  if (nome === 'pdl' && window.PDL) window.PDL.render();
   if (nome === 'desafioreuniao' && window.DESAFIO) window.DESAFIO.render();
   if (nome === 'provas' && window.PROVAS) window.PROVAS.render();
   if (nome === 'dashboard' && window.PROVAS) window.PROVAS.renderDash();
@@ -7502,6 +7562,207 @@ window.CARGOS.salvarDataEtapa = salvarDataEtapa;
 window.CARGOS.adicionarArquivoEtapa = adicionarArquivoEtapa;
 window.CARGOS.excluirArquivoEtapa = excluirArquivoEtapa;
 window.CARGOS.excluirPlano = excluirPlano;
+})();
+</script>
+
+<!-- ===== JS: PDL — Processo de Desenvolvimento de Liderança (escopo isolado) ===== -->
+<script>
+window.PDL = window.PDL || {};
+(function(){
+var CANDIDATOS_SEED = ['Thiago', 'Kuka', 'Felipe'];
+
+let cachedData = null;
+let listenerAtivo = false;
+let detalheId = null;
+
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatarDataHora(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('pt-BR');
+}
+
+function defaultData() {
+  return { lista: CANDIDATOS_SEED.map((nome, i) => ({ id: 'pdl_' + i, nome, criterios: [], notas: [], criadoEm: i })) };
+}
+function getData() { return cachedData || defaultData(); }
+
+function persistir() {
+  if (!window.fb) return;
+  const ind = document.getElementById('saveInd_pdl');
+  if (ind) ind.textContent = 'Salvando...';
+  window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'pdl'), getData())
+    .then(() => { if (ind) ind.textContent = '✓ Salvo'; })
+    .catch(e => console.error('PDL save error', e));
+}
+
+function carregar() {
+  if (!window.fb || listenerAtivo) return;
+  listenerAtivo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', 'pdl'), (snap) => {
+    if (snap.exists()) {
+      cachedData = snap.data();
+      if (!cachedData.lista) cachedData.lista = [];
+    } else {
+      cachedData = defaultData();
+      persistir();
+    }
+    render();
+  }, err => console.error('PDL snapshot error', err));
+}
+
+function mediaCriterios(c) {
+  const crits = c.criterios || [];
+  if (!crits.length) return 0;
+  return Math.round((crits.reduce((a, x) => a + (x.nota || 0), 0) / crits.length) * 10) / 10;
+}
+
+function render() {
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if (!user) return;
+  if (!listenerAtivo) { carregar(); return; }
+  const lista = (getData().lista || []).slice().sort((a, b) => mediaCriterios(b) - mediaCriterios(a));
+  const wrap = document.getElementById('pdl_conteudo');
+  if (!wrap) return;
+  if (!lista.length) {
+    wrap.innerHTML = `<div class="tr-empty">
+      <div class="tr-empty-badge"><span class="tr-empty-icon">👑</span></div>
+      <div class="tr-empty-title">Nenhum candidato ainda</div>
+      <div class="tr-empty-desc">Adicione quem está no processo de desenvolvimento de liderança.</div>
+      <button class="tr-empty-btn" onclick="window.PDL.novoCandidato()">+ Adicionar candidato</button>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="feed-grid">${lista.map((c, i) => {
+    const media = mediaCriterios(c);
+    const pct = Math.round((media / 5) * 100);
+    return `<button class="tr-card" onclick="window.PDL.abrirDetalhe('${c.id}')">
+      ${i === 0 && media > 0 ? '<div class="tr-card-cat" style="color:#FFD75E;">🥇 na frente</div>' : `<div class="tr-card-cat">Candidato(a)</div>`}
+      <div class="tr-card-title">${escapeHTML(c.nome)}</div>
+      <div class="tr-card-desc">${(c.criterios||[]).length} critério${(c.criterios||[]).length===1?'':'s'} avaliado${(c.criterios||[]).length===1?'':'s'} · ${(c.notas||[]).length} nota${(c.notas||[]).length===1?'':'s'} de follow-up</div>
+      <div class="tr-card-progress"><div class="tr-progress-bar"><div class="tr-progress-fill" style="width:${pct}%"></div></div><span>${media || '—'}/5</span></div>
+    </button>`;
+  }).join('')}</div>`;
+}
+
+function novoCandidato() {
+  const nome = prompt('Nome do(a) novo(a) candidato(a):');
+  if (!nome || !nome.trim()) return;
+  const d = getData();
+  d.lista.push({ id: 'pdl_' + Date.now(), nome: nome.trim(), criterios: [], notas: [], criadoEm: Date.now() });
+  cachedData = d;
+  persistir();
+  render();
+}
+
+function abrirDetalhe(id) {
+  const c = (getData().lista || []).find(x => x.id === id);
+  if (!c) return;
+  detalheId = id;
+  document.getElementById('pdl_titulo').textContent = c.nome;
+  document.getElementById('pdl_criterio_nome').value = '';
+  document.getElementById('pdl_nova_nota').value = '';
+  renderDetalhe(c);
+  document.getElementById('pdlDetalheOverlay').classList.add('open');
+}
+
+function renderDetalhe(c) {
+  const media = mediaCriterios(c);
+  document.getElementById('pdl_score_row').innerHTML = `<span class="etapa-badge semana">Nota média: ${media || '—'}/5</span> <span class="etapa-badge categoria">${(c.criterios||[]).length} critérios</span>`;
+
+  const crits = c.criterios || [];
+  document.getElementById('pdl_criterios_lista').innerHTML = crits.length
+    ? crits.map(cr => `<div class="pdl-criterio-row">
+        <span class="pdl-criterio-nome">${escapeHTML(cr.nome)}</span>
+        <span style="display:flex; align-items:center; gap:10px;">
+          <span class="pdl-criterio-nota">${cr.nota}/5</span>
+          <button class="pdl-criterio-del" onclick="window.PDL.excluirCriterio('${cr.id}')">🗑️</button>
+        </span>
+      </div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted);">Nenhum critério avaliado ainda.</div>`;
+
+  const notas = c.notas || [];
+  document.getElementById('pdl_notas_lista').innerHTML = notas.length
+    ? notas.slice().reverse().map(n => `<div class="etapa-step">
+        <div class="etapa-step-icon">📝</div>
+        <div><div class="etapa-step-titulo">${escapeHTML(n.autor||'')} <span style="font-weight:400; color:var(--muted2); font-size:11px;">· ${formatarDataHora(n.criadoEm)}</span></div><div class="etapa-step-sub">${escapeHTML(n.texto)}</div></div>
+      </div>`).join('')
+    : `<div style="font-size:12px; color:var(--muted); padding:6px 0;">Nenhuma nota ainda.</div>`;
+}
+
+function adicionarCriterio() {
+  if (!detalheId) return;
+  const nomeEl = document.getElementById('pdl_criterio_nome');
+  const notaEl = document.getElementById('pdl_criterio_nota');
+  const nome = nomeEl.value.trim();
+  if (!nome) { alert('Dá um nome pro critério :)'); return; }
+  const d = getData();
+  const c = d.lista.find(x => x.id === detalheId);
+  if (!c) return;
+  if (!c.criterios) c.criterios = [];
+  c.criterios.push({ id: 'crit_' + Date.now(), nome, nota: parseInt(notaEl.value, 10) || 3 });
+  cachedData = d;
+  persistir();
+  nomeEl.value = '';
+  renderDetalhe(c);
+  render();
+}
+
+function excluirCriterio(criterioId) {
+  if (!detalheId) return;
+  const d = getData();
+  const c = d.lista.find(x => x.id === detalheId);
+  if (!c) return;
+  c.criterios = (c.criterios || []).filter(cr => cr.id !== criterioId);
+  cachedData = d;
+  persistir();
+  renderDetalhe(c);
+  render();
+}
+
+function adicionarNota() {
+  if (!detalheId) return;
+  const texto = document.getElementById('pdl_nova_nota').value.trim();
+  if (!texto) return;
+  const d = getData();
+  const c = d.lista.find(x => x.id === detalheId);
+  if (!c) return;
+  if (!c.notas) c.notas = [];
+  const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  const autor = (user && (user.nome || user.email)) || 'Alguém';
+  c.notas.push({ texto, autor, criadoEm: Date.now() });
+  cachedData = d;
+  persistir();
+  document.getElementById('pdl_nova_nota').value = '';
+  renderDetalhe(c);
+  render();
+}
+
+function excluirCandidato() {
+  if (!detalheId) return;
+  if (!confirm('Excluir esse candidato do PDL?')) return;
+  const d = getData();
+  d.lista = (d.lista || []).filter(x => x.id !== detalheId);
+  cachedData = d;
+  persistir();
+  fecharDetalhe();
+  render();
+}
+
+function fecharDetalhe() {
+  document.getElementById('pdlDetalheOverlay').classList.remove('open');
+  detalheId = null;
+}
+
+window.PDL.render = render;
+window.PDL.novoCandidato = novoCandidato;
+window.PDL.abrirDetalhe = abrirDetalhe;
+window.PDL.fecharDetalhe = fecharDetalhe;
+window.PDL.adicionarCriterio = adicionarCriterio;
+window.PDL.excluirCriterio = excluirCriterio;
+window.PDL.adicionarNota = adicionarNota;
+window.PDL.excluirCandidato = excluirCandidato;
 })();
 </script>
 
