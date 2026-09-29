@@ -6957,6 +6957,15 @@ function render() {
 
 // ---------- RCF ----------
 
+// Preview do arquivo do RCF (cópia local: a versão do módulo POP não é visível neste escopo)
+function renderPopLinkPreview(url) {
+  if (!url) return '';
+  let embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
+  if (embed.includes('tr-video-link')) embed = '';
+  const botao = `<a class="pop-abrir-arquivo-btn" href="${escapeHTML(url)}" target="_blank" rel="noopener">↗ Abrir arquivo em nova aba</a>`;
+  return embed + botao;
+}
+
 function renderRcf() {
   const isAdmin = (window.APPAUTH && window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin');
   const lista = getRcf().lista || [];
