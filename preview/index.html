@@ -119,9 +119,10 @@ body {
 .drawer-title { font-size:15px; font-weight:700; color:#fff; }
 .drawer-sub { font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--lima); margin-top:2px; }
 .drawer-section-label { padding:18px 20px 8px; font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,0.45); position:relative; z-index:1; }
-.drawer-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:100%; padding:12px 2px; background:transparent; border:none; border-left:3px solid transparent; color:rgba(255,255,255,0.7); font-family:inherit; font-size:8.5px; font-weight:700; line-height:1.15; cursor:pointer; text-align:center; transition:all .18s; position:relative; z-index:1; }
-.drawer-item:hover { background:rgba(255,255,255,0.07); color:#fff; }
-.drawer-item.active { background:rgba(253,116,0,0.12); border-left-color:var(--laranja); color:#fff; }
+.drawer-item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; width:56px; margin:2px auto; padding:9px 2px; background:transparent; border:none; border-radius:11px; color:rgba(255,255,255,0.6); font-family:inherit; font-size:8.5px; font-weight:700; line-height:1.15; cursor:pointer; text-align:center; transition:all .18s; position:relative; z-index:1; }
+.drawer-item:hover { background:rgba(255,255,255,0.08); color:#fff; }
+.drawer-item.active { background:var(--laranja); color:#fff; box-shadow:0 4px 12px rgba(253,116,0,0.35); }
+.drawer-item.active .di-icon { transform:scale(1.05); }
 .drawer-item .di-icon { font-size:19px; width:auto; }
 .drawer-body { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding-bottom:8px; position:relative; z-index:1; }
 .drawer-body::-webkit-scrollbar { width:6px; }
@@ -142,8 +143,8 @@ body {
 .home-desc { font-size:13px; color:rgba(255,255,255,0.82); line-height:1.6; max-width:480px; position:relative; }
 .home-cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:620px) { .home-cards { grid-template-columns:1fr; } }
-.home-card { background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:24px 22px; cursor:pointer; transition:border-color .15s ease; text-align:left; font-family:inherit; position:relative; overflow:hidden; }
-.home-card:hover { border-color:var(--laranja); }
+.home-card { background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:24px 22px; cursor:pointer; transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease; text-align:left; font-family:inherit; position:relative; overflow:hidden; }
+.home-card:hover { border-color:var(--laranja); transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.25); }
 .home-card .hc-icon { width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:23px; margin-bottom:16px; background:var(--card2); border:1px solid var(--border2); }
 .home-card.c-reuniao .hc-icon, .home-card.c-oneone .hc-icon, .home-card.c-treinamentos .hc-icon, .home-card.c-roleplay .hc-icon, .home-card.c-pop .hc-icon, .home-card.c-pauta .hc-icon { background:var(--card2); }
 .home-card .hc-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
@@ -558,7 +559,7 @@ body {
 .wrap { max-width:900px; margin:0 auto; padding:28px 20px 80px; }
 .tr-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:680px) { .tr-grid { grid-template-columns:1fr; } }
-.tr-card { background:var(--card2); border:1px solid var(--border2); border-radius:12px; padding:20px 20px 18px; cursor:pointer; transition:border-color .15s ease; text-align:left; font-family:inherit; display:block; width:100%; position:relative; }
+.tr-card { background:var(--card2); border:1px solid var(--border2); border-radius:12px; padding:20px 20px 18px; cursor:pointer; transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease; text-align:left; font-family:inherit; display:block; width:100%; position:relative; }
 .feed-seletor-row { display:flex!important; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
 .feed-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
 .feed-card { border-left:4px solid var(--laranja); }
@@ -619,7 +620,10 @@ body {
 .etapa-arquivo-link { font-size:12.5px; color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
 .etapa-arquivo-acoes { display:flex; gap:2px; flex-shrink:0; }
 .home-dashboard { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:14px; margin-bottom:28px; }
-.hd-kpi { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; gap:8px; }
+.hd-kpi { background:var(--card2); border:1px solid var(--border2); border-radius:14px; padding:18px 20px; display:flex; flex-direction:column; gap:8px; transition:transform .15s ease, box-shadow .15s ease; }
+.hd-kpi:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.25); }
+.hd-kpi-top { display:flex; align-items:center; justify-content:space-between; }
+.hd-kpi-ico { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
 .hd-kpi-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 .hd-kpi-value { font-size:26px; font-weight:800; color:var(--text); letter-spacing:-0.02em; }
 .hd-kpi-sub { font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px; width:fit-content; padding:2px 9px; border-radius:7px; }
@@ -648,7 +652,7 @@ body {
 .rcf-chip { font-size:11.5px; font-weight:600; color:var(--text); background:var(--card2); border:1px solid var(--border2); padding:6px 12px; border-radius:999px; }
 .rcf-prereq-row { display:flex; gap:8px; font-size:12.5px; margin-bottom:6px; }
 .rcf-prereq-row b { color:var(--muted); font-weight:700; min-width:100px; flex-shrink:0; }
-.tr-card:hover { border-color:var(--laranja); }
+.tr-card:hover { border-color:var(--laranja); transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.25); }
 .tr-card-cat { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--azul-claro); background:rgba(255,255,255,0.08); padding:4px 10px; border-radius:8px; margin-bottom:10px; }
 .tr-card-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; line-height:1.3; }
 .tr-card-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:14px; min-height:18px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -8631,17 +8635,17 @@ function render() {
 
   wrap.innerHTML = `
     <div class="hd-kpi">
-      <span class="hd-kpi-label">Feedbacks</span>
+      <div class="hd-kpi-top"><span class="hd-kpi-label">Feedbacks</span><span class="hd-kpi-ico" style="background:rgba(253,116,0,0.16); color:#FFAF63;">💬</span></div>
       <span class="hd-kpi-value">${pendentes}</span>
       <span class="hd-kpi-sub ${pendentes ? 'alerta' : 'ok'}">${pendentes ? '🔴 aguardando sua resposta' : '✓ tudo em dia'}</span>
     </div>
     <div class="hd-kpi">
-      <span class="hd-kpi-label">Planos de integração</span>
+      <div class="hd-kpi-top"><span class="hd-kpi-label">Planos de integração</span><span class="hd-kpi-ico" style="background:rgba(56,189,248,0.16); color:#7DD3FC;">🧾</span></div>
       <span class="hd-kpi-value">${planosAtivos}</span>
       <span class="hd-kpi-sub neutro">ativos agora</span>
     </div>
     <div class="hd-kpi">
-      <span class="hd-kpi-label">Progresso médio dos planos</span>
+      <div class="hd-kpi-top"><span class="hd-kpi-label">Progresso médio dos planos</span><span class="hd-kpi-ico" style="background:rgba(31,138,112,0.18); color:#5FD9B4;">📈</span></div>
       <span class="hd-kpi-value">${planosAtivos ? progressoMedio + '%' : '—'}</span>
       <div class="tr-progress-bar" style="margin-top:2px;"><div class="tr-progress-fill" style="width:${progressoMedio}%"></div></div>
     </div>`;
