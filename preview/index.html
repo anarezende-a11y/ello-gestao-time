@@ -7424,6 +7424,13 @@ function renderConteudoVerPlano(p) {
     if (!grupos[cat]) grupos[cat] = [];
     grupos[cat].push(a);
   });
+  if (!(p.atividades || []).length) {
+    document.getElementById('planover_lista').innerHTML = `<div style="padding:22px 4px; text-align:center;">
+      <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">Este plano está sem atividades. Isso acontece quando o cargo ainda não tinha o plano de integração cadastrado na hora em que o plano foi criado.</div>
+      <button type="button" class="btn btn-amber" onclick="window.CARGOS.carregarAtividadesPlano()">📋 Carregar atividades do cargo</button>
+    </div>`;
+    return;
+  }
   document.getElementById('planover_lista').innerHTML = Object.keys(grupos).map(cat => `
     <div style="margin-bottom:20px;">
       <div class="cargo-etapa-secao-label">${escapeHTML(cat)}</div>
@@ -7439,6 +7446,34 @@ function renderConteudoVerPlano(p) {
           </button>`).join('')}
       </div>
     </div>`).join('');
+}
+
+function carregarAtividadesPlano() {
+  if (!modalPlanoVerId) return;
+  const d = getPlanos();
+  const p = (d.lista || []).find(x => x.id === modalPlanoVerId);
+  if (!p) return;
+  const rcf = getRcf();
+  const cargo = (rcf.lista || []).find(c => c.id === p.cargoId);
+  let tpl = (cargo && cargo.planoTemplate && cargo.planoTemplate.length) ? cargo.planoTemplate : null;
+  if (!tpl) {
+    if (/triagem/i.test(p.cargoNome || (cargo && cargo.nome) || '')) {
+      if (!confirm('O cargo "' + (p.cargoNome || 'Triagem') + '" ainda não tem as atividades cadastradas no RCF.\n\nCarregar o plano padrão da Triagem N1 (' + SEED_RCF.planoTemplate.length + ' atividades)? Ele também será salvo no cargo, para os próximos planos.')) return;
+      tpl = SEED_RCF.planoTemplate;
+      if (cargo) { cargo.planoTemplate = SEED_RCF.planoTemplate.map(t => Object.assign({}, t)); cachedRcf = rcf; persistirRcf(); }
+    } else {
+      alert('Este cargo ainda não tem atividades cadastradas. Abra o cargo na aba RCF, cole o plano de integração no campo do plano e salve; depois volte aqui.');
+      return;
+    }
+  }
+  p.atividades = tpl.map(t => ({
+    id: t.id, categoria: t.categoria, atividade: t.atividade, descricao: t.descricao || '',
+    semanaInicio: t.semanaInicio, semanaFim: t.semanaFim, done: false, data: '', arquivos: [], campos: [], notas: []
+  }));
+  cachedPlanos = d;
+  window.fb && window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', 'integracoes'), d).catch(e => console.error('CARGOS planos save error', e));
+  renderConteudoVerPlano(p);
+  renderPlano();
 }
 
 function marcarItem(itemId, checked) {
@@ -7675,6 +7710,7 @@ window.CARGOS.filtrarPessoaPlano = filtrarPessoaPlano;
 window.CARGOS.abrirModalNovoPlano = abrirModalNovoPlano;
 window.CARGOS.fecharModalNovoPlano = fecharModalNovoPlano;
 window.CARGOS.criarPlano = criarPlano;
+window.CARGOS.carregarAtividadesPlano = carregarAtividadesPlano;
 window.CARGOS.abrirModalVerPlano = abrirModalVerPlano;
 window.CARGOS.fecharModalVerPlano = fecharModalVerPlano;
 window.CARGOS.marcarItem = marcarItem;
