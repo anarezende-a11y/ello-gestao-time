@@ -7314,8 +7314,8 @@ function renderConteudoVerPlano(p) {
   });
   if (!(p.atividades || []).length) {
     document.getElementById('planover_lista').innerHTML = `<div style="padding:22px 4px; text-align:center;">
-      <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">Este plano está sem atividades. Isso acontece quando o cargo ainda não tinha o plano de integração cadastrado na hora em que o plano foi criado.</div>
-      <button type="button" class="btn btn-amber" onclick="window.CARGOS.carregarAtividadesPlano()">📋 Carregar atividades do cargo</button>
+      <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">Este plano está sem as etapas (os quadradinhos). Clique no botão abaixo para trazê-las de volta.</div>
+      <button type="button" onclick="window.CARGOS.carregarAtividadesPlano()" style="background:var(--laranja); color:#fff; border:none; border-radius:10px; padding:13px 22px; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(253,116,0,.3);">📋 Trazer as etapas de volta</button>
     </div>`;
     return;
   }
