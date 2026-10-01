@@ -1823,7 +1823,13 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
       <div class="tr-field"><label>O que fazer</label><textarea class="tr-text-input" id="pdl_e_desc" rows="3"></textarea></div>
       <div class="tr-field"><label>O que observar / como analisar</label><textarea class="tr-text-input" id="pdl_e_como" rows="5"></textarea></div>
-      <div class="tr-field"><label>Minhas anotações</label><textarea class="tr-text-input" id="pdl_e_notas" rows="3" placeholder="Ex: ordem sorteada, imprevistos, observações"></textarea></div>
+      <div class="tr-field"><label>Anotações por candidato</label>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Felipe</div><textarea class="tr-text-input" id="pdl_e_n_Felipe" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
+          <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Kuka</div><textarea class="tr-text-input" id="pdl_e_n_Kuka" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
+          <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Thiago</div><textarea class="tr-text-input" id="pdl_e_n_Thiago" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
+        </div></div>
+      <div class="tr-field"><label>Anotações gerais da etapa</label><textarea class="tr-text-input" id="pdl_e_notas" rows="3" placeholder="Ex: ordem sorteada, imprevistos, observações"></textarea></div>
       <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text); cursor:pointer;"><input type="checkbox" id="pdl_e_done"> Etapa concluída</label>
     </div>
     <div class="tr-modal-foot">
@@ -7934,6 +7940,7 @@ function preencherModalEtapa(e) {
   document.getElementById('pdl_e_desc').value = e.desc || '';
   document.getElementById('pdl_e_como').value = e.como || '';
   document.getElementById('pdl_e_notas').value = e.notas || '';
+  CAND.forEach(c => { document.getElementById('pdl_e_n_' + c).value = (e.notasPor && e.notasPor[c]) || ''; });
   document.getElementById('pdl_e_done').checked = !!e.done;
 }
 function novaEtapa() {
@@ -7967,6 +7974,7 @@ function salvarEtapa() {
     desc: document.getElementById('pdl_e_desc').value.trim(),
     como: document.getElementById('pdl_e_como').value.trim(),
     notas: document.getElementById('pdl_e_notas').value.trim(),
+    notasPor: (function(){ var o = {}; CAND.forEach(c => { o[c] = document.getElementById('pdl_e_n_' + c).value.trim(); }); return o; })(),
     done: document.getElementById('pdl_e_done').checked
   };
   const d = getData();
