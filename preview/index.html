@@ -1035,7 +1035,7 @@ body {
 .pdl-tag.late { color:#F07070; background:rgba(214,69,69,.15); }
 .pdl-etapa-titulo { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; line-height:1.3; }
 .pdl-etapa-desc { font-size:12px; color:var(--muted); line-height:1.55; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.pdl-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+.pdl-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:16px; }
 @media (max-width:560px){ .pdl-cards { grid-template-columns:1fr; } }
 .pdl-cand { background:var(--card); border:1px solid var(--border2); border-radius:12px; padding:18px; text-align:center; }
 .pdl-cand.lead { border-color:var(--laranja); }
@@ -1906,7 +1906,7 @@ window.APPAUTH = window.APPAUTH || {};
     <button class="btn btn-amber" id="pdl_addBtn" style="display:none;">+ Nova etapa</button>
   </div>
   <div class="wrap" style="max-width:1000px;">
-    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Felipe, Kuka e Thiago · visível só pra você.</div>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Felipe e Kuka · visível só pra você.</div>
     <div id="pdl_resumo"></div>
     <div class="pdl-tabs" id="pdl_tabs"></div>
     <div id="pdl_body"></div>
@@ -1939,7 +1939,6 @@ window.APPAUTH = window.APPAUTH || {};
         <div style="display:flex; flex-direction:column; gap:10px;">
           <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Felipe</div><textarea class="tr-text-input" id="pdl_e_n_Felipe" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
           <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Kuka</div><textarea class="tr-text-input" id="pdl_e_n_Kuka" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
-          <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Thiago</div><textarea class="tr-text-input" id="pdl_e_n_Thiago" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
         </div></div>
       <div class="tr-field"><label>Anotações gerais da etapa</label><textarea class="tr-text-input" id="pdl_e_notas" rows="3" placeholder="Ex: ordem sorteada, imprevistos, observações"></textarea></div>
       <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text); cursor:pointer;"><input type="checkbox" id="pdl_e_done"> Etapa concluída</label>
@@ -7732,7 +7731,7 @@ window.CARGOS.excluirPlano = excluirPlano;
 <script>
 window.PDL = window.PDL || {};
 (function(){
-const CAND = ['Felipe','Kuka','Thiago'];
+const CAND = ['Felipe','Kuka']; // Thiago saiu do processo (dados dele continuam guardados no banco)
 const COMPS = ['Gestão de pessoas','Comunicação','Tomada de decisão','Resolução de conflitos','Organização e priorização','Proatividade','Ética e integridade','Foco em resultados'];
 const FASES = {
   instrumentos: { nome:'Instrumento', cor:'#4F8BFF' },
@@ -8027,7 +8026,7 @@ function salvarEtapa() {
     desc: document.getElementById('pdl_e_desc').value.trim(),
     como: document.getElementById('pdl_e_como').value.trim(),
     notas: document.getElementById('pdl_e_notas').value.trim(),
-    notasPor: (function(){ var o = {}; CAND.forEach(c => { o[c] = document.getElementById('pdl_e_n_' + c).value.trim(); }); return o; })(),
+    notasPor: (function(){ var antes = (modalEtapaId && (getData().etapas.find(x => x.id === modalEtapaId) || {}).notasPor) || {}; var o = Object.assign({}, antes); CAND.forEach(c => { o[c] = document.getElementById('pdl_e_n_' + c).value.trim(); }); return o; })(),
     done: document.getElementById('pdl_e_done').checked
   };
   const d = getData();
@@ -8187,7 +8186,7 @@ function setDecisao(campo, v) { const d = getData(); d.decisao[campo] = v; cache
 /* ---------- Aba Observações ---------- */
 function htmlObs() {
   const d = getData();
-  const lista = d.obs || [];
+  const lista = (d.obs || []).filter(o => CAND.indexOf(o.pessoa) !== -1);
   const cel = (c, comp) => {
     const f = lista.filter(o => o.pessoa === c && o.comp === comp && o.tipo === 'forte').length;
     const a = lista.filter(o => o.pessoa === c && o.comp === comp && o.tipo === 'atencao').length;
@@ -8272,7 +8271,7 @@ function htmlAnalisar() {
       '<b>Teste de Julgamento Situacional:</b> além do total, some por categoria (pessoas, conflito, decisão, comunicação). Um total alto com nota baixa em "conflito" ou "feedback" é um risco específico pra função de líder.',
       '<b>Entrevista:</b> valorize exemplos reais e específicos (situação, o que fez, resultado, aprendizado). Respostas genéricas ("eu sempre converso com todos") valem menos que uma história com detalhes, inclusive de erro.',
       '<b>Feedback 360:</b> olhe a média e a <b>dispersão</b>. Notas muito diferentes entre avaliadores mostram que a pessoa lidera de formas diferentes com pessoas diferentes. Nos comentários, só conte temas que se repetem.',
-      '<b>Práticas:</b> são o mais próximo de ver liderança em ação. Use sempre o mesmo cenário, o mesmo tempo e a mesma régua pros três.',
+      '<b>Práticas:</b> são o mais próximo de ver liderança em ação. Use sempre o mesmo cenário, o mesmo tempo e a mesma régua pros dois.',
       '<b>Autoavaliação:</b> serve mais como comparação do que como nota. O gap entre autoavaliação e 360 mostra autoconhecimento.'] },
     { t:'Sinais que valem ouro numa liderança', i:'🟢', p:[
       'Assume erros sem procurar culpado · ouve antes de decidir e decide mesmo assim · dá feedback direto sem humilhar · delega com clareza e acompanha · trata o time de forma consistente (sem favoritismo percebido) · mantém a calma em crise · lida bem com quem discorda · se preocupa com o resultado do time, não só com o próprio.'] },
