@@ -4722,6 +4722,7 @@ function atualizarPreviewPop() {
   document.getElementById('pop_link_preview').innerHTML = renderPopLinkPreview(url);
 }
 
+window.renderPopLinkPreview = renderPopLinkPreview;
 function renderPopLinkPreview(url) {
   if (!url) return '';
   let embed = window.gerarEmbedVideo ? window.gerarEmbedVideo(url) : '';
