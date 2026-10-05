@@ -9223,14 +9223,90 @@ function abrirTake(id) {
   refazendo = false;
   document.getElementById('pv_take_titulo').textContent = p.titulo || 'Sem título';
   const user = window.APPAUTH.usuarioAtual;
-  renderTakeArea(p, (user && user.nome) || '');
+  if (user && user.role === 'admin') renderResultadosAdmin(p);
+  else renderTakeArea(p, (user && user.nome) || '');
   document.getElementById('pvTakeOverlay').classList.add('open');
+}
+function verResultados() {
+  const data = getData();
+  const p = data.provas.find(x => x.id === takeId);
+  if (p) renderResultadosAdmin(p);
+}
+function fazerMinhaProva() {
+  const data = getData();
+  const p = data.provas.find(x => x.id === takeId);
+  if (!p) return;
+  const user = window.APPAUTH.usuarioAtual;
+  renderTakeArea(p, (user && user.nome) || '');
+}
+function renderResultadosAdmin(p) {
+  const area = document.getElementById('pv_take_area');
+  const perguntas = p.perguntas || [];
+  const resultados = p.resultados || {};
+  const nomes = Object.keys(resultados).sort((a,b) => {
+    const ra = resultados[a], rb = resultados[b];
+    const pa = ra.total ? ra.acertos/ra.total : 0, pb = rb.total ? rb.acertos/rb.total : 0;
+    return pb - pa || (rb.ts||0) - (ra.ts||0);
+  });
+  const cor = pct => pct >= 70 ? '#22c55e' : (pct >= 50 ? '#f59e0b' : '#ef4444');
+  if (!nomes.length) {
+    area.innerHTML = `<div class="tr-comentarios-empty">Ninguém respondeu essa prova ainda.</div>
+      <button class="tr-add-btn" style="margin-top:12px;" onclick="window.PROVAS.fazerMinhaProva()">📝 Fazer a prova</button>`;
+    return;
+  }
+  let somaA = 0, somaT = 0;
+  nomes.forEach(n => { somaA += resultados[n].acertos; somaT += resultados[n].total; });
+  const mediaPct = somaT ? Math.round(somaA/somaT*100) : 0;
+
+  const cards = nomes.map(nome => {
+    const r = resultados[nome];
+    const pct = r.total ? Math.round(r.acertos/r.total*100) : 0;
+    let detalhe;
+    if (r.respostas && perguntas.length) {
+      detalhe = perguntas.map((q, i) => {
+        const ok = r.respostas[q.id];
+        if (ok === undefined) return '';
+        const certa = (q.opcoes && q.opcoes[q.correta]) || '';
+        return `<div style="display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--border2); font-size:12px; line-height:1.45;">
+          <span style="flex:none; font-weight:800; color:${ok ? '#22c55e' : '#ef4444'};">${ok ? '✓' : '✗'}</span>
+          <div>
+            <div>${i+1}. ${escapeHTML(q.texto)}</div>
+            ${ok ? '' : `<div style="margin-top:3px; color:var(--muted2);">Resposta certa: ${escapeHTML(certa)}</div>`}
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      detalhe = `<div style="padding:8px 0; border-top:1px solid var(--border2); font-size:12px; color:var(--muted2);">Só a nota foi registrada (sem o detalhe de cada pergunta).</div>`;
+    }
+    return `<details style="border:1px solid var(--border2); border-radius:10px; padding:10px 12px; margin-bottom:8px;">
+      <summary style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; list-style:none;">
+        <span style="font-weight:700;">${escapeHTML(nome)} <span style="font-weight:400; font-size:11px; color:var(--muted2);">· ${formatarDataHora(r.ts)}</span></span>
+        <span style="font-weight:800; color:${cor(pct)};">${r.acertos}/${r.total} · ${pct}%</span>
+      </summary>
+      <div style="margin-top:8px;">${detalhe}</div>
+    </details>`;
+  }).join('');
+
+  area.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div style="font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted2);">${nomes.length} respondeu(ram)</div>
+      <div style="font-size:13px; font-weight:800; color:${cor(mediaPct)};">Média do time: ${mediaPct}%</div>
+    </div>
+    ${cards}
+    <button class="tr-add-btn" style="margin-top:6px;" onclick="window.PROVAS.fazerMinhaProva()">📝 Fazer a prova</button>`;
 }
 function fecharTake() {
   document.getElementById('pvTakeOverlay').classList.remove('open');
   takeId = null;
 }
 function renderTakeArea(p, meuNome) {
+  renderTakeAreaBase(p, meuNome);
+  const u = window.APPAUTH.usuarioAtual;
+  if (u && u.role === 'admin') {
+    document.getElementById('pv_take_area').insertAdjacentHTML('afterbegin',
+      `<button class="tr-add-btn" style="margin-bottom:12px;" onclick="window.PROVAS.verResultados()">← Resultados do time</button>`);
+  }
+}
+function renderTakeAreaBase(p, meuNome) {
   const area = document.getElementById('pv_take_area');
   const perguntas = p.perguntas || [];
   if (!perguntas.length) {
@@ -9540,6 +9616,8 @@ window.PROVAS.renderDash = renderDash;
 window.PROVAS.marcarManual = marcarManual;
 window.PROVAS.salvarLancamento = salvarLancamento;
 window.PROVAS.abrirTake = abrirTake;
+window.PROVAS.verResultados = verResultados;
+window.PROVAS.fazerMinhaProva = fazerMinhaProva;
 window.PROVAS.fecharTake = fecharTake;
 window.PROVAS.marcarResposta = marcarResposta;
 window.PROVAS.refazer = refazer;
