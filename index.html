@@ -2690,7 +2690,7 @@ function buildAcoes(acoes) {
 }
 
 function addAcao() {
-  const list = document.getElementById('actionList');
+  const list = document.querySelector('#mainWrap_r #actionList');
   const d = document.createElement('div');
   d.className = 'action-item';
   d.innerHTML = `<input type="checkbox" class="action-cb" onchange="window.RS.autosave()">
@@ -2722,15 +2722,15 @@ function togglePresenca(mi) {
 
 // ── MOOD ──
 function selMood(mi, ei) {
-  document.querySelectorAll(`[data-mi="${mi}"]`).forEach(e => e.classList.remove('sel'));
-  document.querySelectorAll(`[data-mi="${mi}"][data-ei="${ei}"]`).forEach(e => e.classList.add('sel'));
+  document.querySelectorAll(`#mainWrap_r [data-mi="${mi}"]`).forEach(e => e.classList.remove('sel'));
+  document.querySelectorAll(`#mainWrap_r [data-mi="${mi}"][data-ei="${ei}"]`).forEach(e => e.classList.add('sel'));
   autosave();
 }
 
 // ── SCALE ──
 function selScale(key, val) {
-  document.querySelectorAll(`[data-key="${key}"]`).forEach(e => e.classList.remove('sel'));
-  document.querySelectorAll(`[data-key="${key}"][data-val="${val}"]`).forEach(e => e.classList.add('sel'));
+  document.querySelectorAll(`#mainWrap_r [data-key="${key}"]`).forEach(e => e.classList.remove('sel'));
+  document.querySelectorAll(`#mainWrap_r [data-key="${key}"][data-val="${val}"]`).forEach(e => e.classList.add('sel'));
   autosave();
 }
 
@@ -2746,7 +2746,7 @@ function saveAll() {
   // textos simples
   ['meta_data','semana_label','meta_duracao','abertura_comunicado','conquistas',
    'travamentos','clima_time','prioridades'].forEach(id => {
-    const el = document.getElementById(id);
+    const el = document.querySelector('#mainWrap_r #' + id);
     if(el) s[id] = el.value;
   });
 
@@ -2757,17 +2757,17 @@ function saveAll() {
       if(el) s[`${campo}_${mi}`] = el.value;
     });
     // mood
-    const sel = document.querySelector(`.mood-sm.sel[data-mi="${mi}"]`);
+    const sel = document.querySelector(`#mainWrap_r .mood-sm.sel[data-mi="${mi}"]`);
     if(sel) s[`mood_${mi}`] = parseInt(sel.getAttribute('data-ei'));
   });
 
   // scale avaliação
-  const scSel = document.querySelector('.scale-opt.sel[data-key="avaliacao_semana"]');
+  const scSel = document.querySelector('#mainWrap_r .scale-opt.sel[data-key="avaliacao_semana"]');
   if(scSel) s.avaliacao_semana = parseInt(scSel.getAttribute('data-val'));
 
   // ações
   const acoes = [];
-  document.querySelectorAll('#actionList .action-item').forEach(item => {
+  document.querySelectorAll('#mainWrap_r #actionList .action-item').forEach(item => {
     const cb   = item.querySelector('.action-cb');
     const resp = item.querySelector('.action-resp');
     const inp  = item.querySelector('.action-input');
@@ -2859,7 +2859,61 @@ function saveConversa(pessoa, idx, conv) {
   setData(d);
 }
 
+// ── LIMPEZA ÚNICA: combinados duplicados/contaminados (bug de IDs repetidos entre módulos) ──
+function limparCombinadosContaminados() {
+  const FLAG = 'ello_oo_limpeza_acoes_v1';
+  try {
+    if(localStorage.getItem(FLAG)) return;
+    const d = getData();
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) localStorage.setItem('ello_one_on_one_v2_backup_antes_limpeza', raw); // backup de segurança
+    const norm = s => (s||'').trim().toLowerCase().replace(/\s+/g,' ');
+
+    // 1) textos que aparecem em conversas de 4+ pessoas diferentes = contaminação (não são combinados individuais)
+    const pessoasPorTexto = {};
+    Object.keys(d).forEach(p => (d[p]||[]).forEach(c => (c.acoes||[]).forEach(a => {
+      const t = norm(a && a.texto); if(!t) return;
+      (pessoasPorTexto[t] = pessoasPorTexto[t] || new Set()).add(p);
+    })));
+    const contaminados = new Set(Object.keys(pessoasPorTexto).filter(t => pessoasPorTexto[t].size >= 4));
+
+    // 2) remove contaminados e duplicados exatos dentro de cada conversa
+    Object.keys(d).forEach(p => (d[p]||[]).forEach(c => {
+      if(!Array.isArray(c.acoes)) return;
+      const vistos = new Set();
+      c.acoes = c.acoes.filter(a => {
+        const t = norm(a && a.texto);
+        if(!t) return true;                 // mantém linhas vazias
+        if(contaminados.has(t)) return false;
+        const k = t + '|' + (a.resp||'');
+        if(vistos.has(k)) return false;
+        vistos.add(k); return true;
+      });
+      if(c.acoes.length === 0) c.acoes = [{resp:'',texto:'',done:false},{resp:'',texto:'',done:false}];
+    }));
+    setData(d);
+
+    // 3) Reunião Semanal: só remove duplicados exatos dentro da mesma semana
+    const rsRaw = localStorage.getItem('ello_reuniao_semanal');
+    if(rsRaw) {
+      const rs = JSON.parse(rsRaw);
+      (rs.semanas||[]).forEach(s => {
+        if(!s || !Array.isArray(s.acoes)) return;
+        const vistos = new Set();
+        s.acoes = s.acoes.filter(a => {
+          const t = norm(a && a.texto); if(!t) return true;
+          const k = t + '|' + (a.resp||''); if(vistos.has(k)) return false;
+          vistos.add(k); return true;
+        });
+      });
+      localStorage.setItem('ello_reuniao_semanal', JSON.stringify(rs));
+    }
+    localStorage.setItem(FLAG, '1');
+  } catch(e) { console.error('Limpeza de combinados falhou', e); }
+}
+
 function popularSelect() {
+  limparCombinadosContaminados();
   const sel = document.getElementById('personSelect');
   MEMBROS.forEach(m => {
     const opt = document.createElement('option');
@@ -3166,11 +3220,11 @@ function renderForm() {
 
   const engSel = conv.energia;
   if(engSel) {
-    document.querySelectorAll(`.scale-opt[data-key="energia"][data-val="${engSel}"]`).forEach(e=>e.classList.add('sel'));
+    document.querySelectorAll(`#mainWrap_o .scale-opt[data-key="energia"][data-val="${engSel}"]`).forEach(e=>e.classList.add('sel'));
   }
   const retSel = conv.pulso_retencao;
   if(retSel) {
-    document.querySelectorAll(`.scale-opt[data-key="pulso_retencao"][data-val="${retSel}"]`).forEach(e=>e.classList.add('sel'));
+    document.querySelectorAll(`#mainWrap_o .scale-opt[data-key="pulso_retencao"][data-val="${retSel}"]`).forEach(e=>e.classList.add('sel'));
   }
 }
 
@@ -3212,7 +3266,7 @@ function renderAcoes(acoes) {
 }
 
 function addAcao() {
-  const list = document.getElementById('actionList');
+  const list = document.querySelector('#mainWrap_o #actionList');
   const d = document.createElement('div');
   d.className = 'action-item';
   d.innerHTML = `<input type="checkbox" class="action-cb" onchange="window.OO.autosave()">
@@ -3228,13 +3282,13 @@ function addAcao() {
 }
 
 function selMood(ei) {
-  document.querySelectorAll('.mood-sm').forEach(e => e.classList.remove('sel'));
-  document.querySelectorAll(`.mood-sm[data-ei="${ei}"]`).forEach(e => e.classList.add('sel'));
+  document.querySelectorAll('#mainWrap_o .mood-sm').forEach(e => e.classList.remove('sel'));
+  document.querySelectorAll(`#mainWrap_o .mood-sm[data-ei="${ei}"]`).forEach(e => e.classList.add('sel'));
   autosave();
 }
 function selScale(key, val) {
-  document.querySelectorAll(`.scale-opt[data-key="${key}"]`).forEach(e => e.classList.remove('sel'));
-  document.querySelectorAll(`.scale-opt[data-key="${key}"][data-val="${val}"]`).forEach(e => e.classList.add('sel'));
+  document.querySelectorAll(`#mainWrap_o .scale-opt[data-key="${key}"]`).forEach(e => e.classList.remove('sel'));
+  document.querySelectorAll(`#mainWrap_o .scale-opt[data-key="${key}"][data-val="${val}"]`).forEach(e => e.classList.add('sel'));
   autosave();
 }
 
@@ -3254,21 +3308,21 @@ function saveAll() {
    'feedback_lider','feedback_liderado','reconhecimento','carreira',
    'pergunta_final','nota_privada',
    'proxima_data'].forEach(id => {
-    const el = document.getElementById(id);
+    const el = document.querySelector('#mainWrap_o #' + id);
     if(el) conv[id] = el.value;
   });
 
-  const moodSel = document.querySelector('.mood-sm.sel');
+  const moodSel = document.querySelector('#mainWrap_o .mood-sm.sel');
   if(moodSel) conv.mood = parseInt(moodSel.getAttribute('data-ei'));
 
-  const engSel = document.querySelector('.scale-opt[data-key="energia"].sel');
+  const engSel = document.querySelector('#mainWrap_o .scale-opt[data-key="energia"].sel');
   if(engSel) conv.energia = parseInt(engSel.getAttribute('data-val'));
 
-  const retSel = document.querySelector('.scale-opt[data-key="pulso_retencao"].sel');
+  const retSel = document.querySelector('#mainWrap_o .scale-opt[data-key="pulso_retencao"].sel');
   if(retSel) conv.pulso_retencao = parseInt(retSel.getAttribute('data-val'));
 
   const acoes = [];
-  document.querySelectorAll('#actionList .action-item').forEach(item => {
+  document.querySelectorAll('#mainWrap_o #actionList .action-item').forEach(item => {
     const cb   = item.querySelector('.action-cb');
     const resp = item.querySelector('.action-resp');
     const inp  = item.querySelector('.action-input');
