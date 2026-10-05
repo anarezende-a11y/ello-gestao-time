@@ -9239,6 +9239,14 @@ function fazerMinhaProva() {
   const user = window.APPAUTH.usuarioAtual;
   renderTakeArea(p, (user && user.nome) || '');
 }
+function toggleResultado(card) {
+  const aberto = card.classList.toggle('pv-aberto');
+  card.style.gridColumn = aberto ? '1 / -1' : '';
+  const det = card.querySelector('.pv-card-detalhe');
+  if (det) det.style.display = aberto ? 'block' : 'none';
+  const seta = card.querySelector('.pv-card-seta');
+  if (seta) seta.textContent = aberto ? 'Esconder respostas ▴' : 'Ver respostas ▾';
+}
 function renderResultadosAdmin(p) {
   const area = document.getElementById('pv_take_area');
   const perguntas = p.perguntas || [];
@@ -9261,13 +9269,14 @@ function renderResultadosAdmin(p) {
   const cards = nomes.map(nome => {
     const r = resultados[nome];
     const pct = r.total ? Math.round(r.acertos/r.total*100) : 0;
+    const c = cor(pct);
     let detalhe;
     if (r.respostas && perguntas.length) {
       detalhe = perguntas.map((q, i) => {
         const ok = r.respostas[q.id];
         if (ok === undefined) return '';
         const certa = (q.opcoes && q.opcoes[q.correta]) || '';
-        return `<div style="display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--border2); font-size:12px; line-height:1.45;">
+        return `<div style="display:flex; gap:8px; padding:8px 0; border-top:1px solid var(--border2); font-size:12px; line-height:1.45; text-align:left;">
           <span style="flex:none; font-weight:800; color:${ok ? '#22c55e' : '#ef4444'};">${ok ? '✓' : '✗'}</span>
           <div>
             <div>${i+1}. ${escapeHTML(q.texto)}</div>
@@ -9276,23 +9285,27 @@ function renderResultadosAdmin(p) {
         </div>`;
       }).join('');
     } else {
-      detalhe = `<div style="padding:8px 0; border-top:1px solid var(--border2); font-size:12px; color:var(--muted2);">Só a nota foi registrada (sem o detalhe de cada pergunta).</div>`;
+      detalhe = `<div style="padding:8px 0; border-top:1px solid var(--border2); font-size:12px; color:var(--muted2); text-align:left;">Só a nota foi registrada (sem o detalhe de cada pergunta).</div>`;
     }
-    return `<details style="border:1px solid var(--border2); border-radius:10px; padding:10px 12px; margin-bottom:8px;">
-      <summary style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; list-style:none;">
-        <span style="font-weight:700;">${escapeHTML(nome)} <span style="font-weight:400; font-size:11px; color:var(--muted2);">· ${formatarDataHora(r.ts)}</span></span>
-        <span style="font-weight:800; color:${cor(pct)};">${r.acertos}/${r.total} · ${pct}%</span>
-      </summary>
-      <div style="margin-top:8px;">${detalhe}</div>
-    </details>`;
+    return `<div class="pv-res-card" onclick="window.PROVAS.toggleResultado(this)"
+        style="border:1px solid var(--border2); border-top:3px solid ${c}; border-radius:14px; padding:14px; cursor:pointer; text-align:center; background:var(--surface);">
+      <div style="width:38px; height:38px; margin:0 auto 8px; border-radius:50%; background:${c}22; color:${c}; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;">${escapeHTML(nome.charAt(0).toUpperCase())}</div>
+      <div style="font-weight:700; font-size:14px;">${escapeHTML(nome)}</div>
+      <div style="font-size:26px; font-weight:800; color:${c}; margin:6px 0 2px;">${r.acertos}<span style="font-size:14px; font-weight:600; color:var(--muted2);">/${r.total}</span></div>
+      <div style="height:5px; border-radius:99px; background:var(--border2); overflow:hidden; margin:6px 0;"><div style="height:100%; width:${pct}%; background:${c};"></div></div>
+      <div style="font-size:12px; font-weight:700; color:${c};">${pct}%</div>
+      <div style="font-size:10px; color:var(--muted2); margin-top:4px;">${formatarDataHora(r.ts)}</div>
+      <div class="pv-card-seta" style="font-size:11px; color:var(--muted2); margin-top:8px;">Ver respostas ▾</div>
+      <div class="pv-card-detalhe" style="display:none; margin-top:10px;">${detalhe}</div>
+    </div>`;
   }).join('');
 
   area.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <div style="font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted2);">${nomes.length} respondeu(ram)</div>
       <div style="font-size:13px; font-weight:800; color:${cor(mediaPct)};">Média do time: ${mediaPct}%</div>
     </div>
-    ${cards}
-    <button class="tr-add-btn" style="margin-top:6px;" onclick="window.PROVAS.fazerMinhaProva()">📝 Fazer a prova</button>`;
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;">${cards}</div>
+    <button class="tr-add-btn" style="margin-top:14px;" onclick="window.PROVAS.fazerMinhaProva()">📝 Fazer a prova</button>`;
 }
 function fecharTake() {
   document.getElementById('pvTakeOverlay').classList.remove('open');
@@ -9617,6 +9630,7 @@ window.PROVAS.marcarManual = marcarManual;
 window.PROVAS.salvarLancamento = salvarLancamento;
 window.PROVAS.abrirTake = abrirTake;
 window.PROVAS.verResultados = verResultados;
+window.PROVAS.toggleResultado = toggleResultado;
 window.PROVAS.fazerMinhaProva = fazerMinhaProva;
 window.PROVAS.fecharTake = fecharTake;
 window.PROVAS.marcarResposta = marcarResposta;
