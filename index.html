@@ -1169,6 +1169,11 @@ body {
 #mod-posvendas .empty{padding:28px;text-align:center;color:var(--muted)}
 #mod-posvendas .list-row{display:grid;grid-template-columns:minmax(0,1.4fr) 90px 34px;gap:10px;align-items:end;padding:8px 0;border-bottom:1px solid rgba(125,211,214,.08)}
 #mod-posvendas .list-row.svc{grid-template-columns:minmax(0,1.4fr) 110px 34px}
+#mod-posvendas .list-row.ven{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) 74px 34px}
+@media (max-width:560px){#mod-posvendas .list-row.ven{grid-template-columns:minmax(0,1fr) 70px 34px}#mod-posvendas .list-row.ven .fld-mail{grid-column:1/-1;order:5}}
+#mod-posvendas .eu-note{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(125,211,214,.06);font-size:13px;color:var(--muted)}
+#mod-posvendas .eu-note b{color:var(--fg)}
+#mod-posvendas .eu-note.warn{border-color:rgba(245,165,36,.5);background:rgba(245,165,36,.08);color:#ffd18a}
 #mod-posvendas .x{all:unset;cursor:pointer;width:34px;height:38px;display:grid;place-items:center;border-radius:9px;color:var(--bad)}
 #mod-posvendas .x:hover{background:var(--bad-soft)}
 #mod-posvendas .admin-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
@@ -2188,6 +2193,7 @@ window.APPAUTH = window.APPAUTH || {};
           </div>
           <div class="form-actions"><button class="pvbtn" type="submit" id="nSave">Salvar negócio</button></div>
         </form>
+        <div class="eu-note" id="euNote" hidden></div>
         <div class="ro-note" id="negRo" hidden>Você está com acesso só de leitura. Peça para a Ana te dar acesso de Colaborador para lançar negócios.</div>
       </article>
 
@@ -2234,7 +2240,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
           <article class="card">
             <div class="race-h"><h3 style="margin:0;font-size:14px">Equipe e peso na meta</h3><button class="pvbtn ghost sm" type="button" id="addVen">+ Pessoa</button></div>
-            <p class="pvsub" style="font-size:12px;margin:8px 0 4px">Peso 1 = parte igual. Peso maior = meta individual maior. A meta de cada um é dividida do que falta vender.</p>
+            <p class="pvsub" style="font-size:12px;margin:8px 0 4px">Peso 1 = parte igual. Peso maior = meta individual maior. A meta de cada um é dividida do que falta vender. O <b>e-mail de login</b> liga a pessoa ao que ela lança em Negócios.</p>
             <div id="venList"></div>
           </article>
           <article class="card">
@@ -10638,6 +10644,39 @@ function fillSelects(){
   keep($("#lVen"), vo, '<option value="">Todos</option>');
   keep($("#nVen"), vo);
   keep($("#nSvc"), ss.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.nome)+'</option>').join(""));
+  try { aplicarColaborador(); } catch(e) {}
+}
+/* ===== colaborador logado → vendedor da equipe ===== */
+let meuVend = "";
+const normNome = t => String(t||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z]/g,"");
+function acharMeuVend(){
+  const u = window.APPAUTH && window.APPAUTH.usuarioAtual; const vs = cfg.vendedores||[];
+  if(!u) return "";
+  const mail = String(u.email||"").trim().toLowerCase();
+  let v = vs.find(x => x.email && String(x.email).trim().toLowerCase() === mail);
+  if(!v){
+    const cands = [u.nome, mail.split("@")[0], mail.split("@")[0].split(/[._-]/)[0]].map(normNome).filter(x=>x && x.length>=3);
+    v = vs.find(x => { const n = normNome(x.nome); return n && cands.some(c => c===n || c.startsWith(n) || n.startsWith(c)); });
+  }
+  return v ? v.id : "";
+}
+let filtroInicialFeito = false;
+function aplicarColaborador(){
+  meuVend = acharMeuVend();
+  const nome = meuVend ? vName(meuVend) : "";
+  const note = $("#euNote");
+  if(!canAdmin){
+    $("#nVen").value = meuVend; $("#nVen").disabled = true;
+    $("#lVen").value = meuVend; $("#lVen").disabled = true;
+    if(!filtroInicialFeito && meuVend){ $("#fVend").value = meuVend; filtroInicialFeito = true; }
+    note.hidden = false;
+    if(meuVend){ note.className = "eu-note"; note.innerHTML = 'Você está lançando como <b>'+esc(nome)+'</b>. Seus negócios atualizam o seu painel, as suas metas e o ranking do time.'; }
+    else { note.className = "eu-note warn"; note.innerHTML = 'Seu login ainda não está ligado a ninguém da equipe. Peça para a Ana colocar o seu e-mail na equipe (Admin · Metas) para poder lançar negócios.'; }
+  } else {
+    $("#nVen").disabled = false; $("#lVen").disabled = false;
+    note.hidden = false; note.className = "eu-note";
+    note.innerHTML = 'Você é admin: escolha o vendedor de cada negócio. Cada colaborador, quando entra, lança e vê só os próprios negócios.';
+  }
 }
 const vName = id => (cfg.vendedores||[]).find(v=>v.id===id)?.nome || id;
 const sName = id => (cfg.servicos||[]).find(s=>s.id===id)?.nome || id;
@@ -10645,7 +10684,8 @@ function renderNeg(){
   const mes = $("#lMes").value, vend=$("#lVen").value, st=$("#lSt").value, q=$("#lQ").value.trim().toLowerCase();
   let rows = realDeals.slice();
   if(mes) rows = rows.filter(d=>(d.entrada||"").startsWith(mes));
-  if(vend) rows = rows.filter(d=>d.vendedor===vend);
+  if(!canAdmin) rows = rows.filter(d=>d.vendedor===meuVend);
+  else if(vend) rows = rows.filter(d=>d.vendedor===vend);
   if(st) rows = rows.filter(d=>d.status===st);
   if(q) rows = rows.filter(d=>(d.cliente||"").toLowerCase().includes(q));
   rows.sort((a,b)=> (b.entrada||"").localeCompare(a.entrada||""));
@@ -10657,13 +10697,13 @@ function renderNeg(){
     const dias = d.status==="aberto" ? dayDiff(d.entrada, todayISO) : (d.fechamento? dayDiff(d.entrada,d.fechamento) : "");
     const lbl = {aberto:"Em aberto", ganho:"Ganho", perdido:"Perdido"}[d.status]||d.status;
     return '<tr data-id="'+esc(d.id)+'"><td><b>'+esc(d.cliente)+'</b>'+(d.motivo&&d.status==="perdido"?'<div style="font-size:11px;color:#8db0b3">'+esc(d.motivo)+'</div>':'')+'</td><td>'+esc(vName(d.vendedor))+'</td><td>'+esc(sName(d.servico))+'</td><td class="r num">'+BRL2(+d.valor||0)+'</td>'+
-      '<td><button class="st '+esc(d.status)+'" data-act="cycle" type="button" title="Clique para trocar o status"'+(canWrite?'':' disabled')+'>'+lbl+'</button></td><td class="num">'+fmtDM(d.entrada)+'</td><td class="r num">'+dias+'</td>'+
-      '<td><div class="act">'+(canWrite?'<button class="pvbtn ghost sm" data-act="edit" type="button">Editar</button><button class="pvbtn danger sm" data-act="del" type="button">Excluir</button>':'')+'</div></td></tr>';
+      '<td><button class="st '+esc(d.status)+'" data-act="cycle" type="button" title="Clique para trocar o status"'+(canWrite && (canAdmin || d.vendedor===meuVend)?'':' disabled')+'>'+lbl+'</button></td><td class="num">'+fmtDM(d.entrada)+'</td><td class="r num">'+dias+'</td>'+
+      '<td><div class="act">'+(canWrite && (canAdmin || d.vendedor===meuVend)?'<button class="pvbtn ghost sm" data-act="edit" type="button">Editar</button><button class="pvbtn danger sm" data-act="del" type="button">Excluir</button>':'')+'</div></td></tr>';
   }).join("");
 }
 
 function resetForm(){
-  editingId = null; $("#negForm").reset(); $("#nEnt").value = todayISO; $("#formTitle").textContent="Novo negócio"; $("#formCancel").hidden=true; $("#nSave").textContent="Salvar negócio"; $("#motWrap").hidden = true;
+  editingId = null; $("#negForm").reset(); $("#nEnt").value = todayISO; if(!canAdmin && meuVend) $("#nVen").value = meuVend; $("#formTitle").textContent="Novo negócio"; $("#formCancel").hidden=true; $("#nSave").textContent="Salvar negócio"; $("#motWrap").hidden = true;
 }
 $("#nSt").addEventListener("change", ()=>{ const s=$("#nSt").value; $("#motWrap").hidden = s!=="perdido"; if(s!=="aberto" && !$("#nFec").value) $("#nFec").value = todayISO; if(s==="aberto") $("#nFec").value=""; });
 $("#formCancel").addEventListener("click", resetForm);
@@ -10672,7 +10712,13 @@ $("#negForm").addEventListener("submit", async ev=>{
   const st = $("#nSt").value;
   const body = { cliente: $("#nCli").value.trim(), vendedor: $("#nVen").value, servico: $("#nSvc").value, valor: Math.max(0, parseFloat($("#nVal").value)||0),
     status: st, entrada: $("#nEnt").value || todayISO, fechamento: st==="aberto" ? "" : ($("#nFec").value || todayISO), motivo: st==="perdido" ? $("#nMot").value : "", obs: $("#nObs").value.trim(), atualizadoEm: new Date().toISOString() };
+  if(!canAdmin){
+    if(!meuVend){ toast("Seu login não está ligado a ninguém da equipe. Peça para a Ana colocar seu e-mail no Admin.", true); return; }
+    body.vendedor = meuVend;
+  }
+  if(!body.vendedor){ toast("Escolha o vendedor.", true); return; }
   if(!body.cliente){ toast("Informe o cliente.", true); return; }
+  try { const u = window.APPAUTH && window.APPAUTH.usuarioAtual; if(u){ body.atualizadoPorEmail = u.email||""; if(!editingId){ body.criadoPorEmail = u.email||""; body.criadoPorNome = u.nome||""; } } } catch(e) {}
   if(body.fechamento && body.fechamento < body.entrada){ toast("A data de fechamento não pode ser antes da entrada.", true); return; }
   const btn = $("#nSave"); btn.disabled = true;
   try{
@@ -10690,6 +10736,7 @@ function handleWriteErr(e){
 const confirmDel = {};
 $("#negTbl").addEventListener("click", async ev=>{
   const b = ev.target.closest("button[data-act]"); if(!b || !db) return; const id = b.closest("tr").dataset.id; const d = realDeals.find(x=>x.id===id); if(!d) return;
+  if(!canAdmin && d.vendedor!==meuVend){ toast("Você só pode alterar os seus próprios negócios.", true); return; }
   const act = b.dataset.act;
   if(act==="edit"){ editingId=id; $("#nCli").value=d.cliente||""; $("#nVen").value=d.vendedor; $("#nSvc").value=d.servico; $("#nVal").value=d.valor; $("#nSt").value=d.status; $("#nEnt").value=d.entrada||""; $("#nFec").value=d.fechamento||""; $("#nMot").value=d.motivo||"Preço"; $("#nObs").value=d.obs||""; $("#motWrap").hidden = d.status!=="perdido";
     $("#formTitle").textContent="Editando: "+(d.cliente||""); $("#formCancel").hidden=false; $("#nSave").textContent="Salvar alterações"; $("#negForm").scrollIntoView({behavior:"smooth",block:"center"}); }
@@ -10712,7 +10759,7 @@ function renderAdmin(){
 }
 function drawLists(){
   const dis = canAdmin ? "" : " disabled";
-  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
+  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row ven" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld fld-mail"><label for="ve'+i+'">E-mail de login</label><input id="ve'+i+'" data-f="email" type="email" placeholder="nome@ellosolar.com.br" value="'+esc(v.email||"")+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
   $("#svcAdm").innerHTML = draft.servicos.map((s,i)=>'<div class="list-row svc" data-i="'+i+'"><div class="fld"><label for="sn'+i+'">Serviço</label><input id="sn'+i+'" data-f="nome" value="'+esc(s.nome)+'"'+dis+'></div><div class="fld"><label for="sm'+i+'">Margem %</label><input id="sm'+i+'" data-f="margem" type="number" step="1" min="0" max="100" value="'+esc(s.margem)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="svc" aria-label="Remover '+esc(s.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhum serviço cadastrado.</div>';
 }
 function bindList(id, key){
@@ -10720,7 +10767,7 @@ function bindList(id, key){
   $(id).addEventListener("click", ev=>{ const b=ev.target.closest("[data-rm]"); if(!b) return; const i=+b.closest(".list-row").dataset.i; draft[key].splice(i,1); drawLists(); });
 }
 bindList("#venList","vendedores"); bindList("#svcAdm","servicos");
-$("#addVen").addEventListener("click", ()=>{ draft.vendedores.push({id:"v"+uid(), nome:"", peso:1}); drawLists(); const ins=$$("#venList input[data-f=nome]"); ins[ins.length-1]?.focus(); });
+$("#addVen").addEventListener("click", ()=>{ draft.vendedores.push({id:"v"+uid(), nome:"", email:"", peso:1}); drawLists(); const ins=$$("#venList input[data-f=nome]"); ins[ins.length-1]?.focus(); });
 $("#addSvc").addEventListener("click", ()=>{ draft.servicos.push({id:"s"+uid(), nome:"", margem:40}); drawLists(); const ins=$$("#svcAdm input[data-f=nome]"); ins[ins.length-1]?.focus(); });
 $("#admSave").addEventListener("click", async ()=>{
   if(!canAdmin){ toast("Só quem tem acesso de Editor pode salvar metas.", true); return; }
@@ -10729,7 +10776,7 @@ $("#admSave").addEventListener("click", async ()=>{
   const fer = $("#aFer").value.split(/[,;\s]+/).filter(Boolean).map(s=>{ const [d,m]=s.split("/"); return (d&&m) ? yr+"-"+pad(+m)+"-"+pad(+d) : null; }).filter(Boolean);
   const other = (cfg.feriados||[]).filter(f=>!f.startsWith(yr));
   const next = Object.assign({}, draft, { mes, metaFat:n("#aFat"), fatIni:n("#aFatIni"), venIni:n("#aVenIni"), metaVen:n("#aVen"), metaNeg:n("#aNeg"), metaTick:n("#aTick"), metaLuc:n("#aLuc"), metaConv:n("#aConv"), maxPerd:n("#aPerd"), maxTempo:n("#aTempo"), pctMin:(n("#aPMin")||80), pctSuper:(n("#aPSup")||120), feriados: other.concat(fer),
-    vendedores: draft.vendedores.filter(v=>v.nome.trim()).map(v=>({id:v.id, nome:v.nome.trim(), peso:+v.peso||0})),
+    vendedores: draft.vendedores.filter(v=>v.nome.trim()).map(v=>({id:v.id, nome:v.nome.trim(), email:String(v.email||"").trim().toLowerCase(), peso:+v.peso||0})),
     servicos: draft.servicos.filter(s=>s.nome.trim()).map(s=>({id:s.id, nome:s.nome.trim(), margem:+s.margem||0})), atualizadoEm:new Date().toISOString() });
   if(!db){ cfg = next; afterCfg(); toast("Salvo só nesta visualização (base indisponível)"); return; }
   const b=$("#admSave"); b.disabled=true;
@@ -10750,6 +10797,7 @@ function applyPerms(){
   $("#admRo").hidden = canAdmin; $("#admSave").disabled = !canAdmin; $("#addVen").hidden = !canAdmin; $("#addSvc").hidden = !canAdmin;
   $$("#v-admin .fld input").forEach(i=>i.disabled = !canAdmin);
   $("#negRo").hidden = canWrite; $$("#negForm input, #negForm select, #negForm button").forEach(i=>i.disabled = !canWrite);
+  try { aplicarColaborador(); } catch(e) {}
 }
 function afterCfg(){ fillSelects(); const cur=$(".view:not([hidden])")?.id; if(cur==="v-dash") renderDash(); if(cur==="v-neg") renderNeg(); if(cur==="v-admin" && document.activeElement?.closest("#v-admin")==null) renderAdmin(); }
 
@@ -11397,6 +11445,15 @@ body{
 #mod-posvendas .card.ok { border-color:rgba(62,227,154,.55); }
 #mod-posvendas .side { background:rgba(255,255,255,.04) !important; }
 #mod-posvendas .fld input, #mod-posvendas .fld select, #mod-posvendas .fld textarea, #mod-posvendas .chip-btn { background:rgba(0,10,14,.28); }
+
+/* ===== sem bolhas coloridas atrás ou em volta de textos ===== */
+body{
+  background:linear-gradient(165deg,#072630 0%,#05181e 45%,#041419 100%) !important;
+  background-attachment:fixed !important;
+}
+#mod-posvendas{ background:transparent !important; }
+#mod-posvendas .card.ok, #mod-posvendas .card.bad { box-shadow:0 20px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16) !important; }
+#mod-posvendas .dot, .el-dot, .home-eyebrow::before, #mod-posvendas .tier-st i, #mod-posvendas .status .live::before { box-shadow:none !important; }
 </style>
 </body>
 </html>
