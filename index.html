@@ -2425,6 +2425,15 @@ window.APPAUTH = window.APPAUTH || {};
       <button class="tr-modal-close" onclick="window.DAILY.fechar()">✕</button>
     </div>
     <div class="tr-modal-body">
+      <details class="dly-imp" id="dly_imp">
+        <summary>📥 Importar do Granola</summary>
+        <div class="dly-hint" style="margin:8px 0;">Cole aqui o bloco <b>ELLO-DAILY</b> que o Claude envia toda manhã. Ele preenche data, presença, pautas, combinados e o que cada um falou. Depois é só conferir e salvar.</div>
+        <textarea class="tr-text-input" id="dly_imp_txt" rows="4" placeholder="ELLO-DAILY { ... }"></textarea>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+          <button type="button" class="btn btn-amber" onclick="window.DAILY.importar()">Preencher</button>
+          <span id="dly_imp_msg" class="dly-hint" style="margin:0;"></span>
+        </div>
+      </details>
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
         <div class="tr-field" style="flex:1; min-width:160px;"><label>Data</label><input type="date" class="tr-text-input" id="dly_data"></div>
         <div class="tr-field" style="width:140px;"><label>Horário</label><input type="time" class="tr-text-input" id="dly_hora" value="08:30"></div>
@@ -2445,6 +2454,10 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-field">
         <label>Combinados / próximos passos (opcional)</label>
         <textarea class="tr-text-input" id="dly_comb" rows="2" placeholder="Quem faz o quê até quando"></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Por pessoa (o que cada um falou)</label>
+        <div id="dly_pp" class="dly-pp"></div>
       </div>
     </div>
     <div class="tr-modal-foot">
@@ -10944,7 +10957,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 window.DAILY = window.DAILY || {};
 (function(){
 const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
-let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {};
+let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const dataBR = d => d ? d.split('-').reverse().join('/') : '';
@@ -11004,7 +11017,9 @@ function render(){
         return '<div class="tr-card dly-reg" onclick="window.DAILY.abrir(\''+r.id+'\')"><div class="dly-reg-top"><span class="dly-reg-data">'+diaSem(r.data)+', '+dataBR(r.data)+'</span><span style="color:var(--muted);font-size:12px;">'+esc(r.hora||'')+'</span>'+
           '<span class="dly-mini p">✓ '+pres.length+' presente(s)</span>'+(falt.length?'<span class="dly-mini a">✕ '+esc(falt.join(', '))+'</span>':'')+(just.length?'<span class="dly-mini j">⚑ '+esc(just.join(', '))+'</span>':'')+'</div>'+
           (r.pauta? '<div class="dly-reg-tx">'+esc(r.pauta)+'</div>' : '<div class="dly-reg-tx" style="color:var(--muted)">Sem registro escrito.</div>')+
-          (r.combinados? '<div class="dly-reg-tx" style="margin-top:6px;"><b>Combinados:</b> '+esc(r.combinados)+'</div>' : '')+'</div>';
+          (r.combinados? '<div class="dly-reg-tx" style="margin-top:6px;"><b>Combinados:</b> '+esc(r.combinados)+'</div>' : '')+
+          (r.porPessoa && Object.keys(r.porPessoa).length ? '<div class="dly-reg-pp">'+Object.entries(r.porPessoa).filter(([n])=>PESSOAS.includes(n)).map(([n,t])=>'<div><b>'+esc(n)+'</b>'+esc(t)+'</div>').join('')+'</div>' : '')+
+          (r.fonte ? '<div style="margin-top:8px;font-size:11.5px;"><a href="'+esc(r.fonte)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#5ee6dc;">Abrir no Granola ↗</a></div>' : '')+'</div>';
       }).join('');
   aba(abaAtual, true);
 }
@@ -11019,14 +11034,44 @@ function desenharPessoas(){
   document.getElementById('dly_pessoas').innerHTML = PESSOAS.map(n => { const v = presenca[n]||'n';
     return '<button type="button" class="dly-p '+v+'" onclick="window.DAILY.trocar(\''+n+'\')"><i></i>'+esc(n)+'</button>'; }).join('');
 }
-function trocar(n){ presenca[n] = ({p:'a', a:'j', j:'n', n:'p'})[presenca[n]||'n']; desenharPessoas(); }
-function todos(v){ PESSOAS.forEach(n => presenca[n] = v); desenharPessoas(); }
+function desenharPP(){
+  document.getElementById('dly_pp').innerHTML = PESSOAS.filter(n => (presenca[n]||'n') !== 'n' || porPessoa[n]).map(n =>
+    '<div class="dly-pp-item"><label for="dpp_'+n+'">'+esc(n)+'</label><textarea class="tr-text-input" id="dpp_'+n+'" data-n="'+n+'" placeholder="O que '+esc(n)+' trouxe: prioridades, andamento, travamentos...">'+esc(porPessoa[n]||'')+'</textarea></div>').join('');
+}
+function lerPP(){ document.querySelectorAll('#dly_pp textarea[data-n]').forEach(t => { const v = t.value.trim(); if(v) porPessoa[t.dataset.n] = v; else delete porPessoa[t.dataset.n]; }); }
+const normN = t => String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+function acharPessoa(nome){ const k = normN(nome); return PESSOAS.find(p => normN(p) === k) || PESSOAS.find(p => k.startsWith(normN(p)) || normN(p).startsWith(k)) || (/(luiz|mariano)/.test(k) ? 'Kuka' : null); }
+function listaTexto(v){ return Array.isArray(v) ? v.map(x => typeof x === 'string' ? '• '+x : '• '+[x.responsavel?('['+x.responsavel+']'):'', x.texto||x.combinado||'', x.prazo?('(até '+x.prazo+')'):''].filter(Boolean).join(' ')).join('\n') : String(v||''); }
+function importar(){
+  const msg = document.getElementById('dly_imp_msg'); const raw = document.getElementById('dly_imp_txt').value;
+  const i = raw.indexOf('{'), j = raw.lastIndexOf('}');
+  if(i < 0 || j <= i){ msg.textContent = 'Não encontrei o bloco ELLO-DAILY no texto colado.'; msg.style.color = '#ff8a8a'; return; }
+  let d; try { d = JSON.parse(raw.slice(i, j+1)); } catch(e){ msg.textContent = 'O texto colado está incompleto. Copie o bloco inteiro, do { até o }.'; msg.style.color = '#ff8a8a'; return; }
+  if(d.data) document.getElementById('dly_data').value = d.data;
+  if(d.hora) document.getElementById('dly_hora').value = d.hora;
+  const mapa = {presente:'p', p:'p', faltou:'a', ausente:'a', a:'a', justificado:'j', j:'j', 'nao se aplica':'n', n:'n'};
+  if(d.presenca){ Object.entries(d.presenca).forEach(([nome, v]) => { const pn = acharPessoa(nome); const st = mapa[normN(v)]; if(pn && st) presenca[pn] = st; }); }
+  const pautas = listaTexto(d.pautas), comb = listaTexto(d.combinados);
+  if(pautas) document.getElementById('dly_pauta').value = pautas;
+  if(comb) document.getElementById('dly_comb').value = comb;
+  let n = 0;
+  if(d.por_pessoa){ Object.entries(d.por_pessoa).forEach(([nome, v]) => { const pn = acharPessoa(nome); if(!pn) return;
+    const tem = x => Array.isArray(x) ? x.length>0 : !!x;
+    const tx = typeof v === 'string' ? v : [tem(v.falou) && ('Falou: '+listaTexto(v.falou).replace(/^• /gm,'')), tem(v.prioridades) && ('Prioridades: '+listaTexto(v.prioridades).replace(/^• /gm,'').replace(/\n/g,'; ')), tem(v.travamentos) && ('Travamentos: '+listaTexto(v.travamentos).replace(/^• /gm,'').replace(/\n/g,'; ')), tem(v.combinados) && ('Combinados: '+listaTexto(v.combinados).replace(/^• /gm,'').replace(/\n/g,'; '))].filter(Boolean).join('\n');
+    if(tx){ porPessoa[pn] = tx; n++; if(!presenca[pn] || presenca[pn]==='n') presenca[pn] = 'p'; } }); }
+  granolaUrl = d.fonte || d.url || '';
+  desenharPessoas(); desenharPP();
+  msg.textContent = '✓ Preenchido: '+n+' pessoa(s), pautas e combinados. Confira e clique em Salvar.'; msg.style.color = '#3ee39a';
+}
+function trocar(n){ lerPP(); presenca[n] = ({p:'a', a:'j', j:'n', n:'p'})[presenca[n]||'n']; desenharPessoas(); desenharPP(); }
+function todos(v){ lerPP(); PESSOAS.forEach(n => presenca[n] = v); desenharPessoas(); desenharPP(); }
 function novo(){
   editId = null; presenca = {}; PESSOAS.slice(0,5).forEach(n => presenca[n]='p'); PESSOAS.slice(5).forEach(n => presenca[n]='n');
   document.getElementById('dly_data').value = hoje(); document.getElementById('dly_hora').value = '08:30';
   document.getElementById('dly_pauta').value = ''; document.getElementById('dly_comb').value = '';
   document.getElementById('dly_del').style.display = 'none';
-  desenharPessoas(); document.getElementById('dailyModalOverlay').classList.add('open');
+  porPessoa = {}; granolaUrl = ''; document.getElementById('dly_imp_txt').value = ''; document.getElementById('dly_imp_msg').textContent = '';
+  desenharPessoas(); desenharPP(); document.getElementById('dailyModalOverlay').classList.add('open');
 }
 function abrir(id){
   const r = lista().find(x=>x.id===id); if(!r) return;
@@ -11034,13 +11079,15 @@ function abrir(id){
   document.getElementById('dly_data').value = r.data||''; document.getElementById('dly_hora').value = r.hora||'08:30';
   document.getElementById('dly_pauta').value = r.pauta||''; document.getElementById('dly_comb').value = r.combinados||'';
   document.getElementById('dly_del').style.display = 'inline-flex';
-  desenharPessoas(); document.getElementById('dailyModalOverlay').classList.add('open');
+  porPessoa = Object.assign({}, r.porPessoa||{}); granolaUrl = r.fonte||''; document.getElementById('dly_imp_txt').value = ''; document.getElementById('dly_imp_msg').textContent = '';
+  desenharPessoas(); desenharPP(); document.getElementById('dailyModalOverlay').classList.add('open');
 }
 function fechar(){ document.getElementById('dailyModalOverlay').classList.remove('open'); }
 function salvar(){
   const data = document.getElementById('dly_data').value; if(!data){ alert('Escolha a data da daily.'); return; }
+  lerPP();
   const reg = { id: editId || ('d'+Date.now().toString(36)), data, hora: document.getElementById('dly_hora').value||'08:30',
-    presenca: Object.fromEntries(Object.entries(presenca).filter(([n]) => PESSOAS.includes(n))), pauta: document.getElementById('dly_pauta').value.trim(), combinados: document.getElementById('dly_comb').value.trim(), atualizadoEm: Date.now() };
+    presenca: Object.fromEntries(Object.entries(presenca).filter(([n]) => PESSOAS.includes(n))), pauta: document.getElementById('dly_pauta').value.trim(), combinados: document.getElementById('dly_comb').value.trim(), porPessoa: Object.fromEntries(Object.entries(porPessoa).filter(([n,v]) => PESSOAS.includes(n) && v)), fonte: granolaUrl||'', atualizadoEm: Date.now() };
   if(!cache) cache = {registros:[]};
   const i = cache.registros.findIndex(x=>x.id===reg.id);
   if(i>-1) cache.registros[i] = Object.assign({}, cache.registros[i], reg); else { reg.criadoEm = Date.now(); cache.registros.push(reg); }
@@ -11059,7 +11106,7 @@ function imprimir(){
   el.querySelectorAll('table').forEach(t=>{ t.style.width='100%'; t.style.borderCollapse='collapse'; t.querySelectorAll('th,td').forEach(c=>{ c.style.border='1px solid #ccc'; c.style.padding='6px 8px'; c.style.color='#111'; }); });
   window.print(); setTimeout(()=>{ el.innerHTML=''; }, 500);
 }
-Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir });
+Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar });
 })();
 </script>
 <!-- ===== TEMA ELLO (visual do Dashboard Pós-vendas em toda a plataforma) ===== -->
@@ -11391,6 +11438,14 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 .tr-modal-foot .tr-btn-delete:hover, .tr-btn-delete:hover { background:rgba(255,107,107,.1); }
 
 /* ===== Daily ===== */
+.dly-imp{border:1px dashed rgba(245,165,36,.5);border-radius:12px;padding:10px 12px;margin-bottom:14px;background:rgba(245,165,36,.05)}
+.dly-imp summary{cursor:pointer;font-weight:800;font-size:13px;color:#ffd18a}
+.dly-pp{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.dly-pp-item label{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.dly-pp-item textarea{width:100%;min-height:64px}
+.dly-reg-pp{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px}
+.dly-reg-pp div{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:10px;background:rgba(3,18,22,.35);border:1px solid rgba(125,211,214,.12);white-space:pre-wrap}
+.dly-reg-pp b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#ffd18a;margin-bottom:3px}
 .dly-filtros{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .dly-abas{display:flex;gap:6px;padding:4px;border-radius:12px;border:1px solid var(--el-line,rgba(125,211,214,.16));background:rgba(3,18,22,.35)}
 .dly-aba{all:unset;cursor:pointer;padding:8px 14px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted)}
