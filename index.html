@@ -1410,6 +1410,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_provas" onclick="mostrarTool('provas')">
     <span class="di-icon">📝</span> Provas
   </button>
+  <button class="drawer-item admin-only" id="di_daily" onclick="mostrarTool('daily')">
+    <span class="di-icon">☀️</span> Daily
+  </button>
   <button class="drawer-item" id="di_posvendas" onclick="mostrarTool('posvendas')">
     <span class="di-icon">📊</span> Comercial Pós-vendas
   </button>
@@ -1474,6 +1477,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-icon">🎖️</div>
         <div class="hc-title">Escolha de Líder</div>
         <div class="hc-desc">Processo de escolha do líder até dezembro: cronograma, placar ponderado, diário de observação e guia de análise.</div>
+        <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-daily admin-only" onclick="mostrarTool('daily')">
+        <div class="hc-icon">☀️</div>
+        <div class="hc-title">Daily</div>
+        <div class="hc-desc">Registro da daily das 08:30: o que foi falado, quem participou e relatório de presença do mês.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
       <button class="home-card c-posvendas" onclick="mostrarTool('posvendas')">
@@ -2386,6 +2395,65 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
 </div>
 
+<!-- ================= TOOL: DAILY ================= -->
+<div class="tool-view tool-contratos" id="view_daily">
+  <div class="tool-subbar">
+    <span class="sb-title">☀️ Daily</span>
+    <span class="save-ind" id="saveInd_daily">✓ Salvo</span>
+    <button class="btn btn-amber" onclick="window.DAILY.novo()">+ Registrar daily</button>
+  </div>
+  <div class="wrap">
+    <div class="dly-filtros">
+      <div class="tr-field" style="margin:0;"><label>Mês</label><input type="month" class="tr-text-input" id="dly_mes" onchange="window.DAILY.render()"></div>
+      <div class="dly-abas" id="dly_abas">
+        <button type="button" class="dly-aba on" data-aba="rel" onclick="window.DAILY.aba('rel')">Relatório de presença</button>
+        <button type="button" class="dly-aba" data-aba="reg" onclick="window.DAILY.aba('reg')">Registros</button>
+      </div>
+      <button type="button" class="btn btn-ghost" style="margin-left:auto;" onclick="window.DAILY.imprimir()">🖨️ Imprimir relatório</button>
+    </div>
+    <div id="dly_kpis" class="dly-kpis"></div>
+    <div id="dly_rel"></div>
+    <div id="dly_reg" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- Modal: registrar/editar daily -->
+<div class="tr-modal-overlay" id="dailyModalOverlay" onclick="if(event.target===this) window.DAILY.fechar()">
+  <div class="tr-modal" style="max-width:640px;">
+    <div class="tr-modal-head">
+      <span class="tr-modal-title-input" style="padding-top:8px;">Daily do time</span>
+      <button class="tr-modal-close" onclick="window.DAILY.fechar()">✕</button>
+    </div>
+    <div class="tr-modal-body">
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div class="tr-field" style="flex:1; min-width:160px;"><label>Data</label><input type="date" class="tr-text-input" id="dly_data"></div>
+        <div class="tr-field" style="width:140px;"><label>Horário</label><input type="time" class="tr-text-input" id="dly_hora" value="08:30"></div>
+      </div>
+      <div class="tr-field">
+        <label>Quem participou</label>
+        <div class="dly-hint">Clique no nome pra trocar: <b class="p">Presente</b> → <b class="a">Faltou</b> → <b class="j">Justificado</b> → <b class="n">Não se aplica</b> (folga, férias, não participa — não conta no relatório)</div>
+        <div id="dly_pessoas" class="dly-pessoas"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button type="button" class="tr-add-btn" onclick="window.DAILY.todos('p')">Todos presentes</button>
+          <button type="button" class="tr-add-btn" onclick="window.DAILY.todos('n')">Limpar</button>
+        </div>
+      </div>
+      <div class="tr-field">
+        <label>Registro (o que foi falado)</label>
+        <textarea class="tr-text-input" id="dly_pauta" rows="4" placeholder="Prioridades do dia, avisos, travamentos, combinados..."></textarea>
+      </div>
+      <div class="tr-field">
+        <label>Combinados / próximos passos (opcional)</label>
+        <textarea class="tr-text-input" id="dly_comb" rows="2" placeholder="Quem faz o quê até quando"></textarea>
+      </div>
+    </div>
+    <div class="tr-modal-foot">
+      <button class="tr-btn-delete" id="dly_del" onclick="window.DAILY.excluir()">🗑️ Excluir</button>
+      <button class="btn btn-amber" onclick="window.DAILY.salvar()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= TOOL: ATUALIZAÇÕES ================= -->
 <div class="tool-view tool-contratos" id="view_atualizacoes">
   <div class="tool-subbar">
@@ -2886,9 +2954,9 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas' };
-  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
+  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl','daily'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
@@ -2920,6 +2988,7 @@ function mostrarTool(nome) {
   if (nome === 'atualizacoes' && window.ATUAL) window.ATUAL.render();
   if (nome === 'pdl' && window.PDL) window.PDL.render();
   if (nome === 'posvendas' && window.PV) window.PV.render();
+  if (nome === 'daily' && window.DAILY) window.DAILY.render();
   window.scrollTo(0, 0);
 }
 
@@ -6527,6 +6596,7 @@ const DEFS = {
     label: 'Adriele',
     counters: false,
     blocks: [
+      { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
       { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
@@ -6563,6 +6633,7 @@ const DEFS = {
     label: 'Sharon',
     counters: false,
     blocks: [
+      { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
       { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
@@ -6599,6 +6670,7 @@ const DEFS = {
 function blocosKukaThiago() {
   return [
     { id:'chegada', time:'08:30', title:'Chegada', type:'info' },
+    { id:'daily', time:'08:30–08:45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
     { id:'chatItems', time:'08:30–09:30', title:'Chat', type:'items', items:[
         'Organização de chat','Atendimento ao cliente','Delegação (dono da solução)' ] },
     { id:'relManha', time:'09:30–11:30', title:'Relatórios · Usinas', type:'counters', counters:[
@@ -10870,6 +10942,129 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 })();
 
 </script>
+<!-- ===== JS: Daily (escopo isolado) ===== -->
+<script>
+window.DAILY = window.DAILY || {};
+(function(){
+const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Cheila'];
+let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {};
+const esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const dataBR = d => d ? d.split('-').reverse().join('/') : '';
+const diaSem = d => ['dom','seg','ter','qua','qui','sex','sáb'][new Date(d+'T12:00:00').getDay()];
+const lista = () => (cache && cache.registros) || [];
+const cor = pct => pct>=90 ? '#3ee39a' : pct>=75 ? '#f5a524' : '#ff6b6b';
+
+function salvarTudo(){
+  if(!window.fb) return Promise.resolve();
+  const ind = document.getElementById('saveInd_daily'); if(ind){ ind.textContent='Salvando...'; ind.classList.add('show'); }
+  return window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','dailys'), {registros: lista()})
+    .then(()=>{ if(ind){ ind.textContent='✓ Salvo'; setTimeout(()=>ind.classList.remove('show'),1800); } })
+    .catch(e=>{ console.error('DAILY save', e); alert('Não foi possível salvar. Tente de novo.'); });
+}
+function ouvir(){
+  if(ouvindo || !window.fb || !window.APPAUTH || !window.APPAUTH.usuarioAtual) return;
+  ouvindo = true;
+  window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','dailys'), sn => {
+    cache = sn.exists() ? sn.data() : {registros:[]}; if(!cache.registros) cache.registros = [];
+    if(document.getElementById('view_daily').classList.contains('active')) render();
+  }, e => console.error('DAILY snapshot', e));
+}
+window.addEventListener('userAuthed', ouvir);
+
+function render(){
+  ouvir();
+  const mesEl = document.getElementById('dly_mes'); if(!mesEl.value) mesEl.value = hoje().slice(0,7);
+  const mes = mesEl.value;
+  const regs = lista().filter(r => (r.data||'').startsWith(mes)).sort((a,b)=> (b.data+b.hora).localeCompare(a.data+a.hora));
+  // números por pessoa
+  const st = {};
+  PESSOAS.forEach(n => st[n] = {p:0,a:0,j:0});
+  regs.forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(!st[n]) st[n]={p:0,a:0,j:0}; if(st[n][v]!==undefined) st[n][v]++; }));
+  const linhas = Object.entries(st).map(([n,c]) => { const tot=c.p+c.a+c.j; return {n, ...c, tot, pct: tot? Math.round(c.p/tot*100) : null}; })
+    .filter(l => l.tot>0 || PESSOAS.slice(0,5).includes(l.n))
+    .sort((a,b)=> (b.pct??-1)-(a.pct??-1) || a.n.localeCompare(b.n));
+  const totP = linhas.reduce((x,l)=>x+l.p,0), totT = linhas.reduce((x,l)=>x+l.tot,0);
+  const media = totT ? Math.round(totP/totT*100) : null;
+  const maisFaltas = linhas.filter(l=>l.a>0).sort((a,b)=>b.a-a.a)[0];
+  const ultima = regs[0];
+  document.getElementById('dly_kpis').innerHTML =
+    kpi('Dailys no mês', regs.length, regs.length? 'última em '+dataBR(ultima.data) : 'nenhuma registrada') +
+    kpi('Presença média', media===null?'—':media+'%', 'do time no mês', media===null?null:cor(media)) +
+    kpi('Faltas no mês', linhas.reduce((x,l)=>x+l.a,0), linhas.reduce((x,l)=>x+l.j,0)+' justificada(s)') +
+    kpi('Mais faltas', maisFaltas? maisFaltas.n : '—', maisFaltas? maisFaltas.a+' falta(s)' : 'ninguém faltou');
+  // relatório
+  document.getElementById('dly_rel').innerHTML = !regs.length
+    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada neste mês. Use <b>+ Registrar daily</b> no topo.</div>'
+    : '<div class="tr-card" style="padding:6px 8px;"><table class="dly-tab"><thead><tr><th>Pessoa</th><th class="n">Presente</th><th class="n">Faltou</th><th class="n">Justificado</th><th>Presença</th><th class="n">%</th></tr></thead><tbody>'+
+      linhas.map(l => '<tr><td><b>'+esc(l.n)+'</b></td><td class="n">'+l.p+'</td><td class="n">'+l.a+'</td><td class="n">'+l.j+'</td><td><div class="dly-bar"><i style="width:'+(l.pct||0)+'%;background:'+(l.pct===null?'transparent':cor(l.pct))+'"></i></div></td><td class="n" style="font-weight:800;color:'+(l.pct===null?'var(--muted)':cor(l.pct))+'">'+(l.pct===null?'—':l.pct+'%')+'</td></tr>').join('')+
+      '</tbody></table></div><div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Presença = presente ÷ dailys em que a pessoa foi registrada (justificado conta como ausência, mas aparece separado).</div>';
+  // registros
+  document.getElementById('dly_reg').innerHTML = !regs.length
+    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada neste mês.</div>'
+    : regs.map(r => {
+        const pr = r.presenca||{}; const pres = Object.keys(pr).filter(n=>pr[n]==='p'), falt = Object.keys(pr).filter(n=>pr[n]==='a'), just = Object.keys(pr).filter(n=>pr[n]==='j');
+        return '<div class="tr-card dly-reg" onclick="window.DAILY.abrir(\''+r.id+'\')"><div class="dly-reg-top"><span class="dly-reg-data">'+diaSem(r.data)+', '+dataBR(r.data)+'</span><span style="color:var(--muted);font-size:12px;">'+esc(r.hora||'')+'</span>'+
+          '<span class="dly-mini p">✓ '+pres.length+' presente(s)</span>'+(falt.length?'<span class="dly-mini a">✕ '+esc(falt.join(', '))+'</span>':'')+(just.length?'<span class="dly-mini j">⚑ '+esc(just.join(', '))+'</span>':'')+'</div>'+
+          (r.pauta? '<div class="dly-reg-tx">'+esc(r.pauta)+'</div>' : '<div class="dly-reg-tx" style="color:var(--muted)">Sem registro escrito.</div>')+
+          (r.combinados? '<div class="dly-reg-tx" style="margin-top:6px;"><b>Combinados:</b> '+esc(r.combinados)+'</div>' : '')+'</div>';
+      }).join('');
+  aba(abaAtual, true);
+}
+function kpi(l, v, s, c){ return '<div class="hd-kpi dly-kpi"><div class="l">'+l+'</div><div class="v" style="'+(c?'color:'+c:'')+'">'+esc(v)+'</div><div class="s">'+esc(s)+'</div></div>'; }
+function aba(a, semRender){
+  abaAtual = a;
+  document.querySelectorAll('#dly_abas .dly-aba').forEach(b => b.classList.toggle('on', b.dataset.aba===a));
+  document.getElementById('dly_rel').style.display = a==='rel' ? '' : 'none';
+  document.getElementById('dly_reg').style.display = a==='reg' ? '' : 'none';
+}
+function desenharPessoas(){
+  document.getElementById('dly_pessoas').innerHTML = PESSOAS.map(n => { const v = presenca[n]||'n';
+    return '<button type="button" class="dly-p '+v+'" onclick="window.DAILY.trocar(\''+n+'\')"><i></i>'+esc(n)+'</button>'; }).join('');
+}
+function trocar(n){ presenca[n] = ({p:'a', a:'j', j:'n', n:'p'})[presenca[n]||'n']; desenharPessoas(); }
+function todos(v){ PESSOAS.forEach(n => presenca[n] = v); desenharPessoas(); }
+function novo(){
+  editId = null; presenca = {}; PESSOAS.slice(0,5).forEach(n => presenca[n]='p'); PESSOAS.slice(5).forEach(n => presenca[n]='n');
+  document.getElementById('dly_data').value = hoje(); document.getElementById('dly_hora').value = '08:30';
+  document.getElementById('dly_pauta').value = ''; document.getElementById('dly_comb').value = '';
+  document.getElementById('dly_del').style.display = 'none';
+  desenharPessoas(); document.getElementById('dailyModalOverlay').classList.add('open');
+}
+function abrir(id){
+  const r = lista().find(x=>x.id===id); if(!r) return;
+  editId = id; presenca = Object.assign({}, r.presenca||{});
+  document.getElementById('dly_data').value = r.data||''; document.getElementById('dly_hora').value = r.hora||'08:30';
+  document.getElementById('dly_pauta').value = r.pauta||''; document.getElementById('dly_comb').value = r.combinados||'';
+  document.getElementById('dly_del').style.display = 'inline-flex';
+  desenharPessoas(); document.getElementById('dailyModalOverlay').classList.add('open');
+}
+function fechar(){ document.getElementById('dailyModalOverlay').classList.remove('open'); }
+function salvar(){
+  const data = document.getElementById('dly_data').value; if(!data){ alert('Escolha a data da daily.'); return; }
+  const reg = { id: editId || ('d'+Date.now().toString(36)), data, hora: document.getElementById('dly_hora').value||'08:30',
+    presenca: Object.assign({}, presenca), pauta: document.getElementById('dly_pauta').value.trim(), combinados: document.getElementById('dly_comb').value.trim(), atualizadoEm: Date.now() };
+  if(!cache) cache = {registros:[]};
+  const i = cache.registros.findIndex(x=>x.id===reg.id);
+  if(i>-1) cache.registros[i] = Object.assign({}, cache.registros[i], reg); else { reg.criadoEm = Date.now(); cache.registros.push(reg); }
+  salvarTudo(); fechar(); document.getElementById('dly_mes').value = data.slice(0,7); render();
+}
+function excluir(){
+  if(!editId || !confirm('Excluir o registro desta daily?')) return;
+  cache.registros = lista().filter(x=>x.id!==editId); salvarTudo(); fechar(); render();
+}
+function imprimir(){
+  const mes = document.getElementById('dly_mes').value;
+  const [y,m] = mes.split('-'); const nomeMes = new Date(+y, +m-1, 1).toLocaleDateString('pt-BR',{month:'long', year:'numeric'});
+  const tab = document.querySelector('#dly_rel table'); const kpis = Array.from(document.querySelectorAll('#dly_kpis .dly-kpi')).map(k=>k.innerText.replace(/\n/g,' · ')).join('<br>');
+  let el = document.getElementById('dly_print'); if(!el){ el = document.createElement('div'); el.id='dly_print'; document.body.appendChild(el); }
+  el.innerHTML = '<h2 style="margin:0 0 4px;">Relatório de presença na Daily</h2><div style="margin-bottom:12px;color:#555;">Ello Solar · Pós-venda · '+nomeMes+'</div><div style="margin-bottom:14px;font-size:13px;">'+kpis+'</div>'+(tab? tab.outerHTML.replace(/<div class="dly-bar">.*?<\/div><\/div>/g,'').replace(/<th>Presença<\/th>/,'') : '<p>Sem registros no mês.</p>');
+  el.querySelectorAll('table').forEach(t=>{ t.style.width='100%'; t.style.borderCollapse='collapse'; t.querySelectorAll('th,td').forEach(c=>{ c.style.border='1px solid #ccc'; c.style.padding='6px 8px'; c.style.color='#111'; }); });
+  window.print(); setTimeout(()=>{ el.innerHTML=''; }, 500);
+}
+Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir });
+})();
+</script>
 <!-- ===== TEMA ELLO (visual do Dashboard Pós-vendas em toda a plataforma) ===== -->
 <style id="ello-theme">
 /* =====================================================================
@@ -11197,6 +11392,46 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 .tr-resp-action-btn:hover, .tr-gostei-btn:hover, .pv-marca-btn:hover { background:rgba(125,211,214,.08) !important; }
 .tr-modal-foot .tr-btn-delete, .tr-btn-delete { background:transparent; border:1px solid rgba(255,107,107,.4); color:var(--el-bad); border-radius:11px; }
 .tr-modal-foot .tr-btn-delete:hover, .tr-btn-delete:hover { background:rgba(255,107,107,.1); }
+
+/* ===== Daily ===== */
+.dly-filtros{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.dly-abas{display:flex;gap:6px;padding:4px;border-radius:12px;border:1px solid var(--el-line,rgba(125,211,214,.16));background:rgba(3,18,22,.35)}
+.dly-aba{all:unset;cursor:pointer;padding:8px 14px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.dly-aba.on{background:linear-gradient(90deg,rgba(245,165,36,.22),rgba(245,165,36,.06));color:#ffd18a;box-shadow:inset 0 0 0 1px rgba(245,165,36,.35)}
+.dly-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+@media (max-width:760px){.dly-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dly-kpi{padding:14px 16px}
+.dly-kpi .l{font-family:var(--f-mono,monospace);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.dly-kpi .v{font-size:26px;font-weight:800;margin-top:6px}
+.dly-kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.dly-tab{width:100%;border-collapse:collapse;font-size:13px}
+.dly-tab th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px;border-bottom:1px solid var(--el-line,rgba(125,211,214,.16));font-weight:700}
+.dly-tab td{padding:11px 10px;border-bottom:1px solid rgba(125,211,214,.08)}
+.dly-tab td.n,.dly-tab th.n{text-align:right;font-variant-numeric:tabular-nums}
+.dly-bar{height:7px;border-radius:5px;background:rgba(125,211,214,.12);overflow:hidden;min-width:90px}
+.dly-bar i{display:block;height:100%;border-radius:5px}
+.dly-pessoas{display:flex;flex-wrap:wrap;gap:8px}
+.dly-p{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid var(--el-line-strong,rgba(125,211,214,.3))}
+.dly-p i{width:8px;height:8px;border-radius:50%}
+.dly-p.p{background:rgba(62,227,154,.14);border-color:rgba(62,227,154,.5);color:#3ee39a}.dly-p.p i{background:#3ee39a}
+.dly-p.a{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.45);color:#ff8a8a}.dly-p.a i{background:#ff6b6b}
+.dly-p.j{background:rgba(245,165,36,.12);border-color:rgba(245,165,36,.45);color:#ffd18a}.dly-p.j i{background:#f5a524}
+.dly-hint{font-size:11.5px;color:var(--muted);margin-bottom:8px}
+.dly-p.n{opacity:.55;border-style:dashed;color:var(--muted)}.dly-p.n i{background:transparent;border:1px solid var(--muted)}
+.dly-hint .n{color:var(--muted)}
+.dly-hint .p{color:#3ee39a}.dly-hint .a{color:#ff8a8a}.dly-hint .j{color:#ffd18a}
+.dly-reg{cursor:pointer;margin-bottom:10px;padding:14px 16px}
+.dly-reg-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.dly-reg-data{font-weight:800;font-size:14px}
+.dly-reg-tx{font-size:13px;color:var(--text);white-space:pre-wrap;line-height:1.5;opacity:.9}
+.dly-mini{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+.dly-mini.p{background:rgba(62,227,154,.12);color:#3ee39a}.dly-mini.a{background:rgba(255,107,107,.12);color:#ff8a8a}.dly-mini.j{background:rgba(245,165,36,.12);color:#ffd18a}
+.dly-vazio{padding:40px 10px;text-align:center;color:var(--muted)}
+@media print{
+  body *{visibility:hidden!important}
+  #dly_print, #dly_print *{visibility:visible!important}
+  #dly_print{position:absolute;left:0;top:0;width:100%;color:#111;background:#fff;padding:24px;font-family:Arial,sans-serif}
+}
 </style>
 <script id="ello-theme-js">
 /* ===== TEMA ELLO: ícones em linha, cabeçalho das páginas e home no formato do dashboard ===== */
@@ -11217,12 +11452,13 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     posvendas:'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
     pdl:'<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>',
     atualizacoes:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+    daily:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
     desafioreuniao:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
     provas:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
     dashboard:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     pop:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'
   };
-  var COR = { reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
+  var COR = { daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
     feedback:'v', contratos:'c', cargos:'o', posvendas:'g', pdl:'o', atualizacoes:'g', desafioreuniao:'r', provas:'c', dashboard:'v', pop:'g', home:'o' };
   function svg(k){ return P[k] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[k]+'</svg>' : ''; }
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
@@ -11269,7 +11505,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 (function(){
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
-    { id:'reunioes',    nome:'Reuniões',            itens:['rco','desafioreuniao','oneone','pauta','reuniao'] },
+    { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
     { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','checklist','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
