@@ -3013,7 +3013,7 @@ const MEMBROS = [
   { nome:'Kuka',    cor:'#059669', ini:'KU' },
   { nome:'Thiago',  cor:'#2563EB', ini:'TH' },
   { nome:'Amanda',  cor:'#7C3AED', ini:'AM' },
-  { nome:'Cheila',  cor:'#D97706', ini:'CH' },
+  { nome:'Cheila',  cor:'#D97706', ini:'CH', oculto:true }, // fora do time: escondida, mas mantém a posição dos dados antigos
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
@@ -3086,7 +3086,7 @@ function renderForm() {
   const wrap = document.getElementById('mainWrap_r');
 
   // presença
-  const presencaChips = MEMBROS.map((m, mi) => {
+  const presencaChips = MEMBROS.map((m, mi) => { if (m.oculto) return '';
     const pres = s[`pres_${mi}`];
     const cls  = pres === 'present' ? 'present' : pres === 'absent' ? 'absent' : '';
     return `<div class="presence-chip ${cls}" id="pchip_${mi}" onclick="window.RS.togglePresenca(${mi})">
@@ -3095,7 +3095,7 @@ function renderForm() {
   }).join('');
 
   // team chips header
-  const teamChipsH = MEMBROS.map(m =>
+  const teamChipsH = MEMBROS.filter(m => !m.oculto).map(m =>
     `<div class="team-chip"><div class="p-av" style="background:${m.cor}">${m.ini}</div>${m.nome}</div>`
   ).join('');
 
@@ -3130,7 +3130,7 @@ function renderForm() {
       <div class="q-block">
         <div class="q-label"><span class="q-dot"></span>Humor do time hoje</div>
         <div class="member-inputs" id="checkin_moods">
-          ${MEMBROS.map((m,mi) => `
+          ${MEMBROS.map((m,mi) => m.oculto ? '' : `
           <div class="member-row" id="mrow_${mi}">
             <div class="p-av" style="background:${m.cor}">${m.ini}</div>
             <div class="member-col">
@@ -3154,7 +3154,7 @@ function renderForm() {
       <div class="q-block">
         <div class="q-label"><span class="q-dot"></span>Principais resultados ou entregas da semana</div>
         <div class="member-inputs">
-          ${MEMBROS.map((m,mi) => `
+          ${MEMBROS.map((m,mi) => m.oculto ? '' : `
           <div class="member-row">
             <div class="p-av" style="background:${m.cor}">${m.ini}</div>
             <div class="member-col">
@@ -3182,7 +3182,7 @@ function renderForm() {
       <div class="q-block">
         <div class="q-label"><span class="q-dot"></span>Maiores obstáculos da semana — quem enfrentou o quê?</div>
         <div class="member-inputs">
-          ${MEMBROS.map((m,mi) => `
+          ${MEMBROS.map((m,mi) => m.oculto ? '' : `
           <div class="member-row">
             <div class="p-av" style="background:${m.cor}">${m.ini}</div>
             <div class="member-col">
@@ -3204,7 +3204,7 @@ function renderForm() {
       <div class="q-block">
         <div class="q-label"><span class="q-dot"></span>O que podemos fazer diferente ou melhor na próxima semana?</div>
         <div class="member-inputs">
-          ${MEMBROS.map((m,mi) => `
+          ${MEMBROS.map((m,mi) => m.oculto ? '' : `
           <div class="member-row">
             <div class="p-av" style="background:${m.cor}">${m.ini}</div>
             <div class="member-col">
@@ -3226,7 +3226,7 @@ function renderForm() {
       <div class="q-block">
         <div class="q-label"><span class="q-dot"></span>💛 Reconhecimento — alguém quer agradecer ou elogiar um colega?</div>
         <div class="member-inputs">
-          ${MEMBROS.map((m,mi) => `
+          ${MEMBROS.map((m,mi) => m.oculto ? '' : `
           <div class="member-row">
             <div class="p-av" style="background:${m.cor}">${m.ini}</div>
             <div class="member-col">
@@ -3268,7 +3268,7 @@ function buildAcoes(acoes) {
       <input type="checkbox" class="action-cb" ${a.done?'checked':''} onchange="window.RS.autosave()">
       <select class="action-resp" onchange="window.RS.autosave()">
         <option value="">Quem?</option>
-        ${MEMBROS.map(m=>`<option value="${m.nome}" ${a.resp===m.nome?'selected':''}>${m.nome}</option>`).join('')}
+        ${MEMBROS.filter(m => !m.oculto).map(m =>`<option value="${m.nome}" ${a.resp===m.nome?'selected':''}>${m.nome}</option>`).join('')}
         <option value="Time" ${a.resp==='Time'?'selected':''}>Time</option>
         <option value="Ana" ${a.resp==='Ana'?'selected':''}>Ana</option>
       </select>
@@ -3284,7 +3284,7 @@ function addAcao() {
   d.innerHTML = `<input type="checkbox" class="action-cb" onchange="window.RS.autosave()">
     <select class="action-resp" onchange="window.RS.autosave()">
       <option value="">Quem?</option>
-      ${MEMBROS.map(m=>`<option value="${m.nome}">${m.nome}</option>`).join('')}
+      ${MEMBROS.filter(m => !m.oculto).map(m =>`<option value="${m.nome}">${m.nome}</option>`).join('')}
       <option value="Time">Time</option>
       <option value="Ana">Ana</option>
     </select>
@@ -3423,7 +3423,6 @@ const MEMBROS = [
   { nome:'Kuka',    cor:'#059669', ini:'KU' },
   { nome:'Thiago',  cor:'#2563EB', ini:'TH' },
   { nome:'Amanda',  cor:'#7C3AED', ini:'AM' },
-  { nome:'Cheila',  cor:'#D97706', ini:'CH' },
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
@@ -4650,7 +4649,7 @@ render();
 window.RP = window.RP || {};
 (function(){
 const STORAGE_KEY = 'ello_roleplay_sessoes';
-const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
 let modalId = null;
 let cachedData = null;
 let listenerAtivo_p = false;
@@ -5668,7 +5667,6 @@ const MEMBROS = [
   { nome:'Kuka',    cor:'#059669', ini:'KU' },
   { nome:'Thiago',  cor:'#2563EB', ini:'TH' },
   { nome:'Amanda',  cor:'#7C3AED', ini:'AM' },
-  { nome:'Cheila',  cor:'#D97706', ini:'CH' },
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
@@ -6939,7 +6937,7 @@ window.CHECK.gerarPDF = gerarPDF;
 <script>
 window.FEED = window.FEED || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
 const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
 
 let cachedData = null;
@@ -7356,7 +7354,7 @@ window.FEED.imprimirFeedbackView = imprimirFeedbackView;
 <script>
 window.CONTR = window.CONTR || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
 const TIPOS = { contrato:'📄 Contrato de Prestação de Serviços', cargo:'🧾 Descritivo de Cargo / OTE', aditivo:'📎 Aditivo Contratual', outro:'📁 Outro documento' };
 
 let cachedData = null;
@@ -8415,7 +8413,7 @@ function defaultEtapas() {
       como:'Nota de 1 a 5 por critério e lançar a média: (1) ouve cada lado separadamente, (2) encontra a raiz do desacordo, (3) é imparcial, (4) conduz a um acordo concreto, (5) combina acompanhamento depois.',
       notas:'', done:false },
     { id:'e06', inicio:'2026-11-03', fim:'2026-11-06', fase:'equipe', titulo:'Feedback 360 da equipe',
-      desc:'Enviar o formulário anônimo para Amanda, Cheila, Adriele e Sharon (5 notas + 2 perguntas abertas por candidato). Combine um prazo curto e cobre até chegarem as 4 respostas.',
+      desc:'Enviar o formulário anônimo para Amanda, Adriele e Sharon (5 notas + 2 perguntas abertas por candidato). Combine um prazo curto e cobre até chegarem as 4 respostas.',
       como:'Calcular a média por pergunta e por candidato, e ver a dispersão (notas muito diferentes entre avaliadores contam uma história). Nos comentários, valorize temas que se repetem; ignore comentário isolado. Com só 4 respondentes, cuidado pra não identificar quem escreveu o quê.',
       notas:'', done:false },
     { id:'e07', inicio:'2026-11-09', fim:'2026-11-13', fase:'pratica', titulo:'Prática 3 · Líder da semana #1',
@@ -9074,7 +9072,7 @@ window.PDL.corrLancar = corrLancar;
 <script>
 window.ATUAL = window.ATUAL || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
 const TIPOS = { salario:'💰 Aumento salarial', promocao:'🚀 Promoção', cargo:'🧾 Mudança de cargo', outro:'📌 Outro' };
 
 let cachedData = null;
@@ -9228,7 +9226,6 @@ const MEMBROS_INFO = [
   { nome:'Kuka',    cor:'#059669', ini:'KU' },
   { nome:'Thiago',  cor:'#2563EB', ini:'TH' },
   { nome:'Amanda',  cor:'#7C3AED', ini:'AM' },
-  { nome:'Cheila',  cor:'#D97706', ini:'CH' },
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
@@ -9459,7 +9456,7 @@ window.DESAFIO.fecharView = fecharView;
 <script>
 window.PROVAS = window.PROVAS || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Cheila','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
 const SEGURO_SOLAR_PERGUNTAS = [
   { texto: 'Qual a diferença central entre garantia e seguro?', opcoes: ['Garantia cobre defeitos de fabricação; seguro cobre danos de causa externa', 'Garantia e seguro cobrem exatamente as mesmas coisas', 'Seguro só cobre defeito de fabricação', 'Garantia cobre roubo e furto; seguro não'], correta: 0 },
   { texto: 'SITUAÇÃO: o cliente diz "Tenho garantia do fabricante, não preciso disso." Como você responde?', opcoes: ['Concordar e desistir da oferta', 'Explicar que garantia cobre defeitos internos e seguro protege contra eventos externos, como granizo, vendaval, raio ou roubo', 'Dizer que a garantia do fabricante não vale nada', 'Oferecer um desconto grande para compensar'], correta: 1 },
@@ -9694,7 +9691,7 @@ function listaPessoasTime() {
   try {
     if (window.EQUIPE && Array.isArray(window.EQUIPE.lista)) return window.EQUIPE.lista.map(u => u.nome).filter(Boolean);
   } catch(e) {}
-  return ['Thiago','Sharon','Kuka','Amanda','Cheila','Adriele','Felipe'];
+  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe'];
 }
 function abrirQuick() {
   const data = getData();
@@ -10946,7 +10943,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 <script>
 window.DAILY = window.DAILY || {};
 (function(){
-const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Cheila'];
+const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {};
 const esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
