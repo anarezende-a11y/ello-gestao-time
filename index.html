@@ -6599,7 +6599,7 @@ function blocosKukaThiago() {
         { key:'relManha', label:'Relatórios (manhã)', sub:'meta: 10', meta:10 },
         { key:'indManha', label:'Indicação', sub:'meta: 5 (dentro dos relatórios)', meta:5 },
         { key:'avalManha', label:'Avaliação', sub:'meta: 2', meta:2 },
-        { key:'tickets', label:'Tickets abertos', sub:'meta: mínimo 3', meta:3 } ],
+        { key:'seguro', label:'Seguro', sub:'meta: mínimo 3 ofertas', meta:3 } ],
       items:[ 'Usinas com alarme — checar','Se ok: ignorar e registrar motivo','Se problema: abrir ticket + vender inspeção' ] },
     { id:'update1Items', time:'11:30', title:'Atualização', type:'items', items:[
         'Atualizar clientes','Cobrar retorno (terceiros)' ] },
@@ -6613,7 +6613,7 @@ function blocosKukaThiago() {
     { id:'meetingSolarz', time:'15:30–16:00', title:'Reunião Solarz', type:'info', onlyDays:[2,4], hint:'Pausa nos relatórios durante a reunião' },
     { id:'closeItems', timeFn: d => (isMeetingDay(d) ? '15:30' : '16:30–18:15'), title:'Fechamento', type:'items',
       hintFn: d => (isMeetingDay(d) ? 'Depois da Reunião Solarz: retomar relatórios e fechamento normal' : 'Fechamento do dia'),
-      items:[ 'Organizar chat','Atualizar clientes','Analisar usinas','Abertura de ticket','Sistema 100% alimentado' ] },
+      items:[ 'Organizar chat','Atualizar clientes','Analisar usinas','Oferta de seguro','Sistema 100% alimentado' ] },
     { id:'meetingFriday', time:'17:00–18:15', title:'Reunião de Alinhamento', type:'info', onlyDays:[5], hint:'Depois: organizar o chat e encerrar o dia' }
   ];
 }
