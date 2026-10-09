@@ -2240,7 +2240,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
           <article class="card">
             <div class="race-h"><h3 style="margin:0;font-size:14px">Equipe e peso na meta</h3><button class="pvbtn ghost sm" type="button" id="addVen">+ Pessoa</button></div>
-            <p class="pvsub" style="font-size:12px;margin:8px 0 4px">Peso 1 = parte igual. Peso maior = meta individual maior. A meta de cada um é dividida do que falta vender. O <b>e-mail de login</b> liga a pessoa ao que ela lança em Negócios.</p>
+            <p class="pvsub" style="font-size:12px;margin:8px 0 4px">Peso 1 = parte igual. Peso maior = meta individual maior. A meta de cada um é dividida do que falta vender.</p>
             <div id="venList"></div>
           </article>
           <article class="card">
@@ -2296,7 +2296,7 @@ window.APPAUTH = window.APPAUTH || {};
       <p>Embaixo de cada card aparece a faixa já atingida e uma barra com os três marcadores. No gráfico <b>Corrida da meta</b>, as três linhas mostram onde o time deveria estar em cada dia útil pra bater cada faixa; a linha ciano é o realizado.</p>
 
       <h3>5. Quem pode fazer o quê</h3>
-      <p><b>Colaborador:</b> na primeira vez que abre <b>Negócios</b>, escolhe quem ele é na equipe ("Quem é você?"). A partir daí, tudo que ele lança entra no nome dele, ele vê e altera só a própria carteira, e o painel abre com os números e as metas individuais dele. O ranking do time aparece pra todos. <b>Ana (admin):</b> vê o time inteiro, lança por qualquer pessoa e é a única que altera metas, equipe e serviços no Admin. Se alguém escolher o nome errado, corrija o e-mail dessa pessoa na Equipe (Admin · Metas).</p>
+      <p>Todo o time lança e edita negócios em <b>Negócios</b>, escolhendo o vendedor de cada um. Só a Ana (admin) altera metas, equipe e serviços no <b>Admin · Metas</b>.</p>
     </section>
   </main>
 </div>
@@ -10675,8 +10675,11 @@ function fillSelects(){
   const keep = (sel, opts, first) => { const v = sel.value; sel.innerHTML = (first||"") + opts; if([...sel.options].some(o=>o.value===v)) sel.value=v; };
   const vo = vs.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.nome)+'</option>').join("");
   keep($("#fVend"), vo, '<option value="">Todo o time</option>');
-  keep($("#lVen"), vo, '<option value="">Todos</option>');
-  keep($("#nVen"), vo);
+  // Cheila e Amanda não aparecem na aba Negócios
+  const foraNeg = ["cheila","amanda"];
+  const voNeg = vs.filter(v => !foraNeg.includes(normNome(v.nome))).map(v=>'<option value="'+esc(v.id)+'">'+esc(v.nome)+'</option>').join("");
+  keep($("#lVen"), voNeg, '<option value="">Todos</option>');
+  keep($("#nVen"), voNeg);
   keep($("#nSvc"), ss.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.nome)+'</option>').join(""));
   try { aplicarColaborador(); } catch(e) {}
 }
@@ -10697,36 +10700,9 @@ function acharMeuVend(){
 }
 let filtroInicialFeito = false;
 function aplicarColaborador(){
-  meuVend = acharMeuVend();
-  const nome = meuVend ? vName(meuVend) : "";
-  const note = $("#euNote");
-  if(!canAdmin){
-    $("#nVen").value = meuVend; $("#nVen").disabled = true;
-    $("#lVen").value = meuVend; $("#lVen").disabled = true;
-    if(!filtroInicialFeito && meuVend){ $("#fVend").value = meuVend; filtroInicialFeito = true; }
-    note.hidden = false;
-    if(meuVend){ note.className = "eu-note"; note.innerHTML = 'Você está lançando como <b>'+esc(nome)+'</b>. Seus negócios atualizam o seu painel, as suas metas e o ranking do time.'; }
-    else {
-      const usados = new Set(Object.values(vinculos||{}).map(x=>x&&x.vendedor).concat((cfg.vendedores||[]).filter(x=>x.email).map(x=>x.id)));
-      const livres = (cfg.vendedores||[]).filter(x => !usados.has(x.id));
-      note.className = "eu-note warn";
-      if(livres.length){
-        note.innerHTML = '<b>Quem é você na equipe?</b> Escolha seu nome uma vez e seus negócios passam a contar pra você. <select id="euPick" style="background:rgba(3,18,22,.7);border:1px solid var(--line-strong);border-radius:10px;padding:7px 10px;color:var(--fg)">'+livres.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nome)+'</option>').join("")+'</select> <button type="button" class="pvbtn sm" id="euOk">Sou eu</button>';
-        $("#euOk").addEventListener("click", async ()=>{
-          const u = window.APPAUTH && window.APPAUTH.usuarioAtual; const id = $("#euPick").value; if(!u || !id || !db) return;
-          $("#euOk").disabled = true;
-          try { await db.vincular(u.email, id, u.nome); vinculos[chaveMail(u.email)] = {vendedor:id, email:u.email}; afterCfg(); toast("Pronto! Você está ligado a "+vName(id)); }
-          catch(e){ toast("Não foi possível salvar. Tente de novo.", true); $("#euOk").disabled = false; }
-        });
-      } else {
-        note.innerHTML = 'Seu login ainda não está ligado a ninguém da equipe e todos os nomes já estão em uso. Peça para a Ana te adicionar na equipe (Admin · Metas).';
-      }
-    }
-  } else {
-    $("#nVen").disabled = false; $("#lVen").disabled = false;
-    note.hidden = false; note.className = "eu-note";
-    note.innerHTML = 'Você é admin: escolha o vendedor de cada negócio. Cada colaborador, quando entra, lança e vê só os próprios negócios.';
-  }
+  // qualquer usuário escolhe o vendedor no formulário; é isso que vai pro Firebase
+  $("#nVen").disabled = !canWrite; $("#lVen").disabled = false;
+  const note = $("#euNote"); if(note) note.hidden = true;
 }
 const vName = id => (cfg.vendedores||[]).find(v=>v.id===id)?.nome || id;
 const sName = id => (cfg.servicos||[]).find(s=>s.id===id)?.nome || id;
@@ -10734,8 +10710,7 @@ function renderNeg(){
   const mes = $("#lMes").value, vend=$("#lVen").value, st=$("#lSt").value, q=$("#lQ").value.trim().toLowerCase();
   let rows = realDeals.slice();
   if(mes) rows = rows.filter(d=>(d.entrada||"").startsWith(mes));
-  if(!canAdmin) rows = rows.filter(d=>d.vendedor===meuVend);
-  else if(vend) rows = rows.filter(d=>d.vendedor===vend);
+  if(vend) rows = rows.filter(d=>d.vendedor===vend);
   if(st) rows = rows.filter(d=>d.status===st);
   if(q) rows = rows.filter(d=>(d.cliente||"").toLowerCase().includes(q));
   rows.sort((a,b)=> (b.entrada||"").localeCompare(a.entrada||""));
@@ -10747,13 +10722,13 @@ function renderNeg(){
     const dias = d.status==="aberto" ? dayDiff(d.entrada, todayISO) : (d.fechamento? dayDiff(d.entrada,d.fechamento) : "");
     const lbl = {aberto:"Em aberto", ganho:"Ganho", perdido:"Perdido"}[d.status]||d.status;
     return '<tr data-id="'+esc(d.id)+'"><td><b>'+esc(d.cliente)+'</b>'+(d.motivo&&d.status==="perdido"?'<div style="font-size:11px;color:#8db0b3">'+esc(d.motivo)+'</div>':'')+'</td><td>'+esc(vName(d.vendedor))+'</td><td>'+esc(sName(d.servico))+'</td><td class="r num">'+BRL2(+d.valor||0)+'</td>'+
-      '<td><button class="st '+esc(d.status)+'" data-act="cycle" type="button" title="Clique para trocar o status"'+(canWrite && (canAdmin || d.vendedor===meuVend)?'':' disabled')+'>'+lbl+'</button></td><td class="num">'+fmtDM(d.entrada)+'</td><td class="r num">'+dias+'</td>'+
-      '<td><div class="act">'+(canWrite && (canAdmin || d.vendedor===meuVend)?'<button class="pvbtn ghost sm" data-act="edit" type="button">Editar</button><button class="pvbtn danger sm" data-act="del" type="button">Excluir</button>':'')+'</div></td></tr>';
+      '<td><button class="st '+esc(d.status)+'" data-act="cycle" type="button" title="Clique para trocar o status"'+(canWrite?'':' disabled')+'>'+lbl+'</button></td><td class="num">'+fmtDM(d.entrada)+'</td><td class="r num">'+dias+'</td>'+
+      '<td><div class="act">'+(canWrite?'<button class="pvbtn ghost sm" data-act="edit" type="button">Editar</button><button class="pvbtn danger sm" data-act="del" type="button">Excluir</button>':'')+'</div></td></tr>';
   }).join("");
 }
 
 function resetForm(){
-  editingId = null; $("#negForm").reset(); $("#nEnt").value = todayISO; if(!canAdmin && meuVend) $("#nVen").value = meuVend; $("#formTitle").textContent="Novo negócio"; $("#formCancel").hidden=true; $("#nSave").textContent="Salvar negócio"; $("#motWrap").hidden = true;
+  editingId = null; $("#negForm").reset(); $("#nEnt").value = todayISO; $("#formTitle").textContent="Novo negócio"; $("#formCancel").hidden=true; $("#nSave").textContent="Salvar negócio"; $("#motWrap").hidden = true;
 }
 $("#nSt").addEventListener("change", ()=>{ const s=$("#nSt").value; $("#motWrap").hidden = s!=="perdido"; if(s!=="aberto" && !$("#nFec").value) $("#nFec").value = todayISO; if(s==="aberto") $("#nFec").value=""; });
 $("#formCancel").addEventListener("click", resetForm);
@@ -10762,10 +10737,6 @@ $("#negForm").addEventListener("submit", async ev=>{
   const st = $("#nSt").value;
   const body = { cliente: $("#nCli").value.trim(), vendedor: $("#nVen").value, servico: $("#nSvc").value, valor: Math.max(0, parseFloat($("#nVal").value)||0),
     status: st, entrada: $("#nEnt").value || todayISO, fechamento: st==="aberto" ? "" : ($("#nFec").value || todayISO), motivo: st==="perdido" ? $("#nMot").value : "", obs: $("#nObs").value.trim(), atualizadoEm: new Date().toISOString() };
-  if(!canAdmin){
-    if(!meuVend){ toast("Seu login não está ligado a ninguém da equipe. Peça para a Ana colocar seu e-mail no Admin.", true); return; }
-    body.vendedor = meuVend;
-  }
   if(!body.vendedor){ toast("Escolha o vendedor.", true); return; }
   if(!body.cliente){ toast("Informe o cliente.", true); return; }
   try { const u = window.APPAUTH && window.APPAUTH.usuarioAtual; if(u){ body.atualizadoPorEmail = u.email||""; if(!editingId){ body.criadoPorEmail = u.email||""; body.criadoPorNome = u.nome||""; } } } catch(e) {}
@@ -10786,7 +10757,6 @@ function handleWriteErr(e){
 const confirmDel = {};
 $("#negTbl").addEventListener("click", async ev=>{
   const b = ev.target.closest("button[data-act]"); if(!b || !db) return; const id = b.closest("tr").dataset.id; const d = realDeals.find(x=>x.id===id); if(!d) return;
-  if(!canAdmin && d.vendedor!==meuVend){ toast("Você só pode alterar os seus próprios negócios.", true); return; }
   const act = b.dataset.act;
   if(act==="edit"){ editingId=id; $("#nCli").value=d.cliente||""; $("#nVen").value=d.vendedor; $("#nSvc").value=d.servico; $("#nVal").value=d.valor; $("#nSt").value=d.status; $("#nEnt").value=d.entrada||""; $("#nFec").value=d.fechamento||""; $("#nMot").value=d.motivo||"Preço"; $("#nObs").value=d.obs||""; $("#motWrap").hidden = d.status!=="perdido";
     $("#formTitle").textContent="Editando: "+(d.cliente||""); $("#formCancel").hidden=false; $("#nSave").textContent="Salvar alterações"; $("#negForm").scrollIntoView({behavior:"smooth",block:"center"}); }
@@ -10809,7 +10779,7 @@ function renderAdmin(){
 }
 function drawLists(){
   const dis = canAdmin ? "" : " disabled";
-  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row ven" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld fld-mail"><label for="ve'+i+'">E-mail de login</label><input id="ve'+i+'" data-f="email" type="email" placeholder="nome@ellosolar.com.br" value="'+esc(v.email || (Object.values(vinculos||{}).find(x=>x&&x.vendedor===v.id)||{}).email || "")+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
+  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
   $("#svcAdm").innerHTML = draft.servicos.map((s,i)=>'<div class="list-row svc" data-i="'+i+'"><div class="fld"><label for="sn'+i+'">Serviço</label><input id="sn'+i+'" data-f="nome" value="'+esc(s.nome)+'"'+dis+'></div><div class="fld"><label for="sm'+i+'">Margem %</label><input id="sm'+i+'" data-f="margem" type="number" step="1" min="0" max="100" value="'+esc(s.margem)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="svc" aria-label="Remover '+esc(s.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhum serviço cadastrado.</div>';
 }
 function bindList(id, key){
