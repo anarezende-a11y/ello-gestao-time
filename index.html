@@ -6549,9 +6549,10 @@ const DEFS = {
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
+      { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
       { id:'b9', time:'Fechamento', title:'Fim do dia', type:'items', items:[
           'Organizar o chat e finalizar o dia' ] }
     ]
@@ -6584,9 +6585,10 @@ const DEFS = {
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
+      { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
       { id:'b9', time:'Fechamento', title:'Fim do dia', type:'items', items:[
           'Organizar o chat e finalizar o dia' ] }
     ]
@@ -6615,10 +6617,10 @@ function blocosKukaThiago() {
         { key:'indTarde', label:'Indicação', sub:'meta: mínimo 5', meta:5 },
         { key:'avalTarde', label:'Avaliação', sub:'meta: 2', meta:2 } ] },
     { id:'meetingSolarz', time:'15:30–16:00', title:'Reunião Solarz', type:'info', onlyDays:[2,4], hint:'Pausa nos relatórios durante a reunião' },
-    { id:'closeItems', timeFn: d => (isMeetingDay(d) ? '15:30' : '16:30–18:15'), title:'Fechamento', type:'items',
-      hintFn: d => (isMeetingDay(d) ? 'Depois da Reunião Solarz: retomar relatórios e fechamento normal' : 'Fechamento do dia'),
+    { id:'treinoSexta', time:'16:30–18:00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
+    { id:'closeItems', timeFn: d => (d.getDay()===5 ? '18:00–18:15' : (isMeetingDay(d) ? '15:30' : '16:30–18:15')), title:'Fechamento', type:'items',
+      hintFn: d => (d.getDay()===5 ? 'Depois do treinamento: fechamento rápido do dia' : (isMeetingDay(d) ? 'Depois da Reunião Solarz: retomar relatórios e fechamento normal' : 'Fechamento do dia')),
       items:[ 'Organizar chat','Atualizar clientes','Analisar usinas','Oferta de seguro','Sistema 100% alimentado' ] },
-    { id:'meetingFriday', time:'17:00–18:15', title:'Reunião de Alinhamento', type:'info', onlyDays:[5], hint:'Depois: organizar o chat e encerrar o dia' }
   ];
 }
 function isMeetingDay(d){ const day = d.getDay(); return day === 2 || day === 4; }
