@@ -1096,6 +1096,19 @@ body {
 #mod-posvendas .race{margin-top:16px}
 #mod-posvendas .race-h{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
 #mod-posvendas .race-h h3{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;display:flex;align-items:center;gap:10px}
+#mod-posvendas .tiers{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);width:100%;text-align:left}
+#mod-posvendas .tier-st{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+#mod-posvendas .tier-st i{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor}
+#mod-posvendas .tbar{position:relative;height:7px;border-radius:5px;background:rgba(125,211,214,.12);margin:0 4px}
+#mod-posvendas .tbar>i{display:block;height:100%;border-radius:5px;transition:width .4s ease}
+#mod-posvendas .tbar .mk{position:absolute;top:-3px;width:3px;height:13px;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 2px rgba(5,24,30,.9)}
+#mod-posvendas .tl{display:flex;justify-content:space-between;gap:6px;margin-top:8px;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#mod-posvendas .tl span{display:flex;flex-direction:column;gap:2px;min-width:0}
+#mod-posvendas .tl span:nth-child(2){align-items:center}
+#mod-posvendas .tl span:nth-child(3){align-items:flex-end}
+#mod-posvendas .tl em{display:inline-block;width:14px;height:3px;border-radius:2px}
+#mod-posvendas .tl b{font-size:11.5px;letter-spacing:0;color:var(--fg);text-transform:none;white-space:nowrap}
+#mod-posvendas .legend b{color:inherit;font-weight:700}
 #mod-posvendas .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 #mod-posvendas .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
 #mod-posvendas .chart-box{position:relative;margin-top:12px}
@@ -2062,19 +2075,19 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="row-top">
         <article class="card" id="cFat">
           <div class="k-label"><span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v18M17 7.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 2.7 5 3.2 5 1.4 5 3.3-2.2 3-5 3-5-1.1-5-3"/></svg></span>Faturamento</div>
-          <div class="big"><div><div class="v num" data-k="fat.v">—</div><div class="meta-l">META <b class="num" data-k="fat.m">—</b></div></div>
+          <div class="big"><div><div class="v num" data-k="fat.v">—</div><div class="meta-l">META IDEAL <b class="num" data-k="fat.m">—</b></div></div>
             <div class="ating">ATINGIDO<span class="p num" data-k="fat.p">—</span><span class="f num" data-k="fat.f">—</span></div></div>
           <svg class="spark" data-spark="fat" viewBox="0 0 300 46" preserveAspectRatio="none"></svg>
         </article>
         <article class="card" id="cTick">
           <div class="k-label"><span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 12l9-9 9 9-9 9z"/></svg></span>Ticket médio</div>
-          <div class="big"><div><div class="v num" data-k="tick.v">—</div><div class="meta-l">META <b class="num" data-k="tick.m">—</b></div></div>
+          <div class="big"><div><div class="v num" data-k="tick.v">—</div><div class="meta-l">META IDEAL <b class="num" data-k="tick.m">—</b></div></div>
             <div class="ating">ATINGIDO<span class="p num" data-k="tick.p">—</span><span class="f" data-k="tick.f">—</span></div></div>
           <svg class="spark" data-spark="tick" viewBox="0 0 300 46" preserveAspectRatio="none"></svg>
         </article>
         <article class="card" id="cLuc">
           <div class="k-label"><span class="k-ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 17l6-6 4 4 6-7M14 8h6v6"/></svg></span>Lucro estimado</div>
-          <div class="big"><div><div class="v num" data-k="luc.v">—</div><div class="meta-l">META <b class="num" data-k="luc.m">—</b></div></div>
+          <div class="big"><div><div class="v num" data-k="luc.v">—</div><div class="meta-l">META IDEAL <b class="num" data-k="luc.m">—</b></div></div>
             <div class="ating">ATINGIDO<span class="p num" data-k="luc.p">—</span><span class="f num" data-k="luc.f">—</span></div></div>
           <svg class="spark" data-spark="luc" viewBox="0 0 300 46" preserveAspectRatio="none"></svg>
         </article>
@@ -2086,13 +2099,13 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="row-ind">
           <article class="card ind" id="iNeg">
             <div class="k-label"><span class="k-ico c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Negócios</div>
-            <div class="v num" data-k="neg.v">—</div><div class="m">META<b class="num" data-k="neg.m">—</b></div>
+            <div class="v num" data-k="neg.v">—</div><div class="m">META IDEAL<b class="num" data-k="neg.m">—</b></div>
             <svg class="spark" data-spark="neg" viewBox="0 0 220 58" preserveAspectRatio="none"></svg>
             <div class="ating">ATINGIDO<span class="p num" data-k="neg.p">—</span><span class="f" data-k="neg.f">—</span></div>
           </article>
           <article class="card ind" id="iVen">
             <div class="k-label"><span class="k-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 7"/></svg></span>Número de vendas</div>
-            <div class="v num" data-k="ven.v">—</div><div class="m">META<b class="num" data-k="ven.m">—</b></div>
+            <div class="v num" data-k="ven.v">—</div><div class="m">META IDEAL<b class="num" data-k="ven.m">—</b></div>
             <svg class="spark" data-spark="ven" viewBox="0 0 220 58" preserveAspectRatio="none"></svg>
             <div class="ating">ATINGIDO<span class="p num" data-k="ven.p">—</span><span class="f" data-k="ven.f">—</span></div>
           </article>
@@ -2131,7 +2144,7 @@ window.APPAUTH = window.APPAUTH || {};
       <article class="card race">
         <div class="race-h">
           <h3><span class="dot"></span>Corrida da meta · Faturamento <span class="pill warn">Mês</span></h3>
-          <div class="legend"><span><i style="background:#ff6b6b"></i>Mín (80%)</span><span><i style="background:#f5a524"></i>Ideal</span><span><i style="background:#c48bff"></i>Super (120%)</span><span><i style="background:#3ee39a;height:4px"></i>Realizado</span></div>
+          <div class="legend"><span><i style="background:#ff6b6b"></i>Mínima (<b data-k="race.pmin">80</b>%)</span><span><i style="background:#f5a524"></i>Ideal (100%)</span><span><i style="background:#3ee39a"></i>Super (<b data-k="race.psup">120</b>%)</span><span><i style="background:#5ee6dc;height:4px"></i>Realizado</span></div>
         </div>
         <div class="chart-box" id="raceBox"><svg id="raceSvg" role="img" aria-label="Faturamento acumulado do mês comparado com a meta"></svg><div class="tip" id="raceTip" hidden></div></div>
         <div class="pace">
@@ -2213,7 +2226,10 @@ window.APPAUTH = window.APPAUTH || {};
             <div class="fld"><label for="aPerd">Limite de perdas (%)</label><input id="aPerd" type="number" min="0" max="100" step="1"></div>
             <div class="fld"><label for="aTempo">Tempo máximo na carteira (dias)</label><input id="aTempo" type="number" min="0" step="1"></div>
             <div class="fld"><label for="aFer">Feriados (dd/mm, separados por vírgula)</label><input id="aFer" placeholder="12/10, 02/11"></div>
+            <div class="fld"><label for="aPMin">Meta mínima (% da ideal)</label><input id="aPMin" type="number" min="1" max="100" step="1"><span class="hint">Vermelho · ex.: 80 = 80% da meta ideal</span></div>
+            <div class="fld"><label for="aPSup">Super meta (% da ideal)</label><input id="aPSup" type="number" min="100" step="1"><span class="hint">Verde · ex.: 120 = 120% da meta ideal</span></div>
           </div>
+          <p class="hint" style="margin:12px 0 0">As metas digitadas acima são a <b style="color:#f5a524">meta ideal</b> (laranja). A <b style="color:#ff6b6b">mínima</b> e a <b style="color:#3ee39a">super</b> são calculadas a partir dela.</p>
         </article>
         <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
           <article class="card">
@@ -2264,6 +2280,14 @@ window.APPAUTH = window.APPAUTH || {};
 
       <h3>4. Cores</h3>
       <p><span class="pill ok">Verde</span> meta batida ou no ritmo. <span class="pill warn">Laranja</span> perto do ritmo (entre 80% e 100% do esperado para hoje). <span class="pill bad">Vermelho</span> abaixo do ritmo. Nos indicadores de “quanto menor, melhor” (perdas e tempo na carteira), a lógica é invertida.</p>
+      <h3>Faixas de meta</h3>
+      <p>Cada meta tem três faixas, calculadas a partir da meta que você digita no Admin (a <b>meta ideal</b>):</p>
+      <ul>
+        <li><span class="pill bad">Mínima</span> em vermelho: 80% da meta ideal (você pode mudar no Admin).</li>
+        <li><span class="pill warn">Ideal</span> em laranja: 100%, a meta digitada.</li>
+        <li><span class="pill ok">Super</span> em verde: 120% da meta ideal (você pode mudar no Admin).</li>
+      </ul>
+      <p>Embaixo de cada card aparece a faixa já atingida e uma barra com os três marcadores. No gráfico <b>Corrida da meta</b>, as três linhas mostram onde o time deveria estar em cada dia útil pra bater cada faixa; a linha ciano é o realizado.</p>
 
       <h3>5. Quem pode fazer o quê</h3>
       <p>Quem tem acesso de <b>Colaborador</b> lança e edita negócios. Só quem tem acesso de <b>Editor</b> (ou a dona do painel) altera as metas no Admin. Quem tem acesso só de <b>Leitor</b> vê o painel sem editar.</p>
@@ -10248,6 +10272,7 @@ const DEFAULT_CFG = {
   metaFat: 80000, fatIni: 10000, venIni: 14,
   metaVen: 114, metaNeg: 380, metaTick: 700, metaLuc: 30000,
   metaConv: 30, maxPerd: 35, maxTempo: 10,
+  pctMin: 80, pctSuper: 120,
   feriados: ["2026-10-12","2026-11-02","2026-11-15","2026-11-20","2026-12-25"],
   vendedores: [
     {id:"felipe", nome:"Felipe", peso:1.2},
@@ -10416,6 +10441,24 @@ function tone(ratio, pace, inverse){
   const exp = pace>0 ? ratio/pace : ratio;
   return exp>=1 ? "good" : (exp>=0.8 ? "warnc" : "badc");
 }
+/* faixas de meta: mínima (vermelho), ideal (laranja), super (verde) */
+function faixas(){ const mn=(+cfg.pctMin||80)/100, sp=(+cfg.pctSuper||120)/100; return {mn: Math.min(mn, 1), sp: Math.max(sp, 1)}; }
+const TIER_COR = { sup:"#3ee39a", ide:"#f5a524", min:"#ff6b6b", abx:"#5f8487" };
+function tierOf(v, meta){ const F=faixas(); if(!meta || !isFinite(v)) return null; return v>=meta*F.sp ? "sup" : v>=meta ? "ide" : v>=meta*F.mn ? "min" : "abx"; }
+function tiers(cardId, v, meta, fmt){
+  const card = document.getElementById(cardId); if(!card) return;
+  let el = card.querySelector(".tiers");
+  if(!el){ el = document.createElement("div"); el.className = "tiers"; card.appendChild(el); }
+  if(!meta){ el.innerHTML = ""; return; }
+  const F = faixas(), top = meta*F.sp, t = tierOf(v, meta);
+  const pct = x => Math.max(0, Math.min(100, x/top*100)).toFixed(1);
+  const nome = { sup:"Super meta batida", ide:"Meta ideal batida", min:"Meta mínima batida", abx:"Abaixo da mínima" }[t] || "Sem dados";
+  el.innerHTML =
+    '<div class="tier-st" style="color:'+(TIER_COR[t]||"#8db0b3")+'"><i style="background:'+(TIER_COR[t]||"#8db0b3")+'"></i>'+nome+'</div>'+
+    '<div class="tbar" role="img" aria-label="'+nome+'"><i style="width:'+pct(isFinite(v)?v:0)+'%;background:'+(TIER_COR[t]||"#5f8487")+'"></i>'+
+      '<span class="mk" style="left:'+pct(meta*F.mn)+'%;background:#ff6b6b"></span><span class="mk" style="left:'+pct(meta)+'%;background:#f5a524"></span><span class="mk" style="left:100%;background:#3ee39a"></span></div>'+
+    '<div class="tl"><span><em style="background:#ff6b6b"></em>Mín<b class="num">'+fmt(meta*F.mn)+'</b></span><span><em style="background:#f5a524"></em>Ideal<b class="num">'+fmt(meta)+'</b></span><span><em style="background:#3ee39a"></em>Super<b class="num">'+fmt(meta*F.sp)+'</b></span></div>';
+}
 function cardTone(id, t){ const el=document.getElementById(id); if(!el) return; el.classList.toggle("ok", t==="good"); el.classList.toggle("bad", t==="badc"); }
 
 function spark(svg, data, color, opts={}){
@@ -10446,27 +10489,27 @@ function renderDash(){
   let r = M.meta.fat ? M.fat/M.meta.fat : NaN; let t = tone(r, M.pace);
   setK("fat.v", BRL2(M.fat), r>=1?"good":null); setK("fat.m", BRL(M.meta.fat)); setK("fat.p", PCT(r), t);
   setK("fat.f", M.fat>=M.meta.fat ? "Meta batida!" : "Falta "+BRL(M.meta.fat-M.fat)+" pra bater"); cardTone("cFat", t);
-  spark($('[data-spark="fat"]'), M.series.fat, toneColor(t));
+  spark($('[data-spark="fat"]'), M.series.fat, toneColor(t)); tiers("cFat", M.fat, M.meta.fat, BRL);
   // Ticket
   r = M.meta.tick ? M.tick/M.meta.tick : NaN; t = isFinite(r) ? (r>=1?"good":r>=.85?"warnc":"badc") : null;
   setK("tick.v", isFinite(M.tick)?BRL2(M.tick):"—", r>=1?"good":null); setK("tick.m", BRL(M.meta.tick)); setK("tick.p", PCT(r), t);
   setK("tick.f", r>=1 ? "Meta batida!" : (isFinite(r)? "Abaixo da meta" : "Sem vendas ainda")); cardTone("cTick", t);
-  spark($('[data-spark="tick"]'), M.series.tick, toneColor(t), {zero:false});
+  spark($('[data-spark="tick"]'), M.series.tick, toneColor(t), {zero:false}); tiers("cTick", M.tick, M.meta.tick, BRL);
   // Lucro
   r = M.meta.luc ? M.luc/M.meta.luc : NaN; t = tone(r, M.pace);
   setK("luc.v", BRL2(M.luc), r>=1?"good":null); setK("luc.m", BRL(M.meta.luc)); setK("luc.p", PCT(r), t);
   setK("luc.f", r>=1 ? "Meta batida!" : "Falta "+BRL(M.meta.luc-M.luc)+" · margem "+(M.fat? PCT(M.luc/M.fat):"—")); cardTone("cLuc", t);
-  spark($('[data-spark="luc"]'), M.series.luc, toneColor(t));
+  spark($('[data-spark="luc"]'), M.series.luc, toneColor(t)); tiers("cLuc", M.luc, M.meta.luc, BRL);
   // Negócios
   r = M.meta.neg ? M.neg/M.meta.neg : NaN; t = tone(r, M.pace);
   setK("neg.v", INT(M.neg), t==="good"?"good":null); setK("neg.m", INT(M.meta.neg)); setK("neg.p", PCT(r), t);
   setK("neg.f", r>=1 ? "Meta batida!" : "Falta "+INT(M.meta.neg-M.neg)+" pra bater"); cardTone("iNeg", t);
-  spark($('[data-spark="neg"]'), M.series.neg, toneColor(t));
+  spark($('[data-spark="neg"]'), M.series.neg, toneColor(t)); tiers("iNeg", M.neg, M.meta.neg, INT);
   // Vendas
   r = M.meta.ven ? M.ven/M.meta.ven : NaN; t = tone(r, M.pace);
   setK("ven.v", INT(M.ven), t==="good"?"good":null); setK("ven.m", INT(M.meta.ven)); setK("ven.p", PCT(r), t);
   setK("ven.f", r>=1 ? "Meta batida!" : "Falta "+INT(M.meta.ven-M.ven)+" pra bater"); cardTone("iVen", t);
-  spark($('[data-spark="ven"]'), M.series.ven, toneColor(t));
+  spark($('[data-spark="ven"]'), M.series.ven, toneColor(t)); tiers("iVen", M.ven, M.meta.ven, INT);
   // Perdidos (vs limite proporcional ao ritmo)
   const limNow = M.meta.perdQtd * Math.max(M.pace, .05);
   r = M.meta.perdQtd ? M.per/M.meta.perdQtd : NaN; t = isFinite(r) ? (M.per<=limNow ? "good" : M.per<=limNow*1.15 ? "warnc" : "badc") : null;
@@ -10505,7 +10548,7 @@ function renderRace(M, iniF){
   const W = Math.max(300, box.clientWidth), H = W<560 ? 220 : 260; const P = {l: W<560?46:64, r:14, t:14, b:28};
   svg.setAttribute("viewBox","0 0 "+W+" "+H); svg.setAttribute("width", W); svg.setAttribute("height", H);
   const days = M.b.days; const meta = M.meta.fat || 1;
-  const yMax = Math.max(meta*1.25, ...M.series.fat, 1);
+  const yMax = Math.max(meta*Math.max(1.25, faixas().sp*1.04), ...M.series.fat, 1);
   const x = d => P.l + ((d-1)/(days-1))*(W-P.l-P.r); const y = v => H-P.b - (v/yMax)*(H-P.t-P.b);
   // ideal curve along business days
   const biz = M.biz; const idealAt = (d, f) => { const s=M.b.first.slice(0,8)+pad(d); const done = biz.filter(z=>z<=s).length; return iniF + (meta*f - iniF) * (biz.length? done/biz.length : 0); };
@@ -10514,17 +10557,18 @@ function renderRace(M, iniF){
   const ticks = 4; for(let i=0;i<=ticks;i++){ const v = yMax*i/ticks; g += '<line x1="'+P.l+'" x2="'+(W-P.r)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="rgba(125,211,214,.10)"/><text x="'+(P.l-8)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="10" fill="#8db0b3">'+(v>=1000? "R$ "+Math.round(v/1000)+" mil" : BRL(v))+'</text>'; }
   const step = W<560 ? 5 : 3; for(let d=1; d<=days; d+=step){ g += '<text x="'+x(d)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#8db0b3">'+pad(d)+'</text>'; }
   g += '<line x1="'+P.l+'" x2="'+(W-P.r)+'" y1="'+y(meta)+'" y2="'+y(meta)+'" stroke="#f5a524" stroke-dasharray="3 5" stroke-opacity=".5"/><text x="'+(W-P.r)+'" y="'+(y(meta)-6)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="#f5a524">Meta '+BRL(meta)+'</text>';
-  g += '<path d="'+line(.8)+'" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-opacity=".8"/>';
+  const FX = faixas(); setK("race.pmin", Math.round(FX.mn*100)); setK("race.psup", Math.round(FX.sp*100));
+  g += '<path d="'+line(FX.mn)+'" fill="none" stroke="#ff6b6b" stroke-width="1.6" stroke-opacity=".85"/>';
   g += '<path d="'+line(1)+'" fill="none" stroke="#f5a524" stroke-width="1.8"/>';
-  g += '<path d="'+line(1.2)+'" fill="none" stroke="#c48bff" stroke-width="1.6" stroke-opacity=".8"/>';
+  g += '<path d="'+line(FX.sp)+'" fill="none" stroke="#3ee39a" stroke-width="1.6" stroke-opacity=".85"/>';
   const s = M.series.fat;
   if(s.length){
     const pth = s.map((v,i)=>(i?"L":"M")+x(i+1).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
-    g += '<defs><linearGradient id="raceG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3ee39a" stop-opacity=".35"/><stop offset="1" stop-color="#3ee39a" stop-opacity="0"/></linearGradient></defs>';
+    g += '<defs><linearGradient id="raceG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5ee6dc" stop-opacity=".32"/><stop offset="1" stop-color="#5ee6dc" stop-opacity="0"/></linearGradient></defs>';
     g += '<path d="'+pth+' L'+x(s.length)+' '+(H-P.b)+' L'+x(1)+' '+(H-P.b)+' Z" fill="url(#raceG)"/>';
-    g += '<path d="'+pth+'" fill="none" stroke="#3ee39a" stroke-width="3" stroke-linejoin="round"/>';
+    g += '<path d="'+pth+'" fill="none" stroke="#5ee6dc" stroke-width="3" stroke-linejoin="round"/>';
     const lx = x(s.length), ly = y(s[s.length-1]);
-    g += '<circle cx="'+lx+'" cy="'+ly+'" r="6" fill="#05181e" stroke="#3ee39a" stroke-width="3"/>';
+    g += '<circle cx="'+lx+'" cy="'+ly+'" r="6" fill="#05181e" stroke="#5ee6dc" stroke-width="3"/>';
   }
   g += '<rect id="raceHit" x="'+P.l+'" y="'+P.t+'" width="'+(W-P.l-P.r)+'" height="'+(H-P.t-P.b)+'" fill="transparent"/>';
   g += '<line id="raceCur" x1="0" x2="0" y1="'+P.t+'" y2="'+(H-P.b)+'" stroke="rgba(233,245,244,.35)" stroke-dasharray="2 3" visibility="hidden"/>';
@@ -10535,7 +10579,7 @@ function renderRace(M, iniF){
     let d = Math.round(1 + (px-P.l)/(W-P.l-P.r)*(days-1)); d = Math.max(1, Math.min(days, d));
     const real = s[d-1]; cur.setAttribute("x1",x(d)); cur.setAttribute("x2",x(d)); cur.setAttribute("visibility","visible");
     tip.hidden=false; tip.style.left = (x(d)*rect.width/W)+"px"; tip.style.top = (y(real!=null?real:idealAt(d,1))*rect.height/H)+"px";
-    tip.innerHTML = '<b>'+pad(d)+'/'+pad(M.b.m)+'</b><br><span style="color:#3ee39a">Realizado: '+(real!=null?BRL(real):"—")+'</span><br><span style="color:#f5a524">Ideal: '+BRL(idealAt(d,1))+'</span>';
+    tip.innerHTML = '<b>'+pad(d)+'/'+pad(M.b.m)+'</b><br><span style="color:#5ee6dc">Realizado: '+(real!=null?BRL(real):"—")+'</span><br><span style="color:#ff6b6b">Mínima: '+BRL(idealAt(d,faixas().mn))+'</span><br><span style="color:#f5a524">Ideal: '+BRL(idealAt(d,1))+'</span><br><span style="color:#3ee39a">Super: '+BRL(idealAt(d,faixas().sp))+'</span>';
   };
   hit.addEventListener("pointermove", move); hit.addEventListener("pointerleave", ()=>{tip.hidden=true; cur.setAttribute("visibility","hidden");});
 }
@@ -10662,6 +10706,7 @@ function renderAdmin(){
   draft = JSON.parse(JSON.stringify(cfg));
   $("#aMes").value = draft.mes; $("#aFat").value=draft.metaFat; $("#aFatIni").value=draft.fatIni; $("#aVenIni").value=draft.venIni; $("#aVen").value=draft.metaVen; $("#aNeg").value=draft.metaNeg;
   $("#aTick").value=draft.metaTick; $("#aLuc").value=draft.metaLuc; $("#aConv").value=draft.metaConv; $("#aPerd").value=draft.maxPerd; $("#aTempo").value=draft.maxTempo;
+  $("#aPMin").value = draft.pctMin!=null ? draft.pctMin : 80; $("#aPSup").value = draft.pctSuper!=null ? draft.pctSuper : 120;
   $("#aFer").value = (draft.feriados||[]).filter(f=>f.startsWith(draft.mes.slice(0,4))).map(f=>f.slice(8)+"/"+f.slice(5,7)).join(", ");
   drawLists();
 }
@@ -10683,7 +10728,7 @@ $("#admSave").addEventListener("click", async ()=>{
   const mes = $("#aMes").value || cfg.mes; const yr = mes.slice(0,4);
   const fer = $("#aFer").value.split(/[,;\s]+/).filter(Boolean).map(s=>{ const [d,m]=s.split("/"); return (d&&m) ? yr+"-"+pad(+m)+"-"+pad(+d) : null; }).filter(Boolean);
   const other = (cfg.feriados||[]).filter(f=>!f.startsWith(yr));
-  const next = Object.assign({}, draft, { mes, metaFat:n("#aFat"), fatIni:n("#aFatIni"), venIni:n("#aVenIni"), metaVen:n("#aVen"), metaNeg:n("#aNeg"), metaTick:n("#aTick"), metaLuc:n("#aLuc"), metaConv:n("#aConv"), maxPerd:n("#aPerd"), maxTempo:n("#aTempo"), feriados: other.concat(fer),
+  const next = Object.assign({}, draft, { mes, metaFat:n("#aFat"), fatIni:n("#aFatIni"), venIni:n("#aVenIni"), metaVen:n("#aVen"), metaNeg:n("#aNeg"), metaTick:n("#aTick"), metaLuc:n("#aLuc"), metaConv:n("#aConv"), maxPerd:n("#aPerd"), maxTempo:n("#aTempo"), pctMin:(n("#aPMin")||80), pctSuper:(n("#aPSup")||120), feriados: other.concat(fer),
     vendedores: draft.vendedores.filter(v=>v.nome.trim()).map(v=>({id:v.id, nome:v.nome.trim(), peso:+v.peso||0})),
     servicos: draft.servicos.filter(s=>s.nome.trim()).map(s=>({id:s.id, nome:s.nome.trim(), margem:+s.margem||0})), atualizadoEm:new Date().toISOString() });
   if(!db){ cfg = next; afterCfg(); toast("Salvo só nesta visualização (base indisponível)"); return; }
