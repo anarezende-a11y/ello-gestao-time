@@ -11046,6 +11046,82 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
 @media (prefers-reduced-motion:reduce) { .el-sec-toggle .el-chev { transition:none; } }
 .drawer-body .drawer-section-label:not(.el-sec-toggle) { padding:14px 12px 6px; }
 
+
+/* =====================================================================
+   COMPONENTES INTERNOS (janelas, cards de etapa, botões e campos)
+   ===================================================================== */
+/* botões .btn em qualquer lugar (antes só existiam estilizados no topo das páginas) */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:9px 15px; border-radius:11px; border:1px solid transparent; cursor:pointer;
+  font-family:var(--f-ui); font-size:12.5px; font-weight:800; line-height:1.2; white-space:nowrap;
+  background:transparent; color:var(--text); transition:filter .15s, background .15s, border-color .15s;
+}
+.btn:hover { filter:brightness(1.08); }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.btn-amber, .btn-primary { background:var(--el-btn) !important; color:#2a1700 !important; border-color:transparent !important; box-shadow:none !important; }
+.btn-ghost { background:transparent !important; border:1px solid var(--el-line-strong) !important; color:var(--text) !important; box-shadow:none !important; }
+.btn-ghost:hover { background:rgba(125,211,214,.07) !important; }
+
+/* campos genéricos (textarea e inputs soltos dentro das janelas) */
+textarea.q-input, .tr-modal input[type=text], .tr-modal input[type=date], .tr-modal input[type=number], .tr-modal input[type=url],
+.tr-modal select, .tr-modal textarea, .tr-pergunta-modal input[type=text], .tr-pergunta-modal textarea {
+  background:rgba(3,18,22,.7) !important; border:1px solid var(--el-line-strong) !important; border-radius:10px !important;
+  color:var(--text) !important; padding:10px 12px; font-family:var(--f-ui); font-size:13px; outline:none; min-height:40px;
+}
+textarea.q-input, .tr-modal textarea { resize:vertical; line-height:1.45; }
+textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal textarea:focus,
+.tr-pergunta-modal input:focus, .tr-pergunta-modal textarea:focus { border-color:var(--el-cyan) !important; box-shadow:0 0 0 3px rgba(94,230,220,.12); }
+::placeholder { color:var(--muted2); opacity:1; }
+
+/* ---- Plano de Integração: cards das etapas no padrão dos cards da página ---- */
+.cargo-etapa-grid { grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; }
+.cargo-etapa-card {
+  background:var(--el-card-bg) !important; border:1px solid var(--el-line) !important; border-radius:14px !important;
+  box-shadow:var(--el-card-shadow); padding:14px 14px 13px !important; min-height:96px;
+  transition:border-color .15s, transform .15s;
+}
+.cargo-etapa-card:hover { border-color:rgba(245,165,36,.55) !important; transform:translateY(-1px); }
+.cargo-etapa-card.done { background:linear-gradient(160deg,rgba(62,227,154,.14),rgba(9,38,46,.75)) !important; border-color:rgba(62,227,154,.4) !important; }
+.cargo-etapa-semana { background:rgba(245,165,36,.16) !important; color:var(--el-warn) !important; font-weight:800 !important; letter-spacing:.08em !important; border-radius:999px !important; padding:3px 9px !important; }
+.cargo-etapa-card.done .cargo-etapa-semana { background:var(--green-dim) !important; color:var(--el-good) !important; }
+.cargo-etapa-titulo { font-weight:800; font-size:13.5px; }
+.cargo-etapa-checkbtn { border-color:var(--el-line-strong) !important; }
+.cargo-etapa-checkbtn:hover { border-color:var(--el-good) !important; background:var(--green-dim) !important; }
+.cargo-etapa-card.done .cargo-etapa-checkbtn, .cargo-etapa-check { background:var(--el-good) !important; border-color:var(--el-good) !important; color:#05302a !important; }
+.cargo-etapa-secao-label { font-family:var(--f-mono); font-weight:600; letter-spacing:.14em; color:var(--muted); display:flex; align-items:center; gap:10px; margin:6px 0 12px; }
+.cargo-etapa-secao-label::after { content:""; flex:1; height:1px; background:var(--el-line); }
+
+/* ---- detalhe da etapa (estilo CRM) ---- */
+.etapa-panel { background:var(--el-card-bg); border:1px solid var(--el-line) !important; border-radius:14px !important; box-shadow:var(--el-card-shadow); padding:16px 18px !important; margin-bottom:14px !important; }
+.etapa-panel-label { font-family:var(--f-mono); font-weight:600 !important; letter-spacing:.14em !important; color:var(--muted) !important; font-size:10.5px !important; }
+.etapa-panel-head .btn { padding:7px 12px !important; font-size:12px !important; }
+.etapa-campo-add-row { border-top:1px solid var(--el-line) !important; padding-top:12px !important; align-items:stretch; flex-wrap:wrap; }
+.etapa-campo-add-row .btn { min-height:40px; }
+.etapa-campo-add-row input { min-width:160px; }
+.etapa-badge.semana { background:rgba(245,165,36,.16) !important; color:var(--el-warn) !important; }
+.etapa-badge.categoria { background:rgba(125,211,214,.08) !important; border-color:var(--el-line) !important; }
+.etapa-badge.feito { background:var(--green-dim) !important; color:var(--el-good) !important; }
+.etapa-badge.pendente { background:rgba(255,107,107,.14) !important; color:var(--el-bad) !important; }
+.etapa-arquivo-row { background:rgba(3,18,22,.55) !important; border-color:var(--el-line) !important; border-radius:10px !important; }
+.etapa-campo-btn { border-radius:8px; }
+.etapa-campo-btn:hover { background:rgba(125,211,214,.08) !important; color:var(--text) !important; }
+.etapa-step { border-bottom-color:var(--el-line) !important; }
+.etapa-step-icon { background:rgba(125,211,214,.08) !important; border-color:var(--el-line) !important; }
+.etapa-campo-valor { font-weight:700; }
+
+/* ---- outras caixas que ainda estavam no cinza antigo ---- */
+.pvd-termo-item, .tr-pergunta-minha, .tr-prova-form {
+  background:var(--el-card-bg) !important; border:1px solid var(--el-line) !important; border-radius:14px; box-shadow:var(--el-card-shadow);
+}
+.tr-pergunta-coment, .tr-pessoa-item, .tr-prova-alt-take, .check-goal-card { background:rgba(125,211,214,.05) !important; border-color:var(--el-line) !important; }
+.tr-pergunta-reply-row input, .tr-pergunta-minha textarea { background:rgba(3,18,22,.7) !important; border:1px solid var(--el-line-strong) !important; border-radius:10px; color:var(--text); }
+.tr-card-cat, .rp-card-chip, .camp-badge-encerrada { background:rgba(125,211,214,.1); }
+.pvd-person-bar-track, .pvd-termo-track, .pdl-bar, .pdl-grupo-bar, .check-mini-bar, .tr-progress-bar, .camp-progress-bar { background:rgba(125,211,214,.12) !important; }
+.tr-resp-action-btn, .tr-gostei-btn, .pv-marca-btn, .camp-file-btn, .camp-check-pill { background:rgba(3,18,22,.55) !important; border-color:var(--el-line-strong) !important; color:var(--text); border-radius:10px; }
+.tr-resp-action-btn:hover, .tr-gostei-btn:hover, .pv-marca-btn:hover { background:rgba(125,211,214,.08) !important; }
+.tr-modal-foot .tr-btn-delete, .tr-btn-delete { background:transparent; border:1px solid rgba(255,107,107,.4); color:var(--el-bad); border-radius:11px; }
+.tr-modal-foot .tr-btn-delete:hover, .tr-btn-delete:hover { background:rgba(255,107,107,.1); }
 </style>
 <script id="ello-theme-js">
 /* ===== TEMA ELLO: ícones em linha, cabeçalho das páginas e home no formato do dashboard ===== */
