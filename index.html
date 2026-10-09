@@ -10986,6 +10986,21 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
 /* menu lateral um pouco mais compacto para caber mais itens */
 .drawer-item { padding:8px 12px; }
 
+/* seções do menu recolhíveis */
+.el-sec-toggle {
+  all:unset; box-sizing:border-box; cursor:pointer; width:100%;
+  display:flex !important; align-items:center; justify-content:space-between; gap:8px;
+  font-family:var(--f-mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:600;
+  color:var(--muted2); padding:14px 12px 6px 12px; margin-top:4px; border-radius:8px;
+}
+.el-sec-toggle:hover { color:var(--text); }
+.el-sec-toggle:focus-visible { outline:2px solid var(--el-cyan); outline-offset:2px; }
+.el-sec-toggle .el-chev { width:14px; height:14px; flex:none; transition:transform .2s ease; }
+.el-sec-toggle[aria-expanded="false"] .el-chev { transform:rotate(-90deg); }
+.el-grupo.fechado > .drawer-item { display:none !important; }
+@media (prefers-reduced-motion:reduce) { .el-sec-toggle .el-chev { transition:none; } }
+.drawer-body .drawer-section-label:not(.el-sec-toggle) { padding:14px 12px 6px; }
+
 </style>
 <script id="ello-theme-js">
 /* ===== TEMA ELLO: ícones em linha, cabeçalho das páginas e home no formato do dashboard ===== */
@@ -11067,7 +11082,8 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
   SECOES.sort(function(a,b){ return cmp(a.nome,b.nome); });
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
   function texto(el){ return (el.textContent||'').replace(/\s+/g,' ').trim(); }
-  function visivel(el){ return el.style.display !== 'none' && getComputedStyle(el).display !== 'none'; }
+  // visível = liberado pela permissão (aplicarPermissoes usa style inline), mesmo que a seção esteja recolhida
+  function visivel(el){ if (el.style.display === 'none') return false; if (el.classList.contains('liderado-only') && !el.style.display) return false; return true; }
 
   function organizarMenu(){
     var body = document.querySelector('#drawer .drawer-body');
@@ -11145,6 +11161,72 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
     }
     window.addEventListener('userAuthed', function(){ setTimeout(atualizarSecoes, 0); });
   }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
+})();
+
+/* ===== Seções do menu recolhíveis ===== */
+(function(){
+  var KEY = 'ello_menu_secoes_v1';
+  function ler(){ try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch(e){ return null; } }
+  function gravar(st){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+  var CHEV = '<svg class="el-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+
+  function estadoAtual(){
+    var st = {};
+    document.querySelectorAll('#drawer .el-grupo').forEach(function(g){ st[g.dataset.secao] = !g.classList.contains('fechado'); });
+    return st;
+  }
+  function definir(id, aberto, salvar){
+    var g = document.querySelector('#drawer .el-grupo[data-secao="'+id+'"]');
+    var b = document.querySelector('#drawer .el-sec-toggle[data-secao="'+id+'"]');
+    if (!g || !b) return;
+    g.classList.toggle('fechado', !aberto);
+    b.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    if (salvar) gravar(estadoAtual());
+  }
+  function secaoAtiva(){ var a = document.querySelector('#drawer .drawer-item.active[data-secao]'); return a ? a.dataset.secao : null; }
+
+  function montar(){
+    var body = document.querySelector('#drawer .drawer-body');
+    if (!body || body.dataset.elRecolher) return;
+    var labels = body.querySelectorAll('.drawer-section-label[data-secao]');
+    if (!labels.length) return;
+    labels.forEach(function(l){
+      var id = l.dataset.secao;
+      var g = document.createElement('div'); g.className = 'el-grupo'; g.dataset.secao = id; g.id = 'el_grupo_'+id;
+      body.querySelectorAll('.drawer-item[data-secao="'+id+'"]').forEach(function(it){ g.appendChild(it); });
+      l.insertAdjacentElement('afterend', g);
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'drawer-section-label el-sec-toggle'; b.dataset.secao = id;
+      b.setAttribute('aria-controls', g.id); b.setAttribute('aria-expanded','true');
+      b.innerHTML = '<span></span>' + CHEV; b.querySelector('span').textContent = l.textContent;
+      b.addEventListener('click', function(){ definir(id, g.classList.contains('fechado'), true); });
+      l.replaceWith(b);
+    });
+    // estado salvo; na primeira vez, deixa aberta só a seção da aba atual
+    var st = ler(), ativa = secaoAtiva();
+    document.querySelectorAll('#drawer .el-grupo').forEach(function(g){
+      var id = g.dataset.secao;
+      var aberto = st ? (st[id] !== false) : (id === ativa);
+      if (id === ativa) aberto = true;
+      definir(id, aberto, false);
+    });
+    body.dataset.elRecolher = '1';
+  }
+
+  // ao abrir uma aba (pelo menu, pela home ou por atalho), a seção dela abre sozinha
+  function ligarNavegacao(){
+    var orig = window.mostrarTool;
+    if (typeof orig !== 'function' || orig._elRec) return;
+    var novo = function(){
+      var r = orig.apply(this, arguments);
+      try { var id = secaoAtiva(); if (id) { var g = document.querySelector('#drawer .el-grupo[data-secao="'+id+'"]'); if (g && g.classList.contains('fechado')) definir(id, true, true); } } catch(e){}
+      return r;
+    };
+    novo._elRec = true; window.mostrarTool = novo;
+  }
+
+  function iniciar(){ montar(); ligarNavegacao(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 })();
 
