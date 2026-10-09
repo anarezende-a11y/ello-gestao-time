@@ -10945,7 +10945,7 @@ window.DAILY = window.DAILY || {};
 (function(){
 const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {};
-const esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
 const dataBR = d => d ? d.split('-').reverse().join('/') : '';
 const diaSem = d => ['dom','seg','ter','qua','qui','sex','sáb'][new Date(d+'T12:00:00').getDay()];
@@ -10977,7 +10977,7 @@ function render(){
   // números por pessoa
   const st = {};
   PESSOAS.forEach(n => st[n] = {p:0,a:0,j:0});
-  regs.forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(!st[n]) st[n]={p:0,a:0,j:0}; if(st[n][v]!==undefined) st[n][v]++; }));
+  regs.forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(!st[n]) return; if(st[n][v]!==undefined) st[n][v]++; })); // só quem está no time conta
   const linhas = Object.entries(st).map(([n,c]) => { const tot=c.p+c.a+c.j; return {n, ...c, tot, pct: tot? Math.round(c.p/tot*100) : null}; })
     .filter(l => l.tot>0 || PESSOAS.slice(0,5).includes(l.n))
     .sort((a,b)=> (b.pct??-1)-(a.pct??-1) || a.n.localeCompare(b.n));
@@ -11000,7 +11000,7 @@ function render(){
   document.getElementById('dly_reg').innerHTML = !regs.length
     ? '<div class="tr-card dly-vazio">Nenhuma daily registrada neste mês.</div>'
     : regs.map(r => {
-        const pr = r.presenca||{}; const pres = Object.keys(pr).filter(n=>pr[n]==='p'), falt = Object.keys(pr).filter(n=>pr[n]==='a'), just = Object.keys(pr).filter(n=>pr[n]==='j');
+        const pr = Object.fromEntries(Object.entries(r.presenca||{}).filter(([n]) => PESSOAS.includes(n))); const pres = Object.keys(pr).filter(n=>pr[n]==='p'), falt = Object.keys(pr).filter(n=>pr[n]==='a'), just = Object.keys(pr).filter(n=>pr[n]==='j');
         return '<div class="tr-card dly-reg" onclick="window.DAILY.abrir(\''+r.id+'\')"><div class="dly-reg-top"><span class="dly-reg-data">'+diaSem(r.data)+', '+dataBR(r.data)+'</span><span style="color:var(--muted);font-size:12px;">'+esc(r.hora||'')+'</span>'+
           '<span class="dly-mini p">✓ '+pres.length+' presente(s)</span>'+(falt.length?'<span class="dly-mini a">✕ '+esc(falt.join(', '))+'</span>':'')+(just.length?'<span class="dly-mini j">⚑ '+esc(just.join(', '))+'</span>':'')+'</div>'+
           (r.pauta? '<div class="dly-reg-tx">'+esc(r.pauta)+'</div>' : '<div class="dly-reg-tx" style="color:var(--muted)">Sem registro escrito.</div>')+
@@ -11040,7 +11040,7 @@ function fechar(){ document.getElementById('dailyModalOverlay').classList.remove
 function salvar(){
   const data = document.getElementById('dly_data').value; if(!data){ alert('Escolha a data da daily.'); return; }
   const reg = { id: editId || ('d'+Date.now().toString(36)), data, hora: document.getElementById('dly_hora').value||'08:30',
-    presenca: Object.assign({}, presenca), pauta: document.getElementById('dly_pauta').value.trim(), combinados: document.getElementById('dly_comb').value.trim(), atualizadoEm: Date.now() };
+    presenca: Object.fromEntries(Object.entries(presenca).filter(([n]) => PESSOAS.includes(n))), pauta: document.getElementById('dly_pauta').value.trim(), combinados: document.getElementById('dly_comb').value.trim(), atualizadoEm: Date.now() };
   if(!cache) cache = {registros:[]};
   const i = cache.registros.findIndex(x=>x.id===reg.id);
   if(i>-1) cache.registros[i] = Object.assign({}, cache.registros[i], reg); else { reg.criadoEm = Date.now(); cache.registros.push(reg); }
