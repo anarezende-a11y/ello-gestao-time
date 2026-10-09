@@ -1744,6 +1744,7 @@ window.APPAUTH = window.APPAUTH || {};
       Seu usuário ainda não tem um checklist configurado. Fale com a Ana.
     </div>
     <div id="check_seletorWrap" class="admin-only" style="margin-bottom:16px;"></div>
+    <div id="check_tarefas"></div>
     <div id="check_conteudo"></div>
   </div>
 </div>
@@ -2404,16 +2405,27 @@ window.APPAUTH = window.APPAUTH || {};
   </div>
   <div class="wrap">
     <div class="dly-filtros">
-      <div class="tr-field" style="margin:0;"><label>Mês</label><input type="month" class="tr-text-input" id="dly_mes" onchange="window.DAILY.render()"></div>
-      <div class="dly-abas" id="dly_abas">
-        <button type="button" class="dly-aba on" data-aba="rel" onclick="window.DAILY.aba('rel')">Relatório de presença</button>
-        <button type="button" class="dly-aba" data-aba="reg" onclick="window.DAILY.aba('reg')">Registros</button>
+      <div class="dly-periodo">
+        <div class="dly-seg" id="dly_seg">
+          <button type="button" data-p="semana" onclick="window.DAILY.periodo('semana')">Semana</button>
+          <button type="button" data-p="mes" class="on" onclick="window.DAILY.periodo('mes')">Mês</button>
+        </div>
+        <button type="button" class="dly-nav" onclick="window.DAILY.navegar(-1)" aria-label="Período anterior">‹</button>
+        <span class="dly-per-lbl" id="dly_per_lbl"></span>
+        <button type="button" class="dly-nav" onclick="window.DAILY.navegar(1)" aria-label="Próximo período">›</button>
+        <button type="button" class="dly-hoje" onclick="window.DAILY.navegar(0)">Hoje</button>
       </div>
-      <button type="button" class="btn btn-ghost" style="margin-left:auto;" onclick="window.DAILY.imprimir()">🖨️ Imprimir relatório</button>
+      <div class="dly-abas" id="dly_abas">
+        <button type="button" class="dly-aba on" data-aba="rel" onclick="window.DAILY.aba('rel')">Presença</button>
+        <button type="button" class="dly-aba" data-aba="reg" onclick="window.DAILY.aba('reg')">Registros</button>
+        <button type="button" class="dly-aba" data-aba="tar" onclick="window.DAILY.aba('tar')">Tarefas <span id="dly_tar_badge" class="dly-badge"></span></button>
+      </div>
+      <button type="button" class="btn btn-ghost" style="margin-left:auto;" onclick="window.DAILY.imprimir()">🖨️ Imprimir</button>
     </div>
     <div id="dly_kpis" class="dly-kpis"></div>
     <div id="dly_rel"></div>
     <div id="dly_reg" style="display:none;"></div>
+    <div id="dly_tar" style="display:none;"></div>
   </div>
 </div>
 
@@ -6837,6 +6849,8 @@ function render() {
     pessoaAtual = p;
   }
 
+  try { if (window.DAILY && window.DAILY.checkTarefas) window.DAILY.checkTarefas((DEFS[pessoaAtual] && DEFS[pessoaAtual].label) || pessoaAtual); } catch(e) {}
+
   if (!listenersAtivos[docId(pessoaAtual)]) {
     listenersAtivos = {}; // só mantém o listener ativo do doc atual
     listenersAtivos[docId(pessoaAtual)] = true;
@@ -10957,6 +10971,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 window.DAILY = window.DAILY || {};
 (function(){
 const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
+let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas';
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
@@ -10979,15 +10994,41 @@ function ouvir(){
     cache = sn.exists() ? sn.data() : {registros:[]}; if(!cache.registros) cache.registros = [];
     if(document.getElementById('view_daily').classList.contains('active')) render();
   }, e => console.error('DAILY snapshot', e));
+  window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','daily_tarefas'), sn => {
+    tarefas = sn.exists() ? (sn.data()||{}) : {};
+    if(document.getElementById('view_daily').classList.contains('active')) render();
+    if(document.getElementById('view_checklist').classList.contains('active') && ultimoCheck) checkTarefas(ultimoCheck);
+  }, e => console.error('DAILY tarefas snapshot', e));
 }
 window.addEventListener('userAuthed', ouvir);
 
+/* ===== período (semana / mês) ===== */
+let perTipo = 'mes', perRef = hoje();
+const addDias = (iso, n) => { const d = new Date(iso+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+function intervalo(){
+  const d = new Date(perRef+'T12:00:00');
+  if(perTipo === 'semana'){ const dow = (d.getDay()+6)%7; const ini = addDias(perRef, -dow); return {ini, fim: addDias(ini, 6)}; }
+  const ini = perRef.slice(0,7)+'-01'; const fimD = new Date(d.getFullYear(), d.getMonth()+1, 0, 12); return {ini, fim: fimD.toISOString().slice(0,10)};
+}
+function rotuloPeriodo(){
+  const {ini, fim} = intervalo();
+  if(perTipo === 'semana') return 'Semana ' + dataBR(ini).slice(0,5) + ' a ' + dataBR(fim).slice(0,5);
+  const t = new Date(ini+'T12:00:00').toLocaleDateString('pt-BR',{month:'long', year:'numeric'}); return t.charAt(0).toUpperCase()+t.slice(1);
+}
+function periodo(t){ perTipo = t; document.querySelectorAll('#dly_seg button').forEach(b => b.classList.toggle('on', b.dataset.p===t)); render(); }
+function navegar(n){
+  if(n === 0) perRef = hoje();
+  else if(perTipo === 'semana') perRef = addDias(perRef, 7*n);
+  else { const d = new Date(perRef+'T12:00:00'); d.setDate(1); d.setMonth(d.getMonth()+n); perRef = d.toISOString().slice(0,10); }
+  render();
+}
+const nomeP = perTipo => perTipo === 'semana' ? 'na semana' : 'no mês';
+
 function render(){
   ouvir();
-  const mesEl = document.getElementById('dly_mes'); if(!mesEl.value) mesEl.value = hoje().slice(0,7);
-  const mes = mesEl.value;
-  const regs = lista().filter(r => (r.data||'').startsWith(mes)).sort((a,b)=> (b.data+b.hora).localeCompare(a.data+a.hora));
-  // números por pessoa
+  const {ini, fim} = intervalo();
+  document.getElementById('dly_per_lbl').textContent = rotuloPeriodo();
+  const regs = lista().filter(r => r.data >= ini && r.data <= fim).sort((a,b)=> (b.data+b.hora).localeCompare(a.data+a.hora));
   const st = {};
   PESSOAS.forEach(n => st[n] = {p:0,a:0,j:0});
   regs.forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(!st[n]) return; if(st[n][v]!==undefined) st[n][v]++; })); // só quem está no time conta
@@ -10998,20 +11039,26 @@ function render(){
   const media = totT ? Math.round(totP/totT*100) : null;
   const maisFaltas = linhas.filter(l=>l.a>0).sort((a,b)=>b.a-a.a)[0];
   const ultima = regs[0];
-  document.getElementById('dly_kpis').innerHTML =
-    kpi('Dailys no mês', regs.length, regs.length? 'última em '+dataBR(ultima.data) : 'nenhuma registrada') +
-    kpi('Presença média', media===null?'—':media+'%', 'do time no mês', media===null?null:cor(media)) +
-    kpi('Faltas no mês', linhas.reduce((x,l)=>x+l.a,0), linhas.reduce((x,l)=>x+l.j,0)+' justificada(s)') +
+  const kpisPresenca =
+    kpi('Dailys '+nomeP(perTipo), regs.length, regs.length? 'última em '+dataBR(ultima.data) : 'nenhuma registrada') +
+    kpi('Presença média', media===null?'—':media+'%', 'do time '+nomeP(perTipo), media===null?null:cor(media)) +
+    kpi('Faltas '+nomeP(perTipo), linhas.reduce((x,l)=>x+l.a,0), linhas.reduce((x,l)=>x+l.j,0)+' justificada(s)') +
     kpi('Mais faltas', maisFaltas? maisFaltas.n : '—', maisFaltas? maisFaltas.a+' falta(s)' : 'ninguém faltou');
-  // relatório
+  window.__dlyKpis = kpisPresenca;
+  // presença: tabela + grade dia a dia
+  const dias = regs.slice().sort((a,b)=> (a.data+a.hora).localeCompare(b.data+b.hora));
+  const simb = {p:'✓', a:'✕', j:'⚑', n:'–'};
+  const grade = '<div class="dly-grade-wrap"><table class="dly-grade"><thead><tr><th class="nm">Dia a dia</th>'+dias.map(r=>'<th>'+diaSem(r.data)+'<br>'+dataBR(r.data).slice(0,5)+'</th>').join('')+'</tr></thead><tbody>'+
+    linhas.map(l => '<tr><td class="nm">'+esc(l.n)+'</td>'+dias.map(r => { const v = (r.presenca||{})[l.n] || 'n'; return '<td><div class="dly-cel '+v+'" title="'+esc(l.n)+' · '+dataBR(r.data)+'">'+simb[v]+'</div></td>'; }).join('')+'</tr>').join('')+
+    '</tbody></table></div><div class="dly-leg"><span><b style="color:#3ee39a">✓</b> presente</span><span><b style="color:#ff8a8a">✕</b> faltou</span><span><b style="color:#ffd18a">⚑</b> justificado</span><span>– não se aplica</span></div>';
   document.getElementById('dly_rel').innerHTML = !regs.length
-    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada neste mês. Use <b>+ Registrar daily</b> no topo.</div>'
-    : '<div class="tr-card" style="padding:6px 8px;"><table class="dly-tab"><thead><tr><th>Pessoa</th><th class="n">Presente</th><th class="n">Faltou</th><th class="n">Justificado</th><th>Presença</th><th class="n">%</th></tr></thead><tbody>'+
-      linhas.map(l => '<tr><td><b>'+esc(l.n)+'</b></td><td class="n">'+l.p+'</td><td class="n">'+l.a+'</td><td class="n">'+l.j+'</td><td><div class="dly-bar"><i style="width:'+(l.pct||0)+'%;background:'+(l.pct===null?'transparent':cor(l.pct))+'"></i></div></td><td class="n" style="font-weight:800;color:'+(l.pct===null?'var(--muted)':cor(l.pct))+'">'+(l.pct===null?'—':l.pct+'%')+'</td></tr>').join('')+
-      '</tbody></table></div><div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Presença = presente ÷ dailys em que a pessoa foi registrada (justificado conta como ausência, mas aparece separado).</div>';
+    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada '+nomeP(perTipo)+'. Use <b>+ Registrar daily</b> no topo.</div>'
+    : '<div class="tr-card" style="padding:6px 8px;"><table class="dly-tab"><thead><tr><th>Pessoa</th><th class="n">Dias presente</th><th class="n">Faltas</th><th class="n">Justificadas</th><th>Presença</th><th class="n">%</th></tr></thead><tbody>'+
+      linhas.map(l => '<tr><td><b>'+esc(l.n)+'</b></td><td class="n">'+l.p+' de '+l.tot+'</td><td class="n">'+l.a+'</td><td class="n">'+l.j+'</td><td><div class="dly-bar"><i style="width:'+(l.pct||0)+'%;background:'+(l.pct===null?'transparent':cor(l.pct))+'"></i></div></td><td class="n" style="font-weight:800;color:'+(l.pct===null?'var(--muted)':cor(l.pct))+'">'+(l.pct===null?'—':l.pct+'%')+'</td></tr>').join('')+
+      '</tbody></table></div><div class="tr-card" style="padding:12px 14px;margin-top:12px;">'+grade+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Presença = dias presente ÷ dailys em que a pessoa foi registrada (justificado conta como ausência, mas aparece separado).</div>';
   // registros
   document.getElementById('dly_reg').innerHTML = !regs.length
-    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada neste mês.</div>'
+    ? '<div class="tr-card dly-vazio">Nenhuma daily registrada '+nomeP(perTipo)+'.</div>'
     : regs.map(r => {
         const pr = Object.fromEntries(Object.entries(r.presenca||{}).filter(([n]) => PESSOAS.includes(n))); const pres = Object.keys(pr).filter(n=>pr[n]==='p'), falt = Object.keys(pr).filter(n=>pr[n]==='a'), just = Object.keys(pr).filter(n=>pr[n]==='j');
         return '<div class="tr-card dly-reg" onclick="window.DAILY.abrir(\''+r.id+'\')"><div class="dly-reg-top"><span class="dly-reg-data">'+diaSem(r.data)+', '+dataBR(r.data)+'</span><span style="color:var(--muted);font-size:12px;">'+esc(r.hora||'')+'</span>'+
@@ -11021,7 +11068,106 @@ function render(){
           (r.porPessoa && Object.keys(r.porPessoa).length ? '<div class="dly-reg-pp">'+Object.entries(r.porPessoa).filter(([n])=>PESSOAS.includes(n)).map(([n,t])=>'<div><b>'+esc(n)+'</b>'+esc(t)+'</div>').join('')+'</div>' : '')+
           (r.fonte ? '<div style="margin-top:8px;font-size:11.5px;"><a href="'+esc(r.fonte)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#5ee6dc;">Abrir no Granola ↗</a></div>' : '')+'</div>';
       }).join('');
+  renderTarefas();
   aba(abaAtual, true);
+}
+/* ===== tarefas (combinados que viram tarefa) ===== */
+let ultimoCheck = '';
+const diaLocal = ts => { const d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const tarRef = () => window.fb.doc(window.fb.db,'shared_data','daily_tarefas');
+function gravarTarefa(id, obj){ tarefas[id] = Object.assign({}, tarefas[id]||{}, obj); return window.fb ? window.fb.setDoc(tarRef(), {[id]: obj}, {merge:true}).catch(e=>{ console.error('tarefa', e); alert('Não foi possível salvar a tarefa.'); }) : Promise.resolve(); }
+const listaTar = () => Object.entries(tarefas).filter(([id,t]) => t && !t._apagada && t.texto).map(([id,t]) => Object.assign({id}, t));
+const hashTx = t => { let h = 0; for(const c of String(t)) h = (h*31 + c.charCodeAt(0)) | 0; return Math.abs(h).toString(36); };
+function prazoISO(txt, base){
+  const t = normN(txt); if(!t) return '';
+  let m = t.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if(m){ let y = m[3] ? (m[3].length===2 ? '20'+m[3] : m[3]) : base.slice(0,4); return y+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0'); }
+  if(/hoje/.test(t)) return base;
+  if(/amanha/.test(t)) return addDias(base, 1);
+  const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+  const k = dias.findIndex(d => t.includes(d));
+  if(k >= 0){ const dow = new Date(base+'T12:00:00').getDay(); let delta = (k - dow + 7) % 7; return addDias(base, delta); }
+  if(/semana/.test(t)){ const dow = new Date(base+'T12:00:00').getDay(); return addDias(base, (5 - dow + 7) % 7); }
+  return '';
+}
+/* lê os combinados ("• [Kuka] texto (até 12/10)") e cria/atualiza as tarefas da daily */
+function sincronizarTarefas(reg){
+  const linhas = String(reg.combinados||'').split(/\n+/).map(l => l.replace(/^[\s•\-\*]+/, '').trim()).filter(Boolean);
+  linhas.forEach(l => {
+    const m = l.match(/^\[([^\]]+)\]\s*(.+)$/); if(!m) return;
+    let resp = m[1].trim(), resto = m[2].trim();
+    const pm = resto.match(/\((?:at[eé]\s*)?([^)]+)\)\s*$/);
+    let prazoTxt = ''; if(pm){ prazoTxt = pm[1].trim(); resto = resto.slice(0, pm.index).trim(); }
+    const pn = acharPessoa(resp); const respFinal = pn || (/^(todos|time|equipe)$/i.test(resp) ? 'Time' : null);
+    if(!respFinal || !resto) return;
+    const id = 't_'+reg.id+'_'+hashTx(respFinal+'|'+resto);
+    const base = { texto: resto, responsavel: respFinal, prazo: prazoISO(prazoTxt, reg.data), prazoTxt, dailyId: reg.id, dailyData: reg.data };
+    if(tarefas[id]) gravarTarefa(id, base);
+    else gravarTarefa(id, Object.assign(base, { status:'aberta', criadaEm: Date.now(), origem:'daily' }));
+  });
+}
+function statusPrazo(t){ if(t.status==='feita' || !t.prazo) return ''; const h = hoje(); return t.prazo < h ? 'venc' : (t.prazo === h ? 'hoje' : ''); }
+function rotPrazo(t){ if(!t.prazo) return t.prazoTxt ? t.prazoTxt : 'sem prazo'; const sp = statusPrazo(t); return (sp==='venc' ? 'atrasada · ' : sp==='hoje' ? 'hoje · ' : 'até ') + dataBR(t.prazo).slice(0,5); }
+function linhaTarefa(t, origem){
+  return '<div class="dly-tar'+(t.status==='feita'?' feita':'')+'"><button type="button" class="dly-chk" title="'+(t.status==='feita'?'Reabrir':'Marcar como feita')+'" onclick="window.DAILY.alternarTarefa(\''+t.id+'\')">'+(t.status==='feita'?'✓':'')+'</button>'+
+    '<div class="dly-tx">'+esc(t.texto)+(origem ? '<small>'+(t.dailyData ? 'Combinado na daily de '+dataBR(t.dailyData) : 'Tarefa avulsa')+(t.status==='feita' && t.concluidaEm ? ' · feita em '+new Date(t.concluidaEm).toLocaleDateString('pt-BR') : '')+'</small>' : '')+'</div>'+
+    '<span class="dly-prazo '+statusPrazo(t)+'">'+esc(rotPrazo(t))+'</span>'+
+    (origem ? '<button type="button" class="dly-x" title="Excluir" onclick="window.DAILY.excluirTarefa(\''+t.id+'\')">✕</button>' : '')+'</div>';
+}
+function renderTarefas(){
+  const todas = listaTar();
+  const abertas = todas.filter(t => t.status!=='feita');
+  const venc = abertas.filter(t => statusPrazo(t)==='venc'), deHoje = abertas.filter(t => statusPrazo(t)==='hoje');
+  const {ini, fim} = intervalo();
+  const feitasPer = todas.filter(t => t.status==='feita' && t.concluidaEm && diaLocal(t.concluidaEm) >= ini && diaLocal(t.concluidaEm) <= fim);
+  const badge = document.getElementById('dly_tar_badge'); if(badge) badge.textContent = venc.length ? venc.length : '';
+  window.__dlyKpisTar = kpi('Tarefas abertas', abertas.length, 'de todo o time') + kpi('Atrasadas', venc.length, 'prazo já passou', venc.length? '#ff6b6b' : '#3ee39a') + kpi('Vencem hoje', deHoje.length, 'acompanhar hoje', deHoje.length? '#f5a524' : null) + kpi('Concluídas '+nomeP(perTipo), feitasPer.length, 'no período selecionado', '#3ee39a');
+  const pessoas = ['todos'].concat(PESSOAS, ['Time']);
+  let lst = todas;
+  if(tarFiltroP !== 'todos') lst = lst.filter(t => t.responsavel === tarFiltroP);
+  if(tarFiltroS === 'abertas') lst = lst.filter(t => t.status!=='feita'); else if(tarFiltroS === 'feitas') lst = lst.filter(t => t.status==='feita');
+  lst.sort((x,y) => (x.status==='feita') - (y.status==='feita') || (x.prazo||'9999').localeCompare(y.prazo||'9999') || (y.criadaEm||0)-(x.criadaEm||0));
+  const grupos = {}; lst.forEach(t => (grupos[t.responsavel] = grupos[t.responsavel] || []).push(t));
+  const ordem = Object.keys(grupos).sort((x,y) => (grupos[y].filter(t=>statusPrazo(t)==='venc').length - grupos[x].filter(t=>statusPrazo(t)==='venc').length) || x.localeCompare(y));
+  document.getElementById('dly_tar').innerHTML =
+    '<div class="tr-card dly-nova"><div class="tr-field" style="margin:0;"><label>Responsável</label><select class="tr-text-input" id="dly_nt_resp">'+PESSOAS.concat(['Time']).map(n=>'<option>'+esc(n)+'</option>').join('')+'</select></div>'+
+    '<div class="tr-field" style="margin:0;"><label>Tarefa</label><input type="text" class="tr-text-input" id="dly_nt_tx" placeholder="O que ficou combinado"></div>'+
+    '<div class="tr-field" style="margin:0;"><label>Prazo</label><input type="date" class="tr-text-input" id="dly_nt_pz"></div>'+
+    '<button type="button" class="btn btn-amber" onclick="window.DAILY.novaTarefa()">+ Tarefa</button></div>'+
+    '<div class="dly-tar-filtros">'+pessoas.map(n => '<button type="button" class="dly-fchip'+(tarFiltroP===n?' on':'')+'" onclick="window.DAILY.filtrarTar(\'p\',\''+n+'\')">'+(n==='todos'?'Todos':esc(n))+'</button>').join('')+
+    '<span style="flex:1"></span>'+[['abertas','Abertas'],['feitas','Concluídas'],['todas','Todas']].map(([k,l]) => '<button type="button" class="dly-fchip'+(tarFiltroS===k?' on':'')+'" onclick="window.DAILY.filtrarTar(\'s\',\''+k+'\')">'+l+'</button>').join('')+'</div>'+
+    (!lst.length ? '<div class="tr-card dly-vazio">Nenhuma tarefa aqui. Os combinados com responsável (ex.: <b>[Kuka] responder clientes (até 12/10)</b>) viram tarefa sozinhos quando você salva a daily.</div>'
+      : ordem.map(n => { const g = grupos[n]; const v = g.filter(t=>statusPrazo(t)==='venc').length;
+          return '<div class="tr-card dly-tar-grupo"><h4>'+esc(n)+' <span class="dly-mini p">'+g.filter(t=>t.status!=='feita').length+' aberta(s)</span>'+(v?'<span class="dly-mini a">'+v+' atrasada(s)</span>':'')+'</h4>'+g.map(t => linhaTarefa(t, true)).join('')+'</div>'; }).join(''));
+}
+function filtrarTar(tipo, v){ if(tipo==='p') tarFiltroP = v; else tarFiltroS = v; renderTarefas(); aba('tar'); }
+function alternarTarefa(id){
+  const t = tarefas[id]; if(!t) return;
+  const u = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  const feita = t.status !== 'feita';
+  gravarTarefa(id, feita ? {status:'feita', concluidaEm: Date.now(), concluidaPor: (u && (u.nome||u.email)) || ''} : {status:'aberta', concluidaEm: null, concluidaPor: ''});
+  if(document.getElementById('view_daily').classList.contains('active')){ renderTarefas(); aba(abaAtual); }
+  if(ultimoCheck){ checkTarefas(ultimoCheck); setTimeout(() => checkTarefas(ultimoCheck), 0); }
+}
+function excluirTarefa(id){ if(!confirm('Excluir esta tarefa?')) return; gravarTarefa(id, {_apagada:true}); delete tarefas[id]; renderTarefas(); aba('tar'); }
+function novaTarefa(){
+  const tx = document.getElementById('dly_nt_tx').value.trim(); if(!tx){ alert('Escreva a tarefa.'); return; }
+  const id = 't_av_'+Date.now().toString(36);
+  gravarTarefa(id, { texto: tx, responsavel: document.getElementById('dly_nt_resp').value, prazo: document.getElementById('dly_nt_pz').value||'', status:'aberta', criadaEm: Date.now(), origem:'manual' });
+  renderTarefas(); aba('tar');
+}
+/* quadro "Combinados da daily" no checklist de cada pessoa */
+function checkTarefas(label){
+  ultimoCheck = label; ouvir();
+  const box = document.getElementById('check_tarefas'); if(!box) return;
+  const pn = acharPessoa(label);
+  if(!pn){ box.innerHTML = ''; return; }
+  const h = hoje();
+  const lst = listaTar().filter(t => (t.responsavel === pn || t.responsavel === 'Time') && (t.status !== 'feita' || (t.concluidaEm && diaLocal(t.concluidaEm) === h)))
+    .sort((x,y) => (x.status==='feita') - (y.status==='feita') || (x.prazo||'9999').localeCompare(y.prazo||'9999'));
+  if(!lst.length){ box.innerHTML = ''; return; }
+  const v = lst.filter(t => statusPrazo(t)==='venc').length;
+  box.innerHTML = '<div class="tr-card chk-tar-box"><h4>📌 Combinados da daily · '+esc(pn)+(v?' <span class="dly-mini a">'+v+' atrasada(s)</span>':'')+'</h4><p>O que você combinou na daily. Marque quando concluir.</p>'+lst.map(t => linhaTarefa(t, false)).join('')+'</div>';
 }
 function kpi(l, v, s, c){ return '<div class="hd-kpi dly-kpi"><div class="l">'+l+'</div><div class="v" style="'+(c?'color:'+c:'')+'">'+esc(v)+'</div><div class="s">'+esc(s)+'</div></div>'; }
 function aba(a, semRender){
@@ -11029,6 +11175,8 @@ function aba(a, semRender){
   document.querySelectorAll('#dly_abas .dly-aba').forEach(b => b.classList.toggle('on', b.dataset.aba===a));
   document.getElementById('dly_rel').style.display = a==='rel' ? '' : 'none';
   document.getElementById('dly_reg').style.display = a==='reg' ? '' : 'none';
+  document.getElementById('dly_tar').style.display = a==='tar' ? '' : 'none';
+  document.getElementById('dly_kpis').innerHTML = a==='tar' ? (window.__dlyKpisTar||'') : (window.__dlyKpis||'');
 }
 function desenharPessoas(){
   document.getElementById('dly_pessoas').innerHTML = PESSOAS.map(n => { const v = presenca[n]||'n';
@@ -11091,22 +11239,21 @@ function salvar(){
   if(!cache) cache = {registros:[]};
   const i = cache.registros.findIndex(x=>x.id===reg.id);
   if(i>-1) cache.registros[i] = Object.assign({}, cache.registros[i], reg); else { reg.criadoEm = Date.now(); cache.registros.push(reg); }
-  salvarTudo(); fechar(); document.getElementById('dly_mes').value = data.slice(0,7); render();
+  salvarTudo(); try { sincronizarTarefas(reg); } catch(e) { console.error('tarefas', e); } fechar(); perRef = data; render();
 }
 function excluir(){
   if(!editId || !confirm('Excluir o registro desta daily?')) return;
   cache.registros = lista().filter(x=>x.id!==editId); salvarTudo(); fechar(); render();
 }
 function imprimir(){
-  const mes = document.getElementById('dly_mes').value;
-  const [y,m] = mes.split('-'); const nomeMes = new Date(+y, +m-1, 1).toLocaleDateString('pt-BR',{month:'long', year:'numeric'});
+  const nomeMes = rotuloPeriodo();
   const tab = document.querySelector('#dly_rel table'); const kpis = Array.from(document.querySelectorAll('#dly_kpis .dly-kpi')).map(k=>k.innerText.replace(/\n/g,' · ')).join('<br>');
   let el = document.getElementById('dly_print'); if(!el){ el = document.createElement('div'); el.id='dly_print'; document.body.appendChild(el); }
-  el.innerHTML = '<h2 style="margin:0 0 4px;">Relatório de presença na Daily</h2><div style="margin-bottom:12px;color:#555;">Ello Solar · Pós-venda · '+nomeMes+'</div><div style="margin-bottom:14px;font-size:13px;">'+kpis+'</div>'+(tab? tab.outerHTML.replace(/<div class="dly-bar">.*?<\/div><\/div>/g,'').replace(/<th>Presença<\/th>/,'') : '<p>Sem registros no mês.</p>');
+  el.innerHTML = '<h2 style="margin:0 0 4px;">Relatório de presença na Daily</h2><div style="margin-bottom:12px;color:#555;">Ello Solar · Pós-venda · '+nomeMes+'</div><div style="margin-bottom:14px;font-size:13px;">'+kpis+'</div>'+(tab? tab.outerHTML.replace(/<div class="dly-bar">.*?<\/div><\/div>/g,'').replace(/<th>Presença<\/th>/,'') : '<p>Sem registros no período.</p>') + (document.querySelector('#dly_rel .dly-grade') ? '<h3 style="margin:18px 0 6px;">Dia a dia</h3>'+document.querySelector('#dly_rel .dly-grade').outerHTML : '');
   el.querySelectorAll('table').forEach(t=>{ t.style.width='100%'; t.style.borderCollapse='collapse'; t.querySelectorAll('th,td').forEach(c=>{ c.style.border='1px solid #ccc'; c.style.padding='6px 8px'; c.style.color='#111'; }); });
   window.print(); setTimeout(()=>{ el.innerHTML=''; }, 500);
 }
-Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar });
+Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar, periodo, navegar, filtrarTar, alternarTarefa, excluirTarefa, novaTarefa, checkTarefas });
 })();
 </script>
 <!-- ===== TEMA ELLO (visual do Dashboard Pós-vendas em toda a plataforma) ===== -->
@@ -11438,6 +11585,45 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 .tr-modal-foot .tr-btn-delete:hover, .tr-btn-delete:hover { background:rgba(255,107,107,.1); }
 
 /* ===== Daily ===== */
+.dly-periodo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dly-seg{display:flex;padding:3px;border-radius:11px;border:1px solid var(--el-line,rgba(125,211,214,.16));background:rgba(3,18,22,.35)}
+.dly-seg button{all:unset;cursor:pointer;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.dly-seg button.on{background:rgba(94,230,220,.14);color:#5ee6dc}
+.dly-nav,.dly-hoje{all:unset;cursor:pointer;min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid var(--el-line-strong,rgba(125,211,214,.3));font-weight:800;color:var(--text)}
+.dly-hoje{padding:0 10px;font-size:12px}
+.dly-nav:hover,.dly-hoje:hover{background:rgba(125,211,214,.08)}
+.dly-per-lbl{font-weight:800;font-size:14px;min-width:150px;text-align:center}
+.dly-badge{display:inline-block;min-width:18px;padding:1px 6px;border-radius:999px;background:#ff6b6b;color:#2a0505;font-size:10.5px;font-weight:800;margin-left:4px}
+.dly-badge:empty{display:none}
+.dly-grade-wrap{overflow-x:auto;margin-top:14px}
+.dly-grade{border-collapse:separate;border-spacing:4px;font-size:12px}
+.dly-grade th{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
+.dly-grade th.nm{text-align:left}
+.dly-grade td.nm{font-weight:700;padding-right:10px;white-space:nowrap}
+.dly-cel{width:30px;height:28px;border-radius:7px;text-align:center;font-weight:800;font-size:13px}
+.dly-cel.p{background:rgba(62,227,154,.18);color:#3ee39a}.dly-cel.a{background:rgba(255,107,107,.18);color:#ff8a8a}.dly-cel.j{background:rgba(245,165,36,.18);color:#ffd18a}.dly-cel.n{background:rgba(125,211,214,.06);color:var(--muted)}
+.dly-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.dly-tar-grupo{margin-bottom:14px;padding:12px 14px}
+.dly-tar-grupo h4{margin:0 0 8px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
+.dly-tar{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid rgba(125,211,214,.08)}
+.dly-tar:first-of-type{border-top:0}
+.dly-chk{all:unset;cursor:pointer;flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--el-line-strong,rgba(125,211,214,.3));display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#05302a;margin-top:1px}
+.dly-chk:hover{border-color:#3ee39a}
+.dly-tar.feita .dly-chk{background:#3ee39a;border-color:#3ee39a}
+.dly-tar.feita .dly-tx{text-decoration:line-through;color:var(--muted)}
+.dly-tx{flex:1;font-size:13.5px;line-height:1.4}
+.dly-tx small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.dly-prazo{flex:none;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;background:rgba(125,211,214,.1);color:var(--muted);white-space:nowrap}
+.dly-prazo.venc{background:rgba(255,107,107,.16);color:#ff8a8a}.dly-prazo.hoje{background:rgba(245,165,36,.18);color:#ffd18a}
+.dly-x{all:unset;cursor:pointer;color:var(--muted);font-size:12px;padding:2px 6px;border-radius:6px}.dly-x:hover{color:#ff8a8a;background:rgba(255,107,107,.1)}
+.dly-nova{display:grid;grid-template-columns:150px 1fr 150px auto;gap:8px;align-items:end;padding:12px 14px;margin-bottom:14px}
+@media (max-width:700px){.dly-nova{grid-template-columns:1fr 1fr}}
+.dly-tar-filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.dly-fchip{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--el-line-strong,rgba(125,211,214,.3));color:var(--muted)}
+.dly-fchip.on{background:rgba(245,165,36,.16);border-color:rgba(245,165,36,.5);color:#ffd18a}
+.chk-tar-box{margin-bottom:14px;padding:14px 16px}
+.chk-tar-box h4{margin:0 0 4px;font-size:14px;font-weight:800}
+.chk-tar-box p{margin:0 0 6px;font-size:12px;color:var(--muted)}
 .dly-imp{border:1px dashed rgba(245,165,36,.5);border-radius:12px;padding:10px 12px;margin-bottom:14px;background:rgba(245,165,36,.05)}
 .dly-imp summary{cursor:pointer;font-weight:800;font-size:13px;color:#ffd18a}
 .dly-pp{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
