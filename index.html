@@ -11352,5 +11352,51 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 })();
 
 </script>
+<style id="ello-vidro">
+/* ===== VARIANTE TRANSLÚCIDA (vidro fosco) ===== */
+:root{
+  --el-card-bg:linear-gradient(150deg,rgba(255,255,255,.085),rgba(255,255,255,.025) 55%,rgba(255,255,255,.04));
+  --el-glass-blur:blur(20px) saturate(160%);
+  --el-line:rgba(210,245,248,.18); --el-line-strong:rgba(210,245,248,.30);
+  --el-card-shadow:0 20px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16), inset 1px 0 0 rgba(255,255,255,.05);
+}
+body{
+  background:
+    radial-gradient(640px 520px at 86% 4%, rgba(40,190,200,.55) 0%, transparent 62%),
+    radial-gradient(560px 480px at 6% 92%, rgba(20,150,125,.55) 0%, transparent 60%),
+    radial-gradient(520px 380px at 58% 60%, rgba(245,165,36,.16) 0%, transparent 66%),
+    radial-gradient(460px 360px at 30% 20%, rgba(94,230,220,.16) 0%, transparent 66%),
+    linear-gradient(160deg,#06222a 0%,#041419 60%,#03252a 100%) !important;
+  background-attachment:fixed !important;
+}
+.home-card, .tool-reuniao .form-body, .tool-oneone .section-group, .tr-card, .camp-card, .check-block,
+.check-pessoa-card, .check-data-card, .pdl-kpi, .pdl-etapa, .pdl-cand, .pdl-bloco, .hd-kpi, .rcf-frente,
+.pop-passo, .pauta-item, .rco-pend-item, .pvd-kpi-card, .pvd-card, .pvd-pessoa-card, .tr-prova-resultado-card, .tr-resposta-card, .tr-comentario-item,
+.tool-reuniao .meta-strip, .tool-oneone .meta-strip, .tool-reuniao .week-nav, .tool-oneone .person-select-bar,
+.tool-oneone .history-nav, .tool-oneone .feedback-card, .tool-oneone .private-group, .tr-cat-nav, .camp-lancar-form,
+.cargo-etapa-card, .etapa-panel, .pvd-termo-item, .tr-pergunta-minha, .tr-prova-form {
+  background:var(--el-card-bg) !important;
+  backdrop-filter:var(--el-glass-blur) !important; -webkit-backdrop-filter:var(--el-glass-blur) !important;
+}
+.home-card .hc-icon { backdrop-filter:blur(6px); }
+.cargo-etapa-card.done { background:linear-gradient(150deg,rgba(62,227,154,.22),rgba(62,227,154,.05)) !important; }
+.drawer { background:rgba(255,255,255,.04) !important; backdrop-filter:blur(26px) saturate(160%); -webkit-backdrop-filter:blur(26px) saturate(160%); border-right:1px solid var(--el-line) !important; box-shadow:inset -1px 0 0 rgba(255,255,255,.04); }
+.main-header { background:rgba(255,255,255,.05) !important; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+.tr-modal-overlay { background:rgba(2,12,15,.30) !important; backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.tr-modal:not([style*="background:transparent"]), .tr-pergunta-modal {
+  background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04) 50%,rgba(6,34,42,.25)) !important;
+  backdrop-filter:blur(30px) saturate(170%) !important; -webkit-backdrop-filter:blur(30px) saturate(170%) !important;
+  border:1px solid rgba(220,248,250,.26) !important; box-shadow:0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2) !important;
+}
+.tr-modal-head, .tr-modal-foot { background:rgba(255,255,255,.03) !important; }
+.tr-text-input, .tr-field select, .tr-field textarea.q-input, textarea.q-input, .tr-modal input[type=text], .tr-modal input[type=date],
+.tr-modal input[type=number], .tr-modal select, .tr-modal textarea, .pdl-in, .tr-video-link { background:rgba(0,10,14,.28) !important; }
+#mod-posvendas .card { background:linear-gradient(150deg,rgba(255,255,255,.085),rgba(255,255,255,.025) 55%,rgba(255,255,255,.04)) !important;
+  backdrop-filter:blur(20px) saturate(160%); -webkit-backdrop-filter:blur(20px) saturate(160%); border-color:rgba(210,245,248,.18);
+  box-shadow:0 20px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16); }
+#mod-posvendas .card.ok { border-color:rgba(62,227,154,.55); }
+#mod-posvendas .side { background:rgba(255,255,255,.04) !important; }
+#mod-posvendas .fld input, #mod-posvendas .fld select, #mod-posvendas .fld textarea, #mod-posvendas .chip-btn { background:rgba(0,10,14,.28); }
+</style>
 </body>
 </html>
