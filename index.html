@@ -2857,7 +2857,7 @@ function fecharDrawer() {
 }
 function mostrarTool(nome) {
   var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -11052,6 +11052,100 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', aplicar); else aplicar();
+})();
+
+/* ===== Menu e home organizados por seções, em ordem alfabética ===== */
+(function(){
+  var SECOES = [
+    { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
+    { id:'reunioes',    nome:'Reuniões',            itens:['rco','desafioreuniao','oneone','pauta','reuniao'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','checklist','posvendas'] },
+    { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
+  ];
+  var ROTULO = { dashboard:'Dashboard de Provas' };
+  var cmp = function(a,b){ return a.localeCompare(b,'pt-BR',{sensitivity:'base'}); };
+  SECOES.sort(function(a,b){ return cmp(a.nome,b.nome); });
+  function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
+  function texto(el){ return (el.textContent||'').replace(/\s+/g,' ').trim(); }
+  function visivel(el){ return el.style.display !== 'none' && getComputedStyle(el).display !== 'none'; }
+
+  function organizarMenu(){
+    var body = document.querySelector('#drawer .drawer-body');
+    if (!body || body.dataset.elOrg) return;
+    var itens = {};
+    body.querySelectorAll('.drawer-item').forEach(function(b){ var k = chave(b); if (k) itens[k] = b; });
+    Object.keys(ROTULO).forEach(function(k){
+      var b = itens[k]; if (!b) return; var ic = b.querySelector('.di-icon');
+      b.textContent = ''; if (ic) b.appendChild(ic); b.appendChild(document.createTextNode(' ' + ROTULO[k]));
+    });
+    body.querySelectorAll('.drawer-section-label').forEach(function(l){ l.remove(); });
+    var frag = document.createDocumentFragment();
+    var lab = function(t, id){ var d = document.createElement('div'); d.className = 'drawer-section-label'; d.textContent = t; if (id) d.dataset.secao = id; return d; };
+    frag.appendChild(lab('Início'));
+    if (itens.home) frag.appendChild(itens.home);
+    var usados = { home:1 };
+    SECOES.forEach(function(s){
+      frag.appendChild(lab(s.nome, s.id));
+      s.itens.filter(function(k){ return itens[k]; })
+       .sort(function(a,b){ return cmp(texto(itens[a]), texto(itens[b])); })
+       .forEach(function(k){ itens[k].dataset.secao = s.id; frag.appendChild(itens[k]); usados[k]=1; });
+    });
+    // qualquer aba nova que ainda não tenha seção vai pro fim, em "Outros"
+    var resto = Object.keys(itens).filter(function(k){ return !usados[k]; });
+    if (resto.length){ frag.appendChild(lab('Outros','outros')); resto.sort(function(a,b){ return cmp(texto(itens[a]), texto(itens[b])); }).forEach(function(k){ itens[k].dataset.secao='outros'; frag.appendChild(itens[k]); }); }
+    body.innerHTML = ''; body.appendChild(frag);
+    // a seção "Menu" acima do corpo do menu não é mais necessária
+    var antigo = document.querySelector('#drawer > .drawer-section-label'); if (antigo) antigo.style.display = 'none';
+    body.dataset.elOrg = '1';
+  }
+
+  function organizarHome(){
+    var grid = document.querySelector('.home-cards');
+    if (!grid || grid.dataset.elOrg) return;
+    var cards = {};
+    grid.querySelectorAll('.home-card').forEach(function(c){ var k = chave(c); if (k) cards[k] = c; });
+    var sec = document.getElementById('el_sec_fer'); if (sec) sec.remove();
+    var pai = grid.parentNode, ref = grid;
+    var usados = {};
+    SECOES.forEach(function(s){
+      var ks = s.itens.filter(function(k){ return cards[k]; });
+      if (!ks.length) return;
+      var h = document.createElement('div'); h.className = 'el-sec-h'; h.dataset.secao = s.id; h.textContent = s.nome;
+      var g = document.createElement('div'); g.className = 'home-cards'; g.dataset.secao = s.id; g.dataset.elOrg = '1';
+      ks.sort(function(a,b){ return cmp(texto(cards[a].querySelector('.hc-title')||cards[a]), texto(cards[b].querySelector('.hc-title')||cards[b])); })
+        .forEach(function(k){ g.appendChild(cards[k]); usados[k]=1; });
+      pai.insertBefore(h, ref); pai.insertBefore(g, ref);
+    });
+    var resto = Object.keys(cards).filter(function(k){ return !usados[k]; });
+    if (resto.length){
+      var h = document.createElement('div'); h.className = 'el-sec-h'; h.dataset.secao = 'outros'; h.textContent = 'Outros';
+      pai.insertBefore(h, ref); resto.forEach(function(k){ grid.appendChild(cards[k]); }); grid.dataset.secao = 'outros'; grid.dataset.elOrg = '1';
+    } else { grid.remove(); }
+  }
+
+  // esconde títulos de seção sem nenhuma aba visível (ex.: liderado não vê as abas só de admin)
+  function atualizarSecoes(){
+    document.querySelectorAll('#drawer .drawer-section-label[data-secao]').forEach(function(l){
+      var tem = Array.prototype.some.call(document.querySelectorAll('#drawer .drawer-item[data-secao="'+l.dataset.secao+'"]'), visivel);
+      l.style.display = tem ? '' : 'none';
+    });
+    document.querySelectorAll('.home-view .el-sec-h[data-secao]').forEach(function(h){
+      var g = document.querySelector('.home-view .home-cards[data-secao="'+h.dataset.secao+'"]');
+      var tem = g && Array.prototype.some.call(g.querySelectorAll('.home-card'), visivel);
+      h.style.display = tem ? '' : 'none'; if (g) g.style.display = tem ? '' : 'none';
+    });
+  }
+
+  function iniciar(){
+    organizarMenu(); organizarHome(); atualizarSecoes();
+    var orig = window.aplicarPermissoes;
+    if (typeof orig === 'function' && !orig._el) {
+      var novo = function(){ var r = orig.apply(this, arguments); try { atualizarSecoes(); } catch(e){} return r; };
+      novo._el = true; window.aplicarPermissoes = novo;
+    }
+    window.addEventListener('userAuthed', function(){ setTimeout(atualizarSecoes, 0); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 })();
 
 </script>
