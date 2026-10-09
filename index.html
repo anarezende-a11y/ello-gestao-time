@@ -2296,7 +2296,7 @@ window.APPAUTH = window.APPAUTH || {};
       <p>Embaixo de cada card aparece a faixa já atingida e uma barra com os três marcadores. No gráfico <b>Corrida da meta</b>, as três linhas mostram onde o time deveria estar em cada dia útil pra bater cada faixa; a linha ciano é o realizado.</p>
 
       <h3>5. Quem pode fazer o quê</h3>
-      <p>Quem tem acesso de <b>Colaborador</b> lança e edita negócios. Só quem tem acesso de <b>Editor</b> (ou a dona do painel) altera as metas no Admin. Quem tem acesso só de <b>Leitor</b> vê o painel sem editar.</p>
+      <p><b>Colaborador:</b> na primeira vez que abre <b>Negócios</b>, escolhe quem ele é na equipe ("Quem é você?"). A partir daí, tudo que ele lança entra no nome dele, ele vê e altera só a própria carteira, e o painel abre com os números e as metas individuais dele. O ranking do time aparece pra todos. <b>Ana (admin):</b> vê o time inteiro, lança por qualquer pessoa e é a única que altera metas, equipe e serviços no Admin. Se alguém escolher o nome errado, corrija o e-mail dessa pessoa na Equipe (Admin · Metas).</p>
     </section>
   </main>
 </div>
@@ -10303,22 +10303,56 @@ let demoForced = null;       // null = auto
 let db = null, me = null, canAdmin = false, canWrite = true;
 let connected = false;
 const COL_CFG = "posvendas_config", COL_NEG = "posvendas_negocios";
+/* Dados guardados em shared_data (já liberado pro time nas regras do Firebase):
+   - shared_data/posvendas_config   → metas e equipe
+   - shared_data/posvendas_negocios → um campo por negócio (cada salvar mexe só no próprio negócio)
+   - shared_data/posvendas_vinculos → qual login é qual vendedor
+   Se existir algo nas coleções antigas (posvendas_config / posvendas_negocios), também é lido. */
+let vinculos = {};
+const chaveMail = m => String(m||"").trim().toLowerCase().replace(/[.#$\/\[\]]/g,"_");
 function makeDb(){
   const fb = window.fb;
-  const pathOf = p => { const parts = p.split("/"); return [parts[0]==="config" ? COL_CFG : COL_NEG, parts[1]]; };
+  const cfgRef = fb.doc(fb.db, "shared_data", "posvendas_config");
+  const negRef = fb.doc(fb.db, "shared_data", "posvendas_negocios");
+  const vincRef = fb.doc(fb.db, "shared_data", "posvendas_vinculos");
+  let novos = {}, antigos = {}; const negCbs = [];
+  const emitir = () => {
+    const ids = new Set(Object.keys(antigos).concat(Object.keys(novos)));
+    const docs = [];
+    ids.forEach(id => { const d = Object.assign({}, antigos[id]||{}, novos[id]||{}); if(d && !d._apagado && d.cliente!==undefined) docs.push({id, data:()=>d}); });
+    negCbs.forEach(cb => cb({docs}));
+  };
+  const novoId = () => "n" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const gravar = (id, d) => fb.setDoc(negRef, {[id]: d}, {merge:true});
   return {
-    doc(p){ const [c,id] = pathOf(p); const ref = fb.doc(fb.db, c, id);
+    doc(p){
+      if(p === "config/geral") return {
+        onSnapshot(cb, err){
+          let temNovo = false, velho = null;
+          fb.onSnapshot(cfgRef, sn => { temNovo = sn.exists(); if(temNovo) cb({exists:true, data:()=>sn.data()}); else if(velho) cb(velho); else cb({exists:false, data:()=>undefined}); }, err);
+          try { fb.onSnapshot(fb.doc(fb.db, COL_CFG, "geral"), sn => { if(sn.exists()){ velho = {exists:true, data:()=>sn.data()}; if(!temNovo) cb(velho); } }, ()=>{}); } catch(e) {}
+        },
+        set(d){ return fb.setDoc(cfgRef, d); }
+      };
+      const id = p.split("/")[1];
       return {
-        onSnapshot(cb, err){ return fb.onSnapshot(ref, s=>cb({exists:s.exists(), data:()=>s.data()}), err); },
-        set(d){ return fb.setDoc(ref, d); },
-        update(d){ return fb.updateDoc(ref, d); },
-        delete(){ return fb.deleteDoc(ref); }
-      }; },
-    collection(){ const ref = fb.collection(fb.db, COL_NEG);
+        set(d){ return gravar(id, d); },
+        update(d){ return gravar(id, d); },
+        delete(){ return gravar(id, {_apagado:true, apagadoEm:new Date().toISOString()}); }
+      };
+    },
+    collection(){
       return {
-        onSnapshot(cb, err){ return fb.onSnapshot(ref, q=>cb({docs:q.docs.map(d=>({id:d.id, data:()=>d.data()}))}), err); },
-        add(d){ return fb.addDoc(ref, d); }
-      }; }
+        onSnapshot(cb, err){
+          negCbs.push(cb);
+          fb.onSnapshot(negRef, sn => { novos = sn.exists() ? (sn.data()||{}) : {}; emitir(); }, err);
+          try { fb.onSnapshot(fb.collection(fb.db, COL_NEG), q => { antigos = {}; q.docs.forEach(d => antigos[d.id] = d.data()); emitir(); }, ()=>{}); } catch(e) {}
+        },
+        add(d){ return gravar(novoId(), d); }
+      };
+    },
+    vinculos(cb){ fb.onSnapshot(vincRef, sn => cb(sn.exists() ? (sn.data()||{}) : {}), ()=>{}); },
+    vincular(email, vendId, nome){ return fb.setDoc(vincRef, {[chaveMail(email)]: {email:String(email||"").toLowerCase(), vendedor:vendId, nome:nome||"", em:new Date().toISOString()}}, {merge:true}); }
   };
 }
 const permDenied = e => e && (e.code==="permission-denied" || e.code==="invalid_argument");
@@ -10654,6 +10688,7 @@ function acharMeuVend(){
   if(!u) return "";
   const mail = String(u.email||"").trim().toLowerCase();
   let v = vs.find(x => x.email && String(x.email).trim().toLowerCase() === mail);
+  if(!v){ const vin = vinculos[chaveMail(mail)]; if(vin && vin.vendedor) v = vs.find(x => x.id === vin.vendedor); }
   if(!v){
     const cands = [u.nome, mail.split("@")[0], mail.split("@")[0].split(/[._-]/)[0]].map(normNome).filter(x=>x && x.length>=3);
     v = vs.find(x => { const n = normNome(x.nome); return n && cands.some(c => c===n || c.startsWith(n) || n.startsWith(c)); });
@@ -10671,7 +10706,22 @@ function aplicarColaborador(){
     if(!filtroInicialFeito && meuVend){ $("#fVend").value = meuVend; filtroInicialFeito = true; }
     note.hidden = false;
     if(meuVend){ note.className = "eu-note"; note.innerHTML = 'Você está lançando como <b>'+esc(nome)+'</b>. Seus negócios atualizam o seu painel, as suas metas e o ranking do time.'; }
-    else { note.className = "eu-note warn"; note.innerHTML = 'Seu login ainda não está ligado a ninguém da equipe. Peça para a Ana colocar o seu e-mail na equipe (Admin · Metas) para poder lançar negócios.'; }
+    else {
+      const usados = new Set(Object.values(vinculos||{}).map(x=>x&&x.vendedor).concat((cfg.vendedores||[]).filter(x=>x.email).map(x=>x.id)));
+      const livres = (cfg.vendedores||[]).filter(x => !usados.has(x.id));
+      note.className = "eu-note warn";
+      if(livres.length){
+        note.innerHTML = '<b>Quem é você na equipe?</b> Escolha seu nome uma vez e seus negócios passam a contar pra você. <select id="euPick" style="background:rgba(3,18,22,.7);border:1px solid var(--line-strong);border-radius:10px;padding:7px 10px;color:var(--fg)">'+livres.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.nome)+'</option>').join("")+'</select> <button type="button" class="pvbtn sm" id="euOk">Sou eu</button>';
+        $("#euOk").addEventListener("click", async ()=>{
+          const u = window.APPAUTH && window.APPAUTH.usuarioAtual; const id = $("#euPick").value; if(!u || !id || !db) return;
+          $("#euOk").disabled = true;
+          try { await db.vincular(u.email, id, u.nome); vinculos[chaveMail(u.email)] = {vendedor:id, email:u.email}; afterCfg(); toast("Pronto! Você está ligado a "+vName(id)); }
+          catch(e){ toast("Não foi possível salvar. Tente de novo.", true); $("#euOk").disabled = false; }
+        });
+      } else {
+        note.innerHTML = 'Seu login ainda não está ligado a ninguém da equipe e todos os nomes já estão em uso. Peça para a Ana te adicionar na equipe (Admin · Metas).';
+      }
+    }
   } else {
     $("#nVen").disabled = false; $("#lVen").disabled = false;
     note.hidden = false; note.className = "eu-note";
@@ -10759,7 +10809,7 @@ function renderAdmin(){
 }
 function drawLists(){
   const dis = canAdmin ? "" : " disabled";
-  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row ven" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld fld-mail"><label for="ve'+i+'">E-mail de login</label><input id="ve'+i+'" data-f="email" type="email" placeholder="nome@ellosolar.com.br" value="'+esc(v.email||"")+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
+  $("#venList").innerHTML = draft.vendedores.map((v,i)=>'<div class="list-row ven" data-i="'+i+'"><div class="fld"><label for="vn'+i+'">Nome</label><input id="vn'+i+'" data-f="nome" value="'+esc(v.nome)+'"'+dis+'></div><div class="fld fld-mail"><label for="ve'+i+'">E-mail de login</label><input id="ve'+i+'" data-f="email" type="email" placeholder="nome@ellosolar.com.br" value="'+esc(v.email || (Object.values(vinculos||{}).find(x=>x&&x.vendedor===v.id)||{}).email || "")+'"'+dis+'></div><div class="fld"><label for="vp'+i+'">Peso</label><input id="vp'+i+'" data-f="peso" type="number" step="0.1" min="0" value="'+esc(v.peso)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="ven" aria-label="Remover '+esc(v.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhuma pessoa cadastrada.</div>';
   $("#svcAdm").innerHTML = draft.servicos.map((s,i)=>'<div class="list-row svc" data-i="'+i+'"><div class="fld"><label for="sn'+i+'">Serviço</label><input id="sn'+i+'" data-f="nome" value="'+esc(s.nome)+'"'+dis+'></div><div class="fld"><label for="sm'+i+'">Margem %</label><input id="sm'+i+'" data-f="margem" type="number" step="1" min="0" max="100" value="'+esc(s.margem)+'"'+dis+'></div>'+(canAdmin?'<button class="x" type="button" data-rm="svc" aria-label="Remover '+esc(s.nome)+'">✕</button>':'<span></span>')+'</div>').join("") || '<div class="empty">Nenhum serviço cadastrado.</div>';
 }
 function bindList(id, key){
@@ -10827,12 +10877,13 @@ function tryConnect(){
     if(s.exists){ const d = s.data(); cfg = Object.assign(JSON.parse(JSON.stringify(DEFAULT_CFG)), JSON.parse(JSON.stringify(d))); if(!$("#fMes").dataset.touched) $("#fMes").value = cfg.mes; }
     afterCfg();
   }, ()=>{});
+  db.vinculos(v => { vinculos = v || {}; afterCfg(); });
   db.collection("negocios").onSnapshot(q=>{
     realDeals = q.docs.map(d=>Object.assign({}, d.data(), {id:d.id}));
     realLoaded = true;
     const cur=$(".view:not([hidden])")?.id; if(cur==="v-dash") renderDash(); if(cur==="v-neg") renderNeg();
   }, e=>{ realLoaded = true;
-    toast(permDenied(e) ? "O Firebase ainda não liberou a coleção posvendas_negocios (regras). Mostrando exemplo." : "A base de negócios ficou indisponível.", true);
+    toast(permDenied(e) ? "Sem permissão para ler os negócios no Firebase." : "A base de negócios ficou indisponível.", true);
     renderDash(); });
 }
 window.addEventListener("fbReady", tryConnect);
