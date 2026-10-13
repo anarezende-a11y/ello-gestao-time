@@ -1421,6 +1421,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 13/10 · 11h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -10971,7 +10972,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 window.DAILY = window.DAILY || {};
 (function(){
 const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
-let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas';
+let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas', fbIds = new Set(), fbCarregado = false, fbSincEm = 0;
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hoje = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
@@ -10994,6 +10995,13 @@ function ouvir(){
     cache = sn.exists() ? sn.data() : {registros:[]}; if(!cache.registros) cache.registros = [];
     if(document.getElementById('view_daily').classList.contains('active')) render();
   }, e => console.error('DAILY snapshot', e));
+  const u0 = window.APPAUTH.usuarioAtual;
+  if(u0 && u0.role === 'admin'){
+    window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','feedbacks'), sn => {
+      const d = sn.exists() ? (sn.data()||{}) : {}; fbIds = new Set((d.lista||[]).map(f => f.id)); fbCarregado = true;
+      if(document.getElementById('view_daily').classList.contains('active')){ render(); sincronizarFeedbacks(); }
+    }, e => console.error('DAILY feedbacks snapshot', e));
+  }
   window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','daily_tarefas'), sn => {
     tarefas = sn.exists() ? (sn.data()||{}) : {};
     if(document.getElementById('view_daily').classList.contains('active')) render();
@@ -11026,6 +11034,7 @@ const nomeP = perTipo => perTipo === 'semana' ? 'na semana' : 'no mês';
 
 function render(){
   ouvir();
+  if(fbCarregado) setTimeout(() => sincronizarFeedbacks(), 0);
   const {ini, fim} = intervalo();
   document.getElementById('dly_per_lbl').textContent = rotuloPeriodo();
   const regs = lista().filter(r => r.data >= ini && r.data <= fim).sort((a,b)=> (b.data+b.hora).localeCompare(a.data+a.hora));
@@ -11062,7 +11071,7 @@ function render(){
     : regs.map(r => {
         const pr = Object.fromEntries(Object.entries(r.presenca||{}).filter(([n]) => PESSOAS.includes(n))); const pres = Object.keys(pr).filter(n=>pr[n]==='p'), falt = Object.keys(pr).filter(n=>pr[n]==='a'), just = Object.keys(pr).filter(n=>pr[n]==='j');
         return '<div class="tr-card dly-reg" onclick="window.DAILY.abrir(\''+r.id+'\')"><div class="dly-reg-top"><span class="dly-reg-data">'+diaSem(r.data)+', '+dataBR(r.data)+'</span><span style="color:var(--muted);font-size:12px;">'+esc(r.hora||'')+'</span>'+
-          '<span class="dly-mini p">✓ '+pres.length+' presente(s)</span>'+(falt.length?'<span class="dly-mini a">✕ '+esc(falt.join(', '))+'</span>':'')+(just.length?'<span class="dly-mini j">⚑ '+esc(just.join(', '))+'</span>':'')+'</div>'+
+          '<span class="dly-mini p">✓ '+pres.length+' presente(s)</span>'+(falt.length? falt.map(n => '<span class="dly-mini a">✕ '+esc(n)+(fbIds.has(idFeedbackFalta(r,n)) ? ' · 📝 feedback aberto' : (r.data >= addDias(hoje(),-30) ? ' · abrindo feedback…' : ''))+'</span>').join('') : '')+(just.length?'<span class="dly-mini j">⚑ '+esc(just.join(', '))+'</span>':'')+'</div>'+
           (r.pauta? '<div class="dly-reg-tx">'+esc(r.pauta)+'</div>' : '<div class="dly-reg-tx" style="color:var(--muted)">Sem registro escrito.</div>')+
           (r.combinados? '<div class="dly-reg-tx" style="margin-top:6px;"><b>Combinados:</b> '+esc(r.combinados)+'</div>' : '')+
           (r.porPessoa && Object.keys(r.porPessoa).length ? '<div class="dly-reg-pp">'+Object.entries(r.porPessoa).filter(([n])=>PESSOAS.includes(n)).map(([n,t])=>'<div><b>'+esc(n)+'</b>'+esc(t)+'</div>').join('')+'</div>' : '')+
@@ -11250,27 +11259,42 @@ function avisoDaily(msg, erro){
   el.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:200;padding:12px 18px;border-radius:12px;font-weight:700;font-size:13.5px;max-width:90vw;box-shadow:0 12px 30px rgba(0,0,0,.45);background:#04161b;border:1px solid '+(erro?'#ff6b6b':'#3ee39a')+';color:'+(erro?'#ff8a8a':'#3ee39a');
   clearTimeout(el._t); el._t = setTimeout(() => { el.remove(); }, 6000);
 }
-async function feedbackFaltas(reg){
+const idFeedbackFalta = (reg, n) => 'f_falta_' + reg.id + '_' + normN(n).replace(/[^a-z]/g,'');
+let sincronizando = false;
+/* garante um feedback de ausência para cada "Faltou" das dailys dos últimos 30 dias */
+async function sincronizarFeedbacks(forcar){
+  const u = window.APPAUTH && window.APPAUTH.usuarioAtual;
+  if(!u || u.role !== 'admin' || !window.fb || !window.fb.getDoc || sincronizando) return;
+  if(!forcar && Date.now() - fbSincEm < 4000) return;
+  const limite = addDias(hoje(), -30);
+  const pend = [];
+  lista().filter(r => r.data >= limite).forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(v === 'a' && PESSOAS.includes(n) && !fbIds.has(idFeedbackFalta(r,n))) pend.push([r,n]); }));
+  if(!pend.length) return;
+  sincronizando = true; fbSincEm = Date.now();
   try {
-    const faltas = Object.entries(reg.presenca||{}).filter(([n,v]) => v === 'a' && PESSOAS.includes(n)).map(([n]) => n);
-    if(!faltas.length || !window.fb || !window.fb.getDoc) return;
     const ref = window.fb.doc(window.fb.db, 'shared_data', 'feedbacks');
     const sn = await window.fb.getDoc(ref);
     const d = sn.exists() ? (sn.data() || {}) : {}; if(!Array.isArray(d.lista)) d.lista = [];
-    const idDe = n => 'f_falta_' + reg.id + '_' + normN(n).replace(/[^a-z]/g,'');
-    const novos = faltas.filter(n => !d.lista.some(f => f.id === idDe(n)));
-    if(!novos.length) return;
-    const dia = diaSem(reg.data) + ', ' + dataBR(reg.data);
-    novos.forEach(n => d.lista.push({
-      id: idDe(n), liderado: n, data: reg.data, tipo: 'melhoria', resposta: '', criadoEm: Date.now(), origem: 'daily', dailyId: reg.id,
-      texto: 'Ausência na daily de ' + dia + ' (' + (reg.hora||'08:30') + '), sem justificativa.\n\n' +
-             'A daily é o nosso momento de alinhar as prioridades do dia, os combinados e o apoio entre o time, e a presença de cada um faz diferença no resultado de todos. ' +
-             'Quero entender o que aconteceu e combinarmos juntos como evitar que se repita.\n\nMe responde por aqui, por favor.'
-    }));
-    await window.fb.setDoc(ref, d);
-    avisoDaily('✓ Feedback de ausência aberto para ' + novos.join(', ') + '. Está na aba Feedback.', false);
-  } catch(e) { console.error('feedback falta', e); avisoDaily('A daily foi salva, mas não consegui abrir o feedback de ausência. Salve a daily de novo.', true); }
+    const existentes = new Set(d.lista.map(f => f.id));
+    const criados = [];
+    pend.forEach(([r,n]) => {
+      const id = idFeedbackFalta(r,n); if(existentes.has(id)) return; existentes.add(id);
+      d.lista.push({ id, liderado: n, data: r.data, tipo: 'melhoria', resposta: '', criadoEm: Date.now(), origem: 'daily', dailyId: r.id,
+        texto: 'Ausência na daily de ' + diaSem(r.data) + ', ' + dataBR(r.data) + ' (' + (r.hora||'08:30') + '), sem justificativa.\n\n' +
+               'A daily é o nosso momento de alinhar as prioridades do dia, os combinados e o apoio entre o time, e a presença de cada um faz diferença no resultado de todos. ' +
+               'Quero entender o que aconteceu e combinarmos juntos como evitar que se repita.\n\nMe responde por aqui, por favor.' });
+      criados.push(n + ' (' + dataBR(r.data).slice(0,5) + ')');
+    });
+    if(criados.length){
+      await window.fb.setDoc(ref, d);
+      criados.forEach(() => {}); d.lista.forEach(f => fbIds.add(f.id));
+      avisoDaily('✓ Feedback de ausência aberto para ' + criados.join(', ') + '. Está na aba Feedback.', false);
+      render();
+    }
+  } catch(e) { console.error('feedback falta', e); avisoDaily('Não consegui abrir o feedback de ausência (' + (e && (e.code || e.message) || 'erro') + '). Me avise com um print desta mensagem.', true); }
+  sincronizando = false;
 }
+function feedbackFaltas(){ return sincronizarFeedbacks(true); }
 function excluir(){
   if(!editId || !confirm('Excluir o registro desta daily?')) return;
   cache.registros = lista().filter(x=>x.id!==editId); salvarTudo(); fechar(); render();
