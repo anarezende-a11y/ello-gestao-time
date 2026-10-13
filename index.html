@@ -11243,6 +11243,13 @@ function salvar(){
   feedbackFaltas(reg);
 }
 /* falta sem justificativa → feedback automático na aba Feedback */
+function avisoDaily(msg, erro){
+  let el = document.getElementById('dly_aviso');
+  if(!el){ el = document.createElement('div'); el.id = 'dly_aviso'; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:200;padding:12px 18px;border-radius:12px;font-weight:700;font-size:13.5px;max-width:90vw;box-shadow:0 12px 30px rgba(0,0,0,.45);background:#04161b;border:1px solid '+(erro?'#ff6b6b':'#3ee39a')+';color:'+(erro?'#ff8a8a':'#3ee39a');
+  clearTimeout(el._t); el._t = setTimeout(() => { el.remove(); }, 6000);
+}
 async function feedbackFaltas(reg){
   try {
     const faltas = Object.entries(reg.presenca||{}).filter(([n,v]) => v === 'a' && PESSOAS.includes(n)).map(([n]) => n);
@@ -11253,7 +11260,6 @@ async function feedbackFaltas(reg){
     const idDe = n => 'f_falta_' + reg.id + '_' + normN(n).replace(/[^a-z]/g,'');
     const novos = faltas.filter(n => !d.lista.some(f => f.id === idDe(n)));
     if(!novos.length) return;
-    if(!confirm('Abrir feedback automático por ausência na daily para: ' + novos.join(', ') + '?\n\nEle vai pra aba Feedback como "Ponto de melhoria". Você pode editar ou excluir depois.')) return;
     const dia = diaSem(reg.data) + ', ' + dataBR(reg.data);
     novos.forEach(n => d.lista.push({
       id: idDe(n), liderado: n, data: reg.data, tipo: 'melhoria', resposta: '', criadoEm: Date.now(), origem: 'daily', dailyId: reg.id,
@@ -11262,8 +11268,8 @@ async function feedbackFaltas(reg){
              'Quero entender o que aconteceu e combinarmos juntos como evitar que se repita.\n\nMe responde por aqui, por favor.'
     }));
     await window.fb.setDoc(ref, d);
-    alert('Feedback aberto para: ' + novos.join(', ') + '. Está na aba Feedback.');
-  } catch(e) { console.error('feedback falta', e); alert('A daily foi salva, mas não consegui abrir o feedback de ausência. Tente salvar a daily de novo.'); }
+    avisoDaily('✓ Feedback de ausência aberto para ' + novos.join(', ') + '. Está na aba Feedback.', false);
+  } catch(e) { console.error('feedback falta', e); avisoDaily('A daily foi salva, mas não consegui abrir o feedback de ausência. Salve a daily de novo.', true); }
 }
 function excluir(){
   if(!editId || !confirm('Excluir o registro desta daily?')) return;
