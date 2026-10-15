@@ -3043,6 +3043,7 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
+  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
 
@@ -3452,6 +3453,7 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
+  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
 
@@ -4675,7 +4677,7 @@ render();
 window.RP = window.RP || {};
 (function(){
 const STORAGE_KEY = 'ello_roleplay_sessoes';
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
 let modalId = null;
 let cachedData = null;
 let listenerAtivo_p = false;
@@ -5696,6 +5698,7 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
+  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
 ];
 
 function escapeHTML(str) {
@@ -6965,7 +6968,7 @@ window.CHECK.gerarPDF = gerarPDF;
 <script>
 window.FEED = window.FEED || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
 const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
 
 let cachedData = null;
@@ -7382,7 +7385,7 @@ window.FEED.imprimirFeedbackView = imprimirFeedbackView;
 <script>
 window.CONTR = window.CONTR || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
 const TIPOS = { contrato:'📄 Contrato de Prestação de Serviços', cargo:'🧾 Descritivo de Cargo / OTE', aditivo:'📎 Aditivo Contratual', outro:'📁 Outro documento' };
 
 let cachedData = null;
@@ -9100,7 +9103,7 @@ window.PDL.corrLancar = corrLancar;
 <script>
 window.ATUAL = window.ATUAL || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
 const TIPOS = { salario:'💰 Aumento salarial', promocao:'🚀 Promoção', cargo:'🧾 Mudança de cargo', outro:'📌 Outro' };
 
 let cachedData = null;
@@ -9257,6 +9260,7 @@ const MEMBROS_INFO = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
+  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
 ];
 const MEMBROS = MEMBROS_INFO.map(m => m.nome);
 
@@ -9484,7 +9488,7 @@ window.DESAFIO.fecharView = fecharView;
 <script>
 window.PROVAS = window.PROVAS || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
 const SEGURO_SOLAR_PERGUNTAS = [
   { texto: 'Qual a diferença central entre garantia e seguro?', opcoes: ['Garantia cobre defeitos de fabricação; seguro cobre danos de causa externa', 'Garantia e seguro cobrem exatamente as mesmas coisas', 'Seguro só cobre defeito de fabricação', 'Garantia cobre roubo e furto; seguro não'], correta: 0 },
   { texto: 'SITUAÇÃO: o cliente diz "Tenho garantia do fabricante, não preciso disso." Como você responde?', opcoes: ['Concordar e desistir da oferta', 'Explicar que garantia cobre defeitos internos e seguro protege contra eventos externos, como granizo, vendaval, raio ou roubo', 'Dizer que a garantia do fabricante não vale nada', 'Oferecer um desconto grande para compensar'], correta: 1 },
@@ -9719,7 +9723,7 @@ function listaPessoasTime() {
   try {
     if (window.EQUIPE && Array.isArray(window.EQUIPE.lista)) return window.EQUIPE.lista.map(u => u.nome).filter(Boolean);
   } catch(e) {}
-  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe'];
+  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe','Robson'];
 }
 function abrirQuick() {
   const data = getData();
@@ -10971,7 +10975,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 <script>
 window.DAILY = window.DAILY || {};
 (function(){
-const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda'];
+const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Robson'];
 let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas', fbIds = new Set(), fbCarregado = false, fbSincEm = 0;
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
