@@ -1244,6 +1244,9 @@ body {
 window.APPAUTH = window.APPAUTH || {};
 (function(){
   const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
+  // e-mails que não começam com o primeiro nome: força o nome usado nas listas do portal
+  const NOMES_POR_EMAIL = { 'robsonsamuelliborio@gmail.com': 'Robson' };
+  const nomeDoEmail = e => NOMES_POR_EMAIL[String(e||'').trim().toLowerCase()] || String(e||'').split('@')[0];
   let fbReady = false;
 
   function whenFbReady(cb) {
@@ -1285,10 +1288,12 @@ window.APPAUTH = window.APPAUTH || {};
     const snap = await window.fb.getDoc(ref);
     if (!snap.exists()) {
       const role = user.email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() ? 'admin' : 'liderado';
-      await window.fb.setDoc(ref, { email: user.email, role: role, nome: user.email.split('@')[0] });
-      return { email: user.email, role: role, nome: user.email.split('@')[0] };
+      await window.fb.setDoc(ref, { email: user.email, role: role, nome: nomeDoEmail(user.email) });
+      return { email: user.email, role: role, nome: nomeDoEmail(user.email) };
     }
-    return snap.data();
+    const dados = snap.data();
+    if (NOMES_POR_EMAIL[String(user.email||'').trim().toLowerCase()]) dados.nome = nomeDoEmail(user.email);
+    return dados;
   }
 
   whenFbReady(() => {
