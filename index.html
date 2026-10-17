@@ -11270,6 +11270,7 @@ function avisoDaily(msg, erro){
 }
 const idFeedbackFalta = (reg, n) => 'f_falta_' + reg.id + '_' + normN(n).replace(/[^a-z]/g,'');
 let sincronizando = false;
+const fbMantidos = new Set();
 /* garante um feedback de ausência para cada "Faltou" das dailys dos últimos 30 dias */
 async function sincronizarFeedbacks(forcar){
   const u = window.APPAUTH && window.APPAUTH.usuarioAtual;
@@ -11278,12 +11279,26 @@ async function sincronizarFeedbacks(forcar){
   const limite = addDias(hoje(), -30);
   const pend = [];
   lista().filter(r => r.data >= limite).forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { if(v === 'a' && PESSOAS.includes(n) && !fbIds.has(idFeedbackFalta(r,n))) pend.push([r,n]); }));
-  if(!pend.length) return;
+  /* falta que virou "Justificado" (ou presente / não se aplica) → recolhe o feedback automático que já tinha sido aberto */
+  const obsoletos = new Set();
+  lista().forEach(r => Object.entries(r.presenca||{}).forEach(([n,v]) => { const fid = idFeedbackFalta(r,n); if(v !== 'a' && PESSOAS.includes(n) && fbIds.has(fid) && !fbMantidos.has(fid)) obsoletos.add(fid); }));
+  if(!pend.length && !obsoletos.size) return;
   sincronizando = true; fbSincEm = Date.now();
   try {
     const ref = window.fb.doc(window.fb.db, 'shared_data', 'feedbacks');
     const sn = await window.fb.getDoc(ref);
     const d = sn.exists() ? (sn.data() || {}) : {}; if(!Array.isArray(d.lista)) d.lista = [];
+    let removidos = 0;
+    if(obsoletos.size){
+      const antes = d.lista.length;
+      /* só apaga o que foi aberto automaticamente pela daily e ainda não tem resposta do liderado */
+      d.lista = d.lista.filter(f => !(obsoletos.has(f.id) && f.origem === 'daily' && !String(f.resposta||'').trim()));
+      removidos = antes - d.lista.length;
+      if(removidos) await window.fb.setDoc(ref, d);
+      fbIds = new Set(d.lista.map(f => f.id));
+      obsoletos.forEach(id => { if(fbIds.has(id)) fbMantidos.add(id); }); /* já respondido: mantém e não reconsulta */
+      if(removidos) avisoDaily('✓ Feedback de ausência removido (falta justificada).', false);
+    }
     const existentes = new Set(d.lista.map(f => f.id));
     const criados = [];
     pend.forEach(([r,n]) => {
