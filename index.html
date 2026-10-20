@@ -1546,7 +1546,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h45</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -11230,7 +11230,7 @@ function fnFiltros(){
   const rs = $("#fnResp"), vs = cfg.vendedores||[]; const keep = rs.value;
   const ehCS = fnFunil === "cs";
   rs.innerHTML = (ehCS ? '<option value="cs">CS (Adriele e Sharon)</option>' : '<option value="">'+esc(fnCfg().resp.map(vName).join(" e "))+'</option>') + (ehCS?'<option value="*">Todo o time</option>':'') + vs.filter(v=>ehCS || (fnCfg().resp.length>1 && fnCfg().resp.includes(v.id))).map(v=>'<option value="'+esc(v.id)+'">'+esc(v.nome)+'</option>').join("");
-  rs.value = keep; if(rs.value !== keep) rs.value = ehCS ? "cs" : "";
+  rs.value = [...rs.options].some(o=>o.value===keep) ? keep : (ehCS ? "cs" : "");
   $("#fnFunil").value = fnFunil + (fnOrigem?":"+fnOrigem:"");
   $("#fnTit").textContent = fnCfg().titulo + (fnOrigem ? " · " + fnOrigNome(fnOrigem) : "");
   $("#fnSub").textContent = fnCfg().sub;
