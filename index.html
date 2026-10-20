@@ -1245,7 +1245,7 @@ window.APPAUTH = window.APPAUTH || {};
 (function(){
   const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
   // e-mails que não começam com o primeiro nome: força o nome usado nas listas do portal
-  const NOMES_POR_EMAIL = { 'robsonsamuelliborio@gmail.com': 'Robson' };
+  const NOMES_POR_EMAIL = { 'robsonsamuelliborio@gmail.com': 'Robson', 'duardogon@gmail.com': 'Eduardo' };
   const nomeDoEmail = e => NOMES_POR_EMAIL[String(e||'').trim().toLowerCase()] || String(e||'').split('@')[0];
   let fbReady = false;
 
@@ -3049,6 +3049,7 @@ const MEMBROS = [
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
   { nome:'Robson',  cor:'#65A30D', ini:'RO' },
+  { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
 
@@ -3459,6 +3460,7 @@ const MEMBROS = [
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
   { nome:'Robson',  cor:'#65A30D', ini:'RO' },
+  { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
 
@@ -4682,7 +4684,7 @@ render();
 window.RP = window.RP || {};
 (function(){
 const STORAGE_KEY = 'ello_roleplay_sessoes';
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
 let modalId = null;
 let cachedData = null;
 let listenerAtivo_p = false;
@@ -5704,6 +5706,7 @@ const MEMBROS = [
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
   { nome:'Robson',  cor:'#65A30D', ini:'RO' },
+  { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 
 function escapeHTML(str) {
@@ -6973,7 +6976,7 @@ window.CHECK.gerarPDF = gerarPDF;
 <script>
 window.FEED = window.FEED || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
 const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
 
 let cachedData = null;
@@ -7390,7 +7393,7 @@ window.FEED.imprimirFeedbackView = imprimirFeedbackView;
 <script>
 window.CONTR = window.CONTR || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
 const TIPOS = { contrato:'📄 Contrato de Prestação de Serviços', cargo:'🧾 Descritivo de Cargo / OTE', aditivo:'📎 Aditivo Contratual', outro:'📁 Outro documento' };
 
 let cachedData = null;
@@ -9108,7 +9111,7 @@ window.PDL.corrLancar = corrLancar;
 <script>
 window.ATUAL = window.ATUAL || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
 const TIPOS = { salario:'💰 Aumento salarial', promocao:'🚀 Promoção', cargo:'🧾 Mudança de cargo', outro:'📌 Outro' };
 
 let cachedData = null;
@@ -9266,6 +9269,7 @@ const MEMBROS_INFO = [
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
   { nome:'Robson',  cor:'#65A30D', ini:'RO' },
+  { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MEMBROS = MEMBROS_INFO.map(m => m.nome);
 
@@ -9493,7 +9497,7 @@ window.DESAFIO.fecharView = fecharView;
 <script>
 window.PROVAS = window.PROVAS || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
 const SEGURO_SOLAR_PERGUNTAS = [
   { texto: 'Qual a diferença central entre garantia e seguro?', opcoes: ['Garantia cobre defeitos de fabricação; seguro cobre danos de causa externa', 'Garantia e seguro cobrem exatamente as mesmas coisas', 'Seguro só cobre defeito de fabricação', 'Garantia cobre roubo e furto; seguro não'], correta: 0 },
   { texto: 'SITUAÇÃO: o cliente diz "Tenho garantia do fabricante, não preciso disso." Como você responde?', opcoes: ['Concordar e desistir da oferta', 'Explicar que garantia cobre defeitos internos e seguro protege contra eventos externos, como granizo, vendaval, raio ou roubo', 'Dizer que a garantia do fabricante não vale nada', 'Oferecer um desconto grande para compensar'], correta: 1 },
@@ -9728,7 +9732,7 @@ function listaPessoasTime() {
   try {
     if (window.EQUIPE && Array.isArray(window.EQUIPE.lista)) return window.EQUIPE.lista.map(u => u.nome).filter(Boolean);
   } catch(e) {}
-  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe','Robson'];
+  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe','Robson','Eduardo'];
 }
 function abrirQuick() {
   const data = getData();
@@ -10980,7 +10984,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 <script>
 window.DAILY = window.DAILY || {};
 (function(){
-const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Robson'];
+const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Robson','Eduardo'];
 let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas', fbIds = new Set(), fbCarregado = false, fbSincEm = 0;
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
