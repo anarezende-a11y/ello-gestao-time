@@ -1320,6 +1320,15 @@ body {
 #mod-posvendas .fn-delbtns button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;border-radius:14px;border:1px solid var(--line-strong);background:rgba(4,22,27,.5);font-weight:800;font-size:15px}
 #mod-posvendas .fn-delbtns button:hover{border-color:#9be564;background:rgba(155,229,100,.1)}
 #mod-posvendas .fn-delbtns .fn-av{width:30px;height:30px;font-size:13px}
+#mod-posvendas .fn-vis{display:inline-flex;gap:4px;margin-top:12px;padding:4px;border-radius:12px;border:1px solid var(--line-strong);background:rgba(4,22,27,.5)}
+#mod-posvendas .fn-vis button{all:unset;cursor:pointer;padding:7px 14px;border-radius:9px;font-size:12.5px;font-weight:800;color:var(--muted)}
+#mod-posvendas .fn-vis button.on{background:rgba(245,165,36,.18);color:var(--warn)}
+#mod-posvendas .fn-com{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;border:1px solid var(--k);color:var(--k);background:color-mix(in srgb,var(--k) 12%,transparent);margin-top:8px}
+#mod-posvendas .fn-com:hover{filter:brightness(1.2)}
+#mod-posvendas .fn-hint{font-size:11px;font-weight:700;color:var(--warn);margin-top:6px}
+#mod-posvendas .fn-seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+#mod-posvendas .fn-seg button{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted)}
+#mod-posvendas .fn-seg button.on{border-color:var(--k);color:var(--fg);background:color-mix(in srgb,var(--k) 20%,transparent)}
 #mod-posvendas .fn-titrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 #mod-posvendas .fn-pick{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:12px;border:1px solid rgba(245,165,36,.55);background:rgba(245,165,36,.1);color:var(--warn);font-weight:800;font-size:13px;cursor:pointer}
 #mod-posvendas .fn-pick select{all:unset;cursor:pointer;color:var(--fg);font-weight:800;padding-right:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f5a524' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right center}
@@ -1537,7 +1546,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 15h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h00</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -2344,6 +2353,7 @@ window.APPAUTH = window.APPAUTH || {};
           <div class="fn-titrow"><h1 id="fnTit">Funil CS</h1><label class="fn-pick"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg><select id="fnFunil" aria-label="Escolher funil">
             <optgroup label="Customer Success"><option value="cs">CS · Adriele e Sharon</option></optgroup>
             <optgroup label="Comercial · Felipe"><option value="felipe">Felipe · todas as origens</option><option value="felipe:solarz">Felipe · SolarZ</option><option value="felipe:prosp">Felipe · Prospecção</option><option value="felipe:chamou">Felipe · Cliente chamou</option><option value="felipe:indic">Felipe · Indicação</option></optgroup>
+            <optgroup label="Gestores de Usinas"><option value="gestores">Kuka e Thiago · usinas</option></optgroup>
           </select></label></div>
           <p class="pvsub" id="fnSub"></p></div>
         <div class="ctrl-row"><button class="pvbtn" type="button" id="fnNovo">+ Novo cliente</button></div>
@@ -2356,6 +2366,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="fld"><label for="fnTag">Etiqueta</label><select id="fnTag"></select></div>
         <div class="fld"><label for="fnFu">Follow-up</label><select id="fnFu"><option value="">Todos</option><option value="atr">Atrasados</option><option value="hoje">Para hoje</option><option value="sem">Sem próximo follow-up</option></select></div>
       </div>
+      <div class="fn-vis" id="fnVis" hidden><button type="button" data-vis="mes" class="on">Por mês</button><button type="button" data-vis="com">Visão comercial</button></div>
       <div class="fn-nav"><span class="fn-navlbl">Role para o lado para ver todas as etapas</span><div class="fn-navbtns"><button type="button" class="fn-sc" data-sc="-1" aria-label="Rolar para a esquerda">‹</button><button type="button" class="fn-sc" data-sc="1" aria-label="Rolar para a direita">›</button></div></div>
       <div class="fn-wrap"><div class="fn-board" id="fnBoard"></div><div class="fn-fade l" hidden></div><div class="fn-fade r"></div></div>
       <div id="fnModalHost"></div>
@@ -11107,10 +11118,33 @@ const FN_FUNIS = {
     quick:["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Enviei proposta","Apresentei a preventiva","Apresentei a expansão"],
     nomes:{ carteira:{nome:"Lead recebido", sub:"Entrou pela origem · primeiro contato"}, acomp:{nome:"Acompanhamento", sub:"Contato e qualificação do cliente"}, apresentar:{nome:"Apresentar", sub:"Preventiva, expansão ou seguro"} } }
 };
+FN_FUNIS.gestores = { titulo:"Funil Gestores de Usinas", resp:["kuka","thiago"], respPadrao:"kuka", delega:false, gestores:true,
+  sub:"A usina chega da CS e anda um mês a cada relatório apresentado. A venda (seguro, preventiva, expansão) pode acontecer em qualquer mês: use o selo comercial do card. Em negociação entra no dashboard; ao fechar, conta como venda.",
+  svc: x => /seguro|manuten|preventiv|amplia|expans|limpeza/i.test(x.nome) || ["seguro","manut","ampliacao","limpeza"].includes(x.id),
+  tags: [FN_RET,"Seguro","Preventiva","Expansão","Aguardando leitura","Degustação","Cooperativa","Sem resposta"],
+  quick:["Apresentei o relatório","Liguei","Mandei WhatsApp","Sem resposta","Apresentei o seguro","Apresentei a preventiva"], nomes:{},
+  etapas:[
+    {id:"checar", nome:"Checar sistema", sub:"Usina recebida da CS · conferir", c:"#7cc4ff"},
+    {id:"m1", nome:"Mês 1", sub:"Relatório do 1º mês", c:"#5ee6dc"},
+    {id:"m2", nome:"Mês 2", sub:"Relatório do 2º mês", c:"#9be564"},
+    {id:"m3", nome:"Mês 3", sub:"Relatório do 3º mês", c:"#ffd166"},
+    {id:"m4", nome:"Mês 4", sub:"Relatório do 4º mês · última chance da degustação", c:"#f5a524"},
+    {id:"fim", nome:"Fim do plano", sub:"Degustação concluída", c:"#c48bff"}
+  ] };
+const FN_COM = [
+  {id:"sem", nome:"Sem proposta", sub:"Ainda não apresentou", c:"#8db0b3"},
+  {id:"apresentado", nome:"Apresentado", sub:"Proposta apresentada", c:"#c48bff"},
+  {id:"negociacao", nome:"Em negociação", sub:"Negócio em aberto no dashboard", c:"#f5a524"},
+  {id:"fechado", nome:"Fechado", sub:"Vendido · conta no dashboard", c:"#3ee39a"}
+];
+const fnComInfo = id => FN_COM.find(x=>x.id===id) || FN_COM[0];
+const fnComSt = c => (c.funil==="gestores") ? (c.comercial||"sem") : (c.etapa==="negociacao" ? "negociacao" : c.etapa==="fechado" ? "fechado" : "sem");
+let fnVisao = "mes"; try { fnVisao = localStorage.getItem("ello-fn-visao")==="com" ? "com" : "mes"; } catch(e) {}
 let fnFunil = "cs", fnOrigem = "";
 try { const v = localStorage.getItem("ello-fn-funil"); if(v){ const [f,o] = v.split(":"); if(FN_FUNIS[f]){ fnFunil = f; fnOrigem = o||""; } } } catch(e) {}
 const fnCfg = () => FN_FUNIS[fnFunil] || FN_FUNIS.cs;
-const fnCols = () => FN_ETAPAS.filter(e => e.id!=="delegado" || fnCfg().delega).map(e => Object.assign({}, e, fnCfg().nomes[e.id]||{}));
+const fnCols = () => fnCfg().etapas ? fnCfg().etapas.slice() : FN_ETAPAS.filter(e => e.id!=="delegado" || fnCfg().delega).map(e => Object.assign({}, e, fnCfg().nomes[e.id]||{}));
+const fnEhG = () => !!fnCfg().gestores;
 const FN_TAGS = [
   {n:FN_RET, c:"#ffd166"}, {n:"Seguro", c:"#3ee39a"}, {n:"Limpeza", c:"#5ee6dc"}, {n:"Manutenção", c:"#7cc4ff"}, {n:"Indicação", c:"#c48bff"},
   {n:"Avaliação Google", c:"#ffd166"}, {n:"NPS", c:"#9be564"}, {n:"Cooperativa", c:"#ff8fa3"}, {n:"Prioridade", c:"#ff6b6b"},
@@ -11133,7 +11167,9 @@ function fnOuvir(){
 }
 const fnSalvar = (id, d) => window.fb.setDoc(fnRef(), {[id]: d}, {merge:true});
 const fnLista = () => Object.keys(fnCards).map(id => { const c = Object.assign({}, fnCards[id], {id});
-  if(c.etapa==="retorno"){ c.etapa = "acomp"; c.etiquetas = Array.from(new Set((c.etiquetas||[]).concat([FN_RET]))); }
+  const fc = FN_FUNIS[c.funil||"cs"] || FN_FUNIS.cs;
+  if(fc.etapas){ if(!fc.etapas.some(e=>e.id===c.etapa)) c.etapa = fc.etapas[0].id; }
+  else if(c.etapa==="retorno"){ c.etapa = "acomp"; c.etiquetas = Array.from(new Set((c.etiquetas||[]).concat([FN_RET]))); }
   else if(c.etapa && !FN_ETAPAS.some(e=>e.id===c.etapa)) c.etapa = "acomp";
   return c; }).filter(c => c && !c._apagado && c.cliente && (c.funil||"cs") === fnFunil);
 let fnCarregado = false;
@@ -11141,6 +11177,14 @@ function fnExemplos(){
   const d = n => { const x = new Date(); x.setDate(x.getDate()+n); return iso(x); };
   const ts = n => { const x = new Date(); x.setDate(x.getDate()-n); return x.toISOString(); };
   const h = (txt, n) => [{em:ts(n||1), por:"Exemplo", tipo:"fu", txt}];
+  if(fnFunil === "gestores") return [
+    {id:"ex_g1", funil:"gestores", cliente:"Carlos Duarte", cidade:"Penha", resp:"kuka", etapa:"checar", etapaEm:ts(1), comercial:"sem", etiquetas:["Seguro"], proxFollow:d(0), recebidoDe:"Sharon", historico:h("Recebido da Sharon: sistema ligado, já tem Seguro Elétron")},
+    {id:"ex_g2", funil:"gestores", cliente:"Jair Mattos Pontes", cidade:"Itajaí", resp:"thiago", etapa:"m1", etapaEm:ts(10), comercial:"sem", etiquetas:["Aguardando leitura"], proxFollow:d(3), historico:h("Aguardando a leitura da concessionária para fechar o relatório", 3)},
+    {id:"ex_g3", funil:"gestores", cliente:"Gessica da Rosa", cidade:"São José", resp:"thiago", etapa:"m2", etapaEm:ts(6), comercial:"apresentado", etiquetas:["Preventiva"], proxFollow:d(2), servico:"manut", valor:900, historico:h("Apresentei o relatório do mês 2 e a preventiva junto", 2)},
+    {id:"ex_g4", funil:"gestores", cliente:"Diego Vidaletti", cidade:"São José", resp:"kuka", etapa:"m3", etapaEm:ts(4), comercial:"negociacao", etiquetas:["Seguro","Cooperativa"], proxFollow:d(1), servico:"seguro", valor:640, historico:h("Gostou do seguro, ficou de confirmar com a esposa")},
+    {id:"ex_g5", funil:"gestores", cliente:"Maria do Carmo Galatto", cidade:"Itajaí", resp:"thiago", etapa:"m4", etapaEm:ts(5), comercial:"sem", etiquetas:["Degustação"], proxFollow:d(0), historico:h("Último relatório da degustação esta semana", 1)},
+    {id:"ex_g6", funil:"gestores", cliente:"Roberto Paganini", cidade:"Criciúma", resp:"kuka", etapa:"m2", etapaEm:ts(3), comercial:"fechado", comercialEm:ts(0), etiquetas:["Expansão"], servico:"ampliacao", valor:5200, historico:h("Fechou a expansão de 2 kW depois do relatório do mês 2", 0)}
+  ];
   if(fnFunil === "felipe") return [
     {id:"ex_f1", cliente:"Mercado Bom Preço", cidade:"Itajaí", resp:"felipe", origem:"prosp", etapa:"carteira", etapaEm:ts(1), etiquetas:["Expansão"], proxFollow:d(0), historico:h("Visitei a região e deixei cartão. Usina de 20 kWp, conta ainda alta")},
     {id:"ex_f2", cliente:"Usina Schmitt", cidade:"Navegantes", resp:"felipe", origem:"solarz", etapa:"acomp", etapaEm:ts(3), etiquetas:["Preventiva"], proxFollow:d(2), historico:h("SolarZ apontou queda de geração de 18%. Liguei e agendei visita", 2)},
@@ -11163,12 +11207,12 @@ const fnBase = () => { const l = fnLista(); return (l.length || !fnCarregado) ? 
 function fnTrocarFunil(v){
   const [f,o] = String(v||"cs").split(":"); fnFunil = FN_FUNIS[f] ? f : "cs"; fnOrigem = o||"";
   try { localStorage.setItem("ello-fn-funil", fnFunil+(fnOrigem?":"+fnOrigem:"")); } catch(e) {}
-  $("#fnResp").value = ""; $("#fnTag").value = ""; renderFunil();
+  $("#fnResp").value = ""; $("#fnTag").value = ""; renderFunil(); $("#fnBoard").scrollLeft = 0;
 }
 const fnVendCor = id => { const i = (cfg.vendedores||[]).findIndex(v=>v.id===id); return COLORS[(i<0?0:i) % COLORS.length]; };
 const fnIni = n => String(n||"?").trim().slice(0,1).toUpperCase();
 function fnFuSt(c){
-  if(c.etapa==="fechado") return "fim"; if(c.etapa==="perdido") return "perd"; if(c.etapa==="delegado") return "del";
+  if(c.etapa==="fechado" || c.etapa==="fim") return "fim"; if(c.etapa==="perdido") return "perd"; if(c.etapa==="delegado") return "del";
   if(!c.proxFollow) return "sem"; if(c.proxFollow < todayISO) return "atr"; if(c.proxFollow === todayISO) return "hoje"; return "ok";
 }
 function fnUsuario(){ const u = window.APPAUTH && window.APPAUTH.usuarioAtual; return u ? (u.nome || String(u.email||"").split("@")[0]) : ""; }
@@ -11180,7 +11224,8 @@ function fnFiltros(){
   $("#fnFunil").value = fnFunil + (fnOrigem?":"+fnOrigem:"");
   $("#fnTit").textContent = fnCfg().titulo + (fnOrigem ? " · " + fnOrigNome(fnOrigem) : "");
   $("#fnSub").textContent = fnCfg().sub;
-  $("#fnNovo").textContent = fnFunil==="cs" ? "+ Novo cliente" : "+ Novo lead";
+  $("#fnNovo").textContent = fnFunil==="cs" ? "+ Novo cliente" : fnFunil==="gestores" ? "+ Nova usina" : "+ Novo lead";
+  $("#fnVis").hidden = !fnEhG(); $$("#fnVis button").forEach(b=>b.classList.toggle("on", b.dataset.vis===fnVisao));
   const ts = $("#fnTag"), kt = ts.value; const set = new Set(fnCfg().tags || FN_TAGS.map(t=>t.n)); fnLista().forEach(c => (c.etiquetas||[]).forEach(t=>set.add(t)));
   ts.innerHTML = '<option value="">Todas</option>' + Array.from(set).map(t=>'<option>'+esc(t)+'</option>').join(""); ts.value = kt;
 }
@@ -11200,25 +11245,35 @@ function renderFunil(){ fnOuvir(); fnFiltros(); renderFunilBoard(); }
 function renderFunilBoard(){
   const cards = fnFiltrados(); const mes = todayISO.slice(0,7);
   $("#fnDemo").hidden = !(fnCarregado && !fnLista().length);
-  const ativos = cards.filter(c=>!["fechado","perdido","delegado"].includes(c.etapa)); const abertos = ativos;
+  const G = fnEhG();
+  const ativos = cards.filter(c=>!["fechado","perdido","delegado","fim"].includes(c.etapa)); const abertos = ativos;
   const atr = ativos.filter(c=>fnFuSt(c)==="atr").length, hoje = ativos.filter(c=>fnFuSt(c)==="hoje").length;
-  const neg = cards.filter(c=>c.etapa==="negociacao"); const fechM = cards.filter(c=>c.etapa==="fechado" && (c.etapaEm||"").startsWith(mes));
+  const neg = cards.filter(c=>fnComSt(c)==="negociacao"); const fechM = cards.filter(c=>fnComSt(c)==="fechado" && ((G ? c.comercialEm : c.etapaEm)||"").startsWith(mes));
   const perdM = cards.filter(c=>c.etapa==="perdido" && (c.etapaEm||"").startsWith(mes));
   const conv = (fechM.length+perdM.length) ? fechM.length/(fechM.length+perdM.length) : NaN;
-  $("#fnKpis").innerHTML = [
+  const semProp = ativos.filter(c=>fnComSt(c)==="sem" && ["m2","m3","m4"].includes(c.etapa)).length;
+  $("#fnKpis").innerHTML = (G ? [
+    ["Usinas em acompanhamento", INT(abertos.length), ""],
+    ["Follow-ups atrasados", INT(atr), atr?"bad":""],
+    ["Mês 2+ sem proposta", INT(semProp), semProp?"warn":""],
+    ["Com proposta", PCT(cards.length ? cards.filter(c=>fnComSt(c)!=="sem").length/cards.length : NaN), ""],
+    ["Em negociação", BRL(neg.reduce((a,c)=>a+(+c.valor||0),0)), "warn"],
+    ["Fechado no mês", BRL(fechM.reduce((a,c)=>a+(+c.valor||0),0)), "ok"]
+  ] : [
     ["Clientes em acompanhamento", INT(abertos.length), ""],
     ["Follow-ups atrasados", INT(atr), atr?"bad":""],
     ["Follow-ups para hoje", INT(hoje), hoje?"warn":""],
     ["Em negociação", BRL(neg.reduce((a,c)=>a+(+c.valor||0),0)), "warn"],
     ["Fechado no mês", BRL(fechM.reduce((a,c)=>a+(+c.valor||0),0)), "ok"],
     ["Retornos futuros", INT(ativos.filter(fnTemRet).length), ""]
-  ].map(k=>'<div class="fn-kpi '+k[2]+'"><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
-  $("#fnBoard").innerHTML = fnCols().map(e => {
-    const lst = cards.filter(c => (c.etapa||"carteira") === e.id).sort((a,b)=>{
+  ]).map(k=>'<div class="fn-kpi '+k[2]+'"><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
+  const porCom = G && fnVisao === "com"; const primeira = fnCols()[0].id;
+  $("#fnBoard").innerHTML = (porCom ? FN_COM : fnCols()).map(e => {
+    const lst = cards.filter(c => porCom ? fnComSt(c) === e.id : (c.etapa||"carteira") === e.id).sort((a,b)=>{
       const fa = a.proxFollow||"9999", fb2 = b.proxFollow||"9999"; return fa===fb2 ? (b.etapaEm||"").localeCompare(a.etapaEm||"") : fa.localeCompare(fb2); });
     const tot = lst.reduce((a,c)=>a+(+c.valor||0),0);
-    return '<div class="fn-col" data-etapa="'+e.id+'" style="--c:'+e.c+'"><div class="fn-colh"><h4>'+esc(e.nome)+'<span>'+lst.length+'</span></h4><p>'+esc(e.sub)+'</p>'+(tot?'<div class="tot">'+BRL(tot)+'</div>':'')+'</div>'+
-      (e.id==="carteira"?'<button class="fn-add" type="button" data-novo="'+e.id+'">+ '+(fnFunil==="cs"?"Adicionar cliente":"Adicionar lead")+'</button>':'')+
+    return '<div class="fn-col" '+(porCom?'data-com':'data-etapa')+'="'+e.id+'" style="--c:'+e.c+'"><div class="fn-colh"><h4>'+esc(e.nome)+'<span>'+lst.length+'</span></h4><p>'+esc(e.sub)+'</p>'+(tot?'<div class="tot">'+BRL(tot)+'</div>':'')+'</div>'+
+      (!porCom && e.id===primeira?'<button class="fn-add" type="button" data-novo="'+e.id+'">+ '+(fnFunil==="cs"?"Adicionar cliente":G?"Adicionar usina":"Adicionar lead")+'</button>':'')+
       '<div class="fn-list">'+(lst.length? lst.map(fnCardHtml).join("") : '<div class="fn-empty">Arraste um card para cá</div>')+'</div></div>';
   }).join("");
   requestAnimationFrame(fnScrollUI);
@@ -11226,7 +11281,7 @@ function renderFunilBoard(){
 function fnCardHtml(c){
   const st = fnFuSt(c), dias = dayDiff((c.etapaEm||c.criadoEm||todayISO).slice(0,10), todayISO);
   const ult = (c.historico||[]).filter(h=>h.tipo!=="sys").slice(-1)[0];
-  const fu = st==="fim" ? '<span class="fn-fu">Fechado '+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
+  const fu = st==="fim" ? '<span class="fn-fu">'+(c.etapa==="fim"?"Plano concluído ":"Fechado ")+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
     st==="del" ? '<span class="fn-fu">Delegado → '+esc(c.delegadoPara||"")+'</span>' :
     st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
@@ -11235,12 +11290,15 @@ function fnCardHtml(c){
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+dias+'d</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
     ((c.etiquetas||[]).length || c.origem ?'<div class="fn-tags">'+(c.origem?'<span class="fn-orig" style="--o:'+fnOrigCor(c.origem)+'">'+esc(fnOrigNome(c.origem))+'</span>':'')+(c.etiquetas||[]).map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+(t===FN_RET && c.proxFollow?' · '+fmtDM(c.proxFollow):'')+'</span>').join("")+'</div>':'')+
+    (c.funil==="gestores" ? (()=>{ const k = fnComInfo(c.comercial||"sem"); const prox = FN_COM[FN_COM.findIndex(x=>x.id===k.id)+1];
+      return '<button type="button" class="fn-com" data-cm="'+(prox?prox.id:'')+'" style="--k:'+k.c+'" title="'+(prox?'Avançar para '+esc(prox.nome):'Negócio fechado')+'">'+esc(k.nome)+(prox?' ›':' ✓')+'</button>'+
+        ((k.id==="sem" && ["m2","m3","m4"].includes(c.etapa)) ? '<div class="fn-hint">'+(c.etapa==="m4"?"Última chance: apresentar antes do fim da degustação":"Hora de apresentar seguro ou preventiva")+'</div>' : ''); })() : '')+
     (ult?'<div class="fn-last">'+esc(ult.txt)+'</div>':'')+
     '<div class="fn-foot">'+fu+(+c.valor?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
       '<span class="fn-resp"><span class="fn-av" style="--a:'+fnVendCor(c.resp)+'">'+esc(fnIni(vName(c.resp)))+'</span>'+esc(vName(c.resp)||"")+'</span>'+
       '<span class="fn-mv">'+(FN_PAUSA.includes(c.etapa) ? '<button type="button" data-mv="ret" title="Retomar o acompanhamento">↺</button>' :
         (i>0?'<button type="button" data-mv="-1" title="Etapa anterior">‹</button>':'')+(i>=0 && i<fnCols().length-1?'<button type="button" data-mv="1" title="'+(fnCols()[i+1].id==="delegado"?'Delegar para Kuka ou Thiago':'Próxima etapa')+'">›</button>':''))+'</span></div>'+
-    (c.delegadoDe?'<div class="fn-sub" style="margin-top:6px">Delegado por '+esc(c.delegadoDe)+'</div>':'')+'</div>';
+    (c.delegadoDe?'<div class="fn-sub" style="margin-top:6px">Delegado por '+esc(c.delegadoDe)+'</div>':'')+(c.recebidoDe?'<div class="fn-sub" style="margin-top:6px">Recebido da CS '+esc(c.recebidoDe)+'</div>':'')+'</div>';
 }
 /* ---- mover de etapa (com integração ao dashboard) ---- */
 async function fnMover(id, etapa, extra){
@@ -11258,12 +11316,12 @@ async function fnMover(id, etapa, extra){
 }
 async function fnSincNegocio(id, c){
   if(!db) return; const nid = "f_"+id; const tem = realDeals.some(d=>d.id===nid);
-  const st = c.etapa==="negociacao" ? "aberto" : c.etapa==="fechado" ? "ganho" : (c.etapa==="perdido" && c.negEntrada) ? "perdido" : null;
+  const k = fnComSt(c); const st = k==="negociacao" ? "aberto" : k==="fechado" ? "ganho" : null;
   if(!st){ if(tem) await db.doc("negocios/"+nid).delete(); return; }
   const prev = realDeals.find(d=>d.id===nid) || {};
   const body = Object.assign({}, prev, { cliente:c.cliente, vendedor:c.resp, servico:c.servico || (cfg.servicos||[])[0]?.id || "", valor:Math.max(0,+c.valor||0), status:st,
     entrada: c.negEntrada || todayISO, fechamento: st==="aberto" ? "" : todayISO, motivo: st==="perdido" ? (c.motivo||"Outro") : "",
-    obs: (c.funil==="felipe" ? "Funil Comercial" : "Funil CS")+(c.origem?" · "+fnOrigNome(c.origem):"")+(c.protocolo?" · #"+c.protocolo:""), origem:"funil_cs", leadOrigem:c.origem||"", funil:c.funil||"cs", funilId:id, atualizadoEm:new Date().toISOString(), _apagado:false });
+    obs: (c.funil==="felipe" ? "Funil Comercial" : c.funil==="gestores" ? "Funil Gestores de Usinas" : "Funil CS")+(c.origem?" · "+fnOrigNome(c.origem):"")+(c.protocolo?" · #"+c.protocolo:""), origem:"funil_cs", leadOrigem:c.origem||"", funil:c.funil||"cs", funilId:id, atualizadoEm:new Date().toISOString(), _apagado:false });
   if(prev.status === st && prev.fechamento) body.fechamento = prev.fechamento;
   delete body.id; if(!tem) body.criadoEm = new Date().toISOString();
   await db.doc("negocios/"+nid).set(body);
@@ -11289,7 +11347,27 @@ async function fnDelegarRapido(pid){
   const de = c.etapa || "carteira";
   fnAplicarDeleg(c, pid, ($("#fmDelMot")||{}).value ? $("#fmDelMot").value.trim() : "", fnUsuario());
   c.etapa = "delegado"; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
-  try { await fnSalvar(E.id, c); await fnSincNegocio(E.id, c); toast("Delegado para "+vName(pid)); fnFechar(); } catch(e){ handleWriteErr(e); }
+  try { await fnSalvar(E.id, c); await fnSincNegocio(E.id, c); await fnCriarNoGestores(E.id, c); toast("Delegado para "+vName(pid)+". Já está no funil dos Gestores de Usinas."); fnFechar(); } catch(e){ handleWriteErr(e); }
+}
+/* ---- selo comercial (gestores) ---- */
+async function fnSetCom(id, val){
+  const c = Object.assign({}, fnCards[id]||{}); if(!c.cliente || !val) return;
+  if(val === "fechado" && (!(+c.valor>0) || !c.servico)){ fnAbrir(id, {comAlvo:"fechado", aviso:"Para fechar, informe o serviço e o valor."}); return; }
+  const de = c.comercial||"sem"; if(de === val) return;
+  c.comercial = val; c.comercialEm = new Date().toISOString(); c.atualizadoEm = c.comercialEm;
+  if(val === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
+  c.historico = (c.historico||[]).concat([{em:c.comercialEm, por:fnUsuario(), tipo:"sys", txt:"Comercial: "+fnComInfo(de).nome+" → "+fnComInfo(val).nome}]);
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(val==="fechado" ? "Negócio fechado! Já está no dashboard." : fnComInfo(val).nome); } catch(e){ handleWriteErr(e); }
+}
+/* ---- cliente delegado pela CS cai no funil dos gestores ---- */
+async function fnCriarNoGestores(srcId, c){
+  const gid = "g_" + srcId; if(fnCards[gid] && !fnCards[gid]._apagado) return;
+  const agora = new Date().toISOString();
+  const notas = (c.historico||[]).filter(h=>h.tipo==="fu").slice(-3);
+  const g = { funil:"gestores", cliente:c.cliente, cidade:c.cidade||"", protocolo:c.protocolo||"", telefone:c.telefone||"", resp:c.delegadoParaId, etapa:"checar", etapaEm:agora, criadoEm:agora,
+    comercial:"sem", etiquetas:(c.etiquetas||[]).filter(t=>t!==FN_RET), proxFollow:todayISO, recebidoDe:c.delegadoDe||"", origemCsId:srcId, obs:c.delegadoMotivo||"",
+    historico:[{em:agora, por:fnUsuario(), tipo:"sys", txt:"Recebido da CS "+(c.delegadoDe||"")+(c.etapa==="fechado"||c.servico ? " · já vendido/negociado: "+(c.servico?sName(c.servico):"")+(+c.valor?" "+BRL(+c.valor):"") : "")+(c.delegadoMotivo?" · "+c.delegadoMotivo:"")}].concat(notas) };
+  await fnSalvar(gid, g);
 }
 /* ---- modal ---- */
 function fnAbrir(id, opt){
@@ -11297,12 +11375,12 @@ function fnAbrir(id, opt){
   const rSel = $("#fnResp").value, eu = acharMeuVend();
   const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", funil: fnFunil, origem: fnOrigem, resp: (fnCfg().resp.includes(eu) ? eu : (rSel && rSel!=="cs" && rSel!=="*" ? rSel : fnCfg().respPadrao)), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(fnLista().find(x=>x.id===id) || Object.assign({}, fnCards[id], {id})));
   const alvo = opt.etapaAlvo || c.etapa || "carteira";
-  fnEdit = {id, c, alvo, tags:new Set(c.etiquetas||[])};
+  fnEdit = {id, c, alvo, tags:new Set(c.etiquetas||[]), com: opt.comAlvo || c.comercial || "sem"};
   const vs = cfg.vendedores||[], ss = cfg.servicos||[];
   const tagsUsadas = []; fnLista().forEach(x => (x.etiquetas||[]).forEach(t => tagsUsadas.push(t)));
   const tagsAll = Array.from(new Set((fnCfg().tags || FN_TAGS.map(t=>t.n)).concat(tagsUsadas, c.etiquetas||[])));
   $("#fnModalHost").innerHTML = '<div class="fn-ov" id="fnOv"><div class="fn-modal" role="dialog" aria-modal="true" aria-labelledby="fnMT">'+
-    '<div class="fn-mh"><div><h3 id="fnMT">'+(novo?(fnFunil==="cs"?"Novo cliente no funil":"Novo lead · Felipe"):esc(c.cliente))+'</h3><p>'+(novo?(fnFunil==="cs" ? "Entra em Cliente assumido. O foco agora é ganhar o cliente e acompanhar até o sistema ligar." : "Entra em Lead recebido. Escolha de onde veio o lead."):"Na etapa "+esc(fnEtapa(c.etapa).nome)+(c.criadoEm?" · no funil desde "+fmtDM(c.criadoEm.slice(0,10)):""))+'</p></div><button class="fn-x" type="button" data-fx="close" aria-label="Fechar">✕</button></div>'+
+    '<div class="fn-mh"><div><h3 id="fnMT">'+(novo?(fnFunil==="cs"?"Novo cliente no funil":fnFunil==="gestores"?"Nova usina":"Novo lead · Felipe"):esc(c.cliente))+'</h3><p>'+(novo?(fnFunil==="cs" ? "Entra em Cliente assumido. O foco agora é ganhar o cliente e acompanhar até o sistema ligar." : fnFunil==="gestores" ? "Entra em Checar sistema. Normalmente a usina chega sozinha quando a CS delega." : "Entra em Lead recebido. Escolha de onde veio o lead."):"Na etapa "+esc(fnEtapa(c.etapa).nome)+(c.criadoEm?" · no funil desde "+fmtDM(c.criadoEm.slice(0,10)):""))+'</p></div><button class="fn-x" type="button" data-fx="close" aria-label="Fechar">✕</button></div>'+
     (opt.aviso?'<div class="fn-warn">'+esc(opt.aviso)+'</div>':'')+
     '<div class="fn-steps" id="fnSteps">'+fnCols().map(e=>'<button type="button" data-et="'+e.id+'" style="--c:'+e.c+'" class="'+(e.id===alvo?'on':'')+'">'+esc(e.nome)+'</button>').join("")+'</div>'+
     '<div class="fn-sec"><h5>Cliente</h5><div class="fn-g3">'+
@@ -11311,7 +11389,7 @@ function fnAbrir(id, opt){
       '<div class="fld"><label for="fmCid">Cidade</label><input id="fmCid" maxlength="60" value="'+esc(c.cidade||"")+'" placeholder="Itajaí"></div>'+
       '<div class="fld"><label for="fmProt">Protocolo / nº</label><input id="fmProt" maxlength="40" value="'+esc(c.protocolo||"")+'"></div>'+
       '<div class="fld"><label for="fmTel">Telefone</label><input id="fmTel" maxlength="30" value="'+esc(c.telefone||"")+'" placeholder="(47) 9…"></div>'+
-      ((c.funil||"cs")!=="cs" ? '<div class="fld"><label for="fmOrig">Origem do lead</label><select id="fmOrig"><option value="">—</option>'+FN_ORIGENS.map(o=>'<option value="'+o.id+'"'+(o.id===c.origem?' selected':'')+'>'+esc(o.n)+'</option>').join("")+'</select></div>' : '')+
+      ((c.funil||"cs")==="felipe" ? '<div class="fld"><label for="fmOrig">Origem do lead</label><select id="fmOrig"><option value="">—</option>'+FN_ORIGENS.map(o=>'<option value="'+o.id+'"'+(o.id===c.origem?' selected':'')+'>'+esc(o.n)+'</option>').join("")+'</select></div>' : '')+
     '</div></div>'+
     '<div class="fn-sec"><h5>Etiquetas</h5><div class="fn-tagpick" id="fnTagPick">'+tagsAll.map(t=>'<button type="button" data-tg="'+esc(t)+'" style="--t:'+fnTagCor(t)+'" class="'+(fnEdit.tags.has(t)?'on':'')+'">'+esc(t)+'</button>').join("")+'<input id="fmNovaTag" maxlength="24" placeholder="+ nova etiqueta (Enter)"></div></div>'+
     '<div class="fn-sec"><h5>Follow-up</h5><div class="fn-g2">'+
@@ -11324,7 +11402,7 @@ function fnAbrir(id, opt){
       '<div class="fld"><label for="fmDel">Delegar para</label><select id="fmDel"><option value="">'+(c.etapa==="delegado"?"Manter ("+esc(c.delegadoPara||"")+")":"Não delegar")+'</option>'+fnDelegOpcoes().filter(o=>!(c.etapa==="delegado"&&c.delegadoParaId===o.id)).map(o=>'<option value="'+esc(o.id)+'">'+esc(o.nome)+'</option>').join("")+'</select></div>'+
       '<div class="fld"><label for="fmDelMot">Motivo / orientação</label><input id="fmDelMot" maxlength="200" placeholder="Ex.: sistema ligado em 15/10, medidor trocado"></div>'+
     '</div>'+(c.delegadoPara?'<span class="hint" style="font-size:11px;color:var(--dim)">Delegado para '+esc(c.delegadoPara)+(c.delegadoDe?' por '+esc(c.delegadoDe):'')+'</span>':'')+'</div>'+
-    '<div class="fn-sec" id="fnVenda"><h5>Venda</h5><div class="fn-g3">'+
+    '<div class="fn-sec" id="fnVenda"><h5>Venda</h5>'+((c.funil||fnFunil)==="gestores" ? '<div class="fn-seg" id="fnSeg">'+FN_COM.map(k=>'<button type="button" data-sg="'+k.id+'" style="--k:'+k.c+'" class="'+(k.id===fnEdit.com?'on':'')+'">'+esc(k.nome)+'</button>').join("")+'</div>' : '')+'<div class="fn-g3">'+
       '<div class="fld"><label for="fmSvc">Serviço</label><select id="fmSvc"><option value="">—</option>'+(fnSvcFunil().length ? fnSvcFunil().concat(ss.filter(x=>x.id===c.servico && !fnSvcFunil().includes(x))) : ss).map(s=>'<option value="'+esc(s.id)+'"'+(s.id===c.servico?' selected':'')+'>'+esc(s.nome)+'</option>').join("")+'</select></div>'+
       '<div class="fld"><label for="fmVal">Valor (R$)</label><input id="fmVal" type="number" min="0" step="0.01" value="'+esc(c.valor||"")+'"></div>'+
       '<div class="fld" id="fmMotW"><label for="fmMot">Motivo da perda</label><select id="fmMot"><option value="">—</option>'+["Preço","Sem interesse","Sem retorno do cliente","Fechou com concorrente","Sem condição financeira","Outro"].map(m=>'<option'+(m===c.motivo?' selected':'')+'>'+m+'</option>').join("")+'</select></div>'+
@@ -11333,9 +11411,9 @@ function fnAbrir(id, opt){
     '<div class="fn-mf"><div>'+(novo?'':'<button class="pvbtn danger sm" type="button" data-fx="del">Excluir card</button>')+'</div><div style="display:flex;gap:8px"><button class="pvbtn ghost" type="button" data-fx="close">Cancelar</button><button class="pvbtn" type="button" data-fx="save">'+(novo?"Adicionar ao funil":"Salvar")+'</button></div></div>'+
   '</div></div>';
   fnVendaVis();
-  setTimeout(()=>{ const el = opt.etapaAlvo==="fechado" ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
+  setTimeout(()=>{ const el = (opt.etapaAlvo==="fechado" || opt.comAlvo==="fechado") ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
 }
-function fnVendaVis(){ if(!fnEdit || fnEdit.rapido) return; const a = fnEdit.alvo, i = fnIdx(a); $("#fnVenda").hidden = i < 2 || a==="retorno" || a==="delegado"; $("#fmMotW").hidden = a !== "perdido";
+function fnVendaVis(){ if(!fnEdit || fnEdit.rapido) return; const a = fnEdit.alvo, i = fnIdx(a); $("#fnVenda").hidden = fnEhG() ? false : (i < 2 || a==="retorno" || a==="delegado"); $("#fmMotW").hidden = a !== "perdido";
   $("#fmFuDtL").textContent = fnEdit.tags.has(FN_RET) ? "Data do retorno" : "Próximo follow-up"; $("#fnDeleg").classList.toggle("on", a==="delegado"); }
 function fnFechar(){ fnEdit = null; $("#fnModalHost").innerHTML = ""; renderFunilBoard(); }
 async function fnGravarModal(){
@@ -11344,12 +11422,12 @@ async function fnGravarModal(){
   if($("#fmOrig")){ c.origem = $("#fmOrig").value; if(!c.origem){ toast("Escolha a origem do lead.", true); $("#fmOrig").focus(); return; } }
   Object.assign(c, { cliente:cli, resp:$("#fmResp").value, cidade:$("#fmCid").value.trim(), protocolo:$("#fmProt").value.trim(), telefone:$("#fmTel").value.trim(),
     etiquetas:Array.from(E.tags), proxFollow:$("#fmFuDt").value, servico:$("#fmSvc").value, valor:Math.max(0, parseFloat($("#fmVal").value)||0), motivo:$("#fmMot").value, obs:$("#fmObs").value.trim() });
-  if(E.alvo==="fechado" && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
+  if((E.alvo==="fechado" || E.com==="fechado") && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
   if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo da perda.", true); return; }
   const del = $("#fmDel").value, delMot = $("#fmDelMot").value.trim(), quem = fnUsuario();
   if(E.tags.has(FN_RET) && !c.proxFollow){ toast("Retorno futuro: escolha a data do retorno.", true); $("#fmFuDt").focus(); return; }
   if(E.alvo==="delegado" && !del && !(c.etapa==="delegado" && c.delegadoPara)){ toast("Escolha para quem delegar.", true); $("#fmDel").focus(); return; }
-  if(del){ fnAplicarDeleg(c, del, delMot, quem); E.alvo = "delegado"; }
+  if(del){ fnAplicarDeleg(c, del, delMot, quem); E.alvo = "delegado"; E.criarG = true; }
   const agora = new Date().toISOString(); const txt = $("#fmFuTxt").value.trim();
   c.historico = c.historico || [];
   if(txt){ c.historico.push({em:agora, por:fnUsuario(), tipo:"fu", txt}); c.ultimoFollow = agora; }
@@ -11360,7 +11438,8 @@ async function fnGravarModal(){
   else if(de !== E.alvo){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(E.alvo).nome}); c.etapa = E.alvo; c.etapaEm = agora; }
   if(c.etapa==="negociacao" && !c.negEntrada) c.negEntrada = todayISO;
   c.atualizadoEm = agora; delete c.id;
-  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(E.id ? (c.etapa==="fechado" && de!=="fechado" ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
+  if(fnEhG()){ const nv = E.com || c.comercial || "sem"; if(nv !== (c.comercial||"sem")){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Comercial: "+fnComInfo(c.comercial||"sem").nome+" → "+fnComInfo(nv).nome}); c.comercial = nv; c.comercialEm = agora; if(nv==="negociacao" && !c.negEntrada) c.negEntrada = todayISO; } }
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); if(E.criarG) await fnCriarNoGestores(id, c); toast(E.id ? ((c.etapa==="fechado" && de!=="fechado") || (E.com==="fechado") ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
   catch(e){ handleWriteErr(e); }
 }
 let fnDelOk = false;
@@ -11375,6 +11454,7 @@ $("#fnModalHost").addEventListener("click", async ev=>{
       fnDelOk = false; try{ await fnSalvar(E.id, {_apagado:true, apagadoEm:new Date().toISOString()}); if(realDeals.some(d=>d.id==="f_"+E.id)) await db.doc("negocios/f_"+E.id).delete(); toast("Card excluído"); fnFechar(); }catch(e){ handleWriteErr(e); } }
     return;
   }
+  const sg = ev.target.closest("[data-sg]"); if(sg){ E.com = sg.dataset.sg; $$("#fnSeg button").forEach(b=>b.classList.toggle("on", b===sg)); return; }
   const et = ev.target.closest("[data-et]"); if(et){ E.alvo = et.dataset.et; $$("#fnSteps button").forEach(b=>b.classList.toggle("on", b===et)); fnVendaVis(); return; }
   const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); if(t===FN_RET){ fnVendaVis(); if(E.tags.has(t)){ const f=$("#fmFuDt"); if(!f.value || f.value<=todayISO){ const d=new Date(); d.setDate(d.getDate()+30); f.value=iso(d); } toast("Retorno futuro: confira a data do retorno"); } } return; }
   const q = ev.target.closest("[data-q]"); if(q){ const ta = $("#fmFuTxt"); ta.value = (ta.value ? ta.value.replace(/\s*$/," ") : "") + q.dataset.q + (q.dataset.q==="Sem resposta"?"":": "); ta.focus(); return; }
@@ -11393,6 +11473,7 @@ $("#fnBoard").addEventListener("click", ev=>{
   const add = ev.target.closest("[data-novo]"); if(add){ fnAbrir(null, {etapa:add.dataset.novo}); return; }
   const card = ev.target.closest(".fn-card"); if(!card) return; const id = card.dataset.id;
   if(id.startsWith("ex_")){ toast("Esse é um exemplo. Clique em + Novo cliente para cadastrar um de verdade."); return; }
+  const cm = ev.target.closest("[data-cm]"); if(cm){ ev.stopPropagation(); if(cm.dataset.cm) fnSetCom(id, cm.dataset.cm); return; }
   const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnCards[id];
     if(mv.dataset.mv==="ret"){ fnMover(id, "acomp"); return; }
     const i = fnIdx(c.etapa||"carteira") + (+mv.dataset.mv); const cols = fnCols(); if(i>=0 && cols[i]) fnMover(id, cols[i].id); return; }
@@ -11401,9 +11482,10 @@ $("#fnBoard").addEventListener("click", ev=>{
 $("#fnBoard").addEventListener("dragstart", ev=>{ const c = ev.target.closest(".fn-card"); if(!c) return; fnDrag = c.dataset.id; c.classList.add("dragging"); try{ ev.dataTransfer.setData("text/plain", fnDrag); ev.dataTransfer.effectAllowed="move"; }catch(e){} });
 $("#fnBoard").addEventListener("dragend", ev=>{ const c = ev.target.closest(".fn-card"); if(c) c.classList.remove("dragging"); $$("#fnBoard .fn-col.over").forEach(x=>x.classList.remove("over")); });
 $("#fnBoard").addEventListener("dragover", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); $$("#fnBoard .fn-col.over").forEach(x=>{ if(x!==col) x.classList.remove("over"); }); col.classList.add("over"); });
-$("#fnBoard").addEventListener("drop", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); col.classList.remove("over"); const id = fnDrag; fnDrag = null; fnMover(id, col.dataset.etapa); });
+$("#fnBoard").addEventListener("drop", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); col.classList.remove("over"); const id = fnDrag; fnDrag = null; if(col.dataset.com) fnSetCom(id, col.dataset.com); else fnMover(id, col.dataset.etapa); });
 ["fnQ","fnResp","fnTag","fnFu"].forEach(id=>$("#"+id).addEventListener("input", renderFunilBoard));
 $("#fnFunil").addEventListener("change", ev=>fnTrocarFunil(ev.target.value));
+$("#fnVis").addEventListener("click", ev=>{ const b = ev.target.closest("[data-vis]"); if(!b) return; fnVisao = b.dataset.vis; try{ localStorage.setItem("ello-fn-visao", fnVisao); }catch(e){} renderFunil(); });
 /* ---- rolagem lateral: botões, roda do mouse, arrastar o fundo e auto-rolagem ao arrastar card ---- */
 function fnScrollUI(){
   const b = $("#fnBoard"); const max = b.scrollWidth - b.clientWidth;
