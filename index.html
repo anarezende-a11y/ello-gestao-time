@@ -1546,7 +1546,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h15</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -2359,7 +2359,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="ctrl-row"><button class="pvbtn" type="button" id="fnNovo">+ Novo cliente</button></div>
       </div>
       <div class="fn-kpis" id="fnKpis"></div>
-      <div class="fn-demo" id="fnDemo" hidden><b>Exemplos</b> <span style="flex:1">Os cards marcados como EXEMPLO são só para mostrar como o funil funciona. Não são salvos e não contam no dashboard.</span></div>
+      <div class="fn-demo" id="fnDemo" hidden><b>Exemplos</b> <span style="flex:1">Os cards marcados como EXEMPLO servem para simular: dá para abrir, colocar etiqueta, mover e fechar. Nada disso é salvo nem conta no dashboard (some ao recarregar a página).</span></div>
       <div class="fn-bar">
         <div class="fld q"><label for="fnQ">Buscar</label><input id="fnQ" placeholder="Cliente, cidade ou protocolo"></div>
         <div class="fld"><label for="fnResp">Responsável</label><select id="fnResp"></select></div>
@@ -11165,7 +11165,10 @@ function fnOuvir(){
   if(fnOuvindo || !window.fb || !connected) return; fnOuvindo = true;
   window.fb.onSnapshot(fnRef(), sn => { fnCards = sn.exists() ? (sn.data()||{}) : {}; fnCarregado = true; if(!$("#v-funil").hidden && !fnEdit) renderFunil(); else if(!$("#v-funil").hidden) renderFunilBoard(); }, e => toast(permDenied(e) ? "Sem permissão para ler o funil." : "O funil ficou indisponível.", true));
 }
-const fnSalvar = (id, d) => window.fb.setDoc(fnRef(), {[id]: d}, {merge:true});
+let fnExMem = {};   // exemplos editados só na tela (simulação: nada vai pro Firebase)
+const fnEhEx = id => String(id||"").startsWith("ex_");
+const fnSalvar = (id, d) => { if(fnEhEx(id)){ fnExMem[id] = Object.assign({}, fnExMem[id]||{}, JSON.parse(JSON.stringify(d))); setTimeout(()=>{ if(!$("#v-funil").hidden) renderFunilBoard(); }, 0); return Promise.resolve(); } return window.fb.setDoc(fnRef(), {[id]: d}, {merge:true}); };
+const fnGet = id => { if(fnEhEx(id)){ const base = fnExemplos().find(x=>x.id===id) || {}; return Object.assign({}, base, fnExMem[id]||{}); } return fnCards[id]; };
 const fnLista = () => Object.keys(fnCards).map(id => { const c = Object.assign({}, fnCards[id], {id});
   const fc = FN_FUNIS[c.funil||"cs"] || FN_FUNIS.cs;
   if(fc.etapas){ if(!fc.etapas.some(e=>e.id===c.etapa)) c.etapa = fc.etapas[0].id; }
@@ -11205,7 +11208,12 @@ function fnExemplos(){
   ];
 }
 let fnVerEx = true; try { fnVerEx = localStorage.getItem("ello-fn-ex") !== "0"; } catch(e) {}
-const fnBase = () => { const l = fnLista(); if(!fnCarregado) return l; return fnVerEx ? l.concat(fnExemplos()) : l; };
+function fnExemplosVivos(){
+  const ex = fnExemplos().map(e => fnExMem[e.id] ? Object.assign({}, e, fnExMem[e.id], {id:e.id}) : e);
+  Object.keys(fnExMem).forEach(id => { if(!ex.some(e=>e.id===id) && (fnExMem[id].funil||"cs")===fnFunil) ex.push(Object.assign({}, fnExMem[id], {id})); });
+  return ex.filter(c => !c._apagado);
+}
+const fnBase = () => { const l = fnLista(); if(!fnCarregado) return l; return fnVerEx ? l.concat(fnExemplosVivos()) : l; };
 function fnTrocarFunil(v){
   const [f,o] = String(v||"cs").split(":"); fnFunil = FN_FUNIS[f] ? f : "cs"; fnOrigem = o||"";
   try { localStorage.setItem("ello-fn-funil", fnFunil+(fnOrigem?":"+fnOrigem:"")); } catch(e) {}
@@ -11289,7 +11297,7 @@ function fnCardHtml(c){
     st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   const ex = String(c.id).startsWith("ex_");
-  return '<div class="fn-card st-'+st+(ex?' ex':'')+'" draggable="'+(ex?'false':'true')+'" data-id="'+esc(c.id)+'">'+
+  return '<div class="fn-card st-'+st+(ex?' ex':'')+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+(ex?'EXEMPLO':dias+'d')+'</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
     ((c.etiquetas||[]).length || c.origem ?'<div class="fn-tags">'+(c.origem?'<span class="fn-orig" style="--o:'+fnOrigCor(c.origem)+'">'+esc(fnOrigNome(c.origem))+'</span>':'')+(c.etiquetas||[]).map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+(t===FN_RET && c.proxFollow?' · '+fmtDM(c.proxFollow):'')+'</span>').join("")+'</div>':'')+
@@ -11305,7 +11313,7 @@ function fnCardHtml(c){
 }
 /* ---- mover de etapa (com integração ao dashboard) ---- */
 async function fnMover(id, etapa, extra){
-  const c = Object.assign({}, fnCards[id]||{}); if(!c.cliente) return;
+  const c = Object.assign({}, fnGet(id)||{}); if(!c.cliente) return;
   const de = c.etapa || "carteira"; if(de === etapa && !extra) return;
   Object.assign(c, extra||{});
   if(etapa === "fechado" && (!(+c.valor > 0) || !c.servico)){ fnAbrir(id, {etapaAlvo:"fechado", aviso:"Para fechar o negócio, informe o serviço e o valor."}); return; }
@@ -11314,11 +11322,11 @@ async function fnMover(id, etapa, extra){
   c.etapa = etapa; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
   if(de !== etapa){ c.historico = (c.historico||[]).concat([{em:c.etapaEm, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(etapa).nome}]); }
   if(etapa === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
-  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(etapa==="fechado" ? "Negócio fechado! Já está no dashboard." : "Movido para "+fnEtapa(etapa).nome); }
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast((etapa==="fechado" ? (fnEhEx(id) ? "Negócio fechado" : "Negócio fechado! Já está no dashboard.") : "Movido para "+fnEtapa(etapa).nome) + (fnEhEx(id) ? " (simulação)" : "")); }
   catch(e){ handleWriteErr(e); }
 }
 async function fnSincNegocio(id, c){
-  if(!db) return; const nid = "f_"+id; const tem = realDeals.some(d=>d.id===nid);
+  if(!db || fnEhEx(id)) return; const nid = "f_"+id; const tem = realDeals.some(d=>d.id===nid);
   const k = fnComSt(c); const st = k==="negociacao" ? "aberto" : k==="fechado" ? "ganho" : null;
   if(!st){ if(tem) await db.doc("negocios/"+nid).delete(); return; }
   const prev = realDeals.find(d=>d.id===nid) || {};
@@ -11336,7 +11344,7 @@ function fnAplicarDeleg(c, pid, mot, quem){
   c.delegadoDe = vName(c.resp) || quem || fnUsuario(); c.delegadoPara = nome; c.delegadoParaId = pid; c.delegadoEm = agora; c.delegadoMotivo = mot||"";
 }
 function fnEscolherDeleg(id){
-  const c = fnLista().find(x=>x.id===id); if(!c) return;
+  const c = fnBase().find(x=>x.id===id); if(!c) return;
   fnEdit = {id, c, alvo:"delegado", tags:new Set(c.etiquetas||[]), rapido:true};
   $("#fnModalHost").innerHTML = '<div class="fn-ov" id="fnOv"><div class="fn-modal" style="width:min(460px,100%)" role="dialog" aria-modal="true" aria-labelledby="fnMT">'+
     '<div class="fn-mh"><div><h3 id="fnMT">Delegar '+esc(c.cliente)+'</h3><p>Para quem vai o acompanhamento da usina?</p></div><button class="fn-x" type="button" data-fx="close" aria-label="Fechar">✕</button></div>'+
@@ -11345,26 +11353,26 @@ function fnEscolherDeleg(id){
   '</div></div>';
 }
 async function fnDelegarRapido(pid){
-  const E = fnEdit; if(!E) return; const c = Object.assign({}, fnCards[E.id]||{});
+  const E = fnEdit; if(!E) return; const c = Object.assign({}, fnGet(E.id)||{});
   if(c.etapa==="retorno"||c.etapa==="perdido") c.etapa = "acomp";
   const de = c.etapa || "carteira";
   fnAplicarDeleg(c, pid, ($("#fmDelMot")||{}).value ? $("#fmDelMot").value.trim() : "", fnUsuario());
   c.etapa = "delegado"; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
-  try { await fnSalvar(E.id, c); await fnSincNegocio(E.id, c); await fnCriarNoGestores(E.id, c); toast("Delegado para "+vName(pid)+". Já está no funil dos Gestores de Usinas."); fnFechar(); } catch(e){ handleWriteErr(e); }
+  try { await fnSalvar(E.id, c); await fnSincNegocio(E.id, c); await fnCriarNoGestores(E.id, c); toast("Delegado para "+vName(pid)+". Já está no funil dos Gestores de Usinas."+(fnEhEx(E.id)?" (simulação)":"")); fnFechar(); } catch(e){ handleWriteErr(e); }
 }
 /* ---- selo comercial (gestores) ---- */
 async function fnSetCom(id, val){
-  const c = Object.assign({}, fnCards[id]||{}); if(!c.cliente || !val) return;
+  const c = Object.assign({}, fnGet(id)||{}); if(!c.cliente || !val) return;
   if(val === "fechado" && (!(+c.valor>0) || !c.servico)){ fnAbrir(id, {comAlvo:"fechado", aviso:"Para fechar, informe o serviço e o valor."}); return; }
   const de = c.comercial||"sem"; if(de === val) return;
   c.comercial = val; c.comercialEm = new Date().toISOString(); c.atualizadoEm = c.comercialEm;
   if(val === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
   c.historico = (c.historico||[]).concat([{em:c.comercialEm, por:fnUsuario(), tipo:"sys", txt:"Comercial: "+fnComInfo(de).nome+" → "+fnComInfo(val).nome}]);
-  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(val==="fechado" ? "Negócio fechado! Já está no dashboard." : fnComInfo(val).nome); } catch(e){ handleWriteErr(e); }
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast((val==="fechado" ? (fnEhEx(id) ? "Negócio fechado" : "Negócio fechado! Já está no dashboard.") : fnComInfo(val).nome) + (fnEhEx(id) ? " (simulação)" : "")); } catch(e){ handleWriteErr(e); }
 }
 /* ---- cliente delegado pela CS cai no funil dos gestores ---- */
 async function fnCriarNoGestores(srcId, c){
-  const gid = "g_" + srcId; if(fnCards[gid] && !fnCards[gid]._apagado) return;
+  const gid = (fnEhEx(srcId) ? "ex_g_" : "g_") + srcId; const ja = fnEhEx(gid) ? fnExMem[gid] : fnCards[gid]; if(ja && !ja._apagado) return;
   const agora = new Date().toISOString();
   const notas = (c.historico||[]).filter(h=>h.tipo==="fu").slice(-3);
   const g = { funil:"gestores", cliente:c.cliente, cidade:c.cidade||"", protocolo:c.protocolo||"", telefone:c.telefone||"", resp:c.delegadoParaId, etapa:"checar", etapaEm:agora, criadoEm:agora,
@@ -11376,7 +11384,7 @@ async function fnCriarNoGestores(srcId, c){
 function fnAbrir(id, opt){
   opt = opt || {};
   const rSel = $("#fnResp").value, eu = acharMeuVend();
-  const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", funil: fnFunil, origem: fnOrigem, resp: (fnCfg().resp.includes(eu) ? eu : (rSel && rSel!=="cs" && rSel!=="*" ? rSel : fnCfg().respPadrao)), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(fnLista().find(x=>x.id===id) || Object.assign({}, fnCards[id], {id})));
+  const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", funil: fnFunil, origem: fnOrigem, resp: (fnCfg().resp.includes(eu) ? eu : (rSel && rSel!=="cs" && rSel!=="*" ? rSel : fnCfg().respPadrao)), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(fnBase().find(x=>x.id===id) || Object.assign({}, fnGet(id), {id})));
   const alvo = opt.etapaAlvo || c.etapa || "carteira";
   fnEdit = {id, c, alvo, tags:new Set(c.etiquetas||[]), com: opt.comAlvo || c.comercial || "sem"};
   const vs = cfg.vendedores||[], ss = cfg.servicos||[];
@@ -11442,7 +11450,7 @@ async function fnGravarModal(){
   if(c.etapa==="negociacao" && !c.negEntrada) c.negEntrada = todayISO;
   c.atualizadoEm = agora; delete c.id;
   if(fnEhG()){ const nv = E.com || c.comercial || "sem"; if(nv !== (c.comercial||"sem")){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Comercial: "+fnComInfo(c.comercial||"sem").nome+" → "+fnComInfo(nv).nome}); c.comercial = nv; c.comercialEm = agora; if(nv==="negociacao" && !c.negEntrada) c.negEntrada = todayISO; } }
-  try { await fnSalvar(id, c); await fnSincNegocio(id, c); if(E.criarG) await fnCriarNoGestores(id, c); toast(E.id ? ((c.etapa==="fechado" && de!=="fechado") || (E.com==="fechado") ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); if(E.criarG) await fnCriarNoGestores(id, c); toast(fnEhEx(id) ? "Exemplo atualizado (simulação: não é salvo nem vai pro dashboard)" : E.id ? ((c.etapa==="fechado" && de!=="fechado") || (E.com==="fechado") ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
   catch(e){ handleWriteErr(e); }
 }
 let fnDelOk = false;
@@ -11475,9 +11483,8 @@ $("#fnNovo").addEventListener("click", ()=>fnAbrir(null));
 $("#fnBoard").addEventListener("click", ev=>{
   const add = ev.target.closest("[data-novo]"); if(add){ fnAbrir(null, {etapa:add.dataset.novo}); return; }
   const card = ev.target.closest(".fn-card"); if(!card) return; const id = card.dataset.id;
-  if(id.startsWith("ex_")){ toast("Esse é um exemplo. Clique em + Novo cliente para cadastrar um de verdade."); return; }
   const cm = ev.target.closest("[data-cm]"); if(cm){ ev.stopPropagation(); if(cm.dataset.cm) fnSetCom(id, cm.dataset.cm); return; }
-  const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnCards[id];
+  const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnGet(id);
     if(mv.dataset.mv==="ret"){ fnMover(id, "acomp"); return; }
     const i = fnIdx(c.etapa||"carteira") + (+mv.dataset.mv); const cols = fnCols(); if(i>=0 && cols[i]) fnMover(id, cols[i].id); return; }
   fnAbrir(id);
