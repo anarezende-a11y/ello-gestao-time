@@ -1329,6 +1329,52 @@ body {
 #mod-posvendas .fn-seg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 #mod-posvendas .fn-seg button{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted)}
 #mod-posvendas .fn-seg button.on{border-color:var(--k);color:var(--fg);background:color-mix(in srgb,var(--k) 20%,transparent)}
+#mod-posvendas .fn-board{display:flex!important;align-items:flex-start}
+#mod-posvendas .fn-col{flex:0 0 272px;width:272px}
+#mod-posvendas .fn-col.min{flex:0 0 64px;width:64px;min-height:240px;cursor:pointer}
+#mod-posvendas .fn-col.min .fn-colh{padding:10px 6px;border-bottom:0}
+#mod-posvendas .fn-col.min .fn-colh h4{flex-direction:column;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);margin:6px auto 0;font-size:13px}
+#mod-posvendas .fn-col.min .fn-colh h4 span{writing-mode:horizontal-tb;transform:rotate(180deg)}
+#mod-posvendas .fn-col.min .fn-colh p,#mod-posvendas .fn-col.min .fn-colh .tot,#mod-posvendas .fn-col.min .fn-list{display:none}
+#mod-posvendas .fn-colmin{all:unset;cursor:pointer;float:right;margin-left:6px;font-size:12px;color:var(--muted);padding:0 4px;border-radius:6px;border:1px solid var(--line)}
+#mod-posvendas .fn-col.min .fn-colmin{float:none;display:block;margin:0 auto 6px;text-align:center;width:22px}
+#mod-posvendas .fn-kpis.k8{grid-template-columns:repeat(4,minmax(0,1fr))}
+#mod-posvendas .fn-kpi.clk{cursor:pointer}
+#mod-posvendas .fn-kpi.clk:hover{border-color:var(--line-strong)}
+#mod-posvendas .fn-kpi.on{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad) inset}
+#mod-posvendas .fn-card.st-linkv{border-left-color:#ffd166;background:linear-gradient(160deg,rgba(255,209,102,.16),rgba(9,38,46,.8));border-color:rgba(255,209,102,.55)}
+#mod-posvendas .fn-linkchip{display:inline-block;margin-top:8px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(255,209,102,.16);color:#ffd166;border:1px solid rgba(255,209,102,.5)}
+#mod-posvendas .fn-pend{margin-top:8px;padding:6px 9px;border-radius:9px;background:rgba(255,77,77,.12);border:1px solid rgba(255,77,77,.45);color:#ff8080;font-size:11.5px;font-weight:700}
+#mod-posvendas .fn-pend small{display:block;font-weight:600;color:#ffb0b0;margin-top:2px}
+#mod-posvendas .fn-segval{margin-top:6px;font-family:var(--f-mono);font-size:11.5px;font-weight:700;color:var(--good)}
+#mod-posvendas .fn-x2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px;margin-top:12px}
+#mod-posvendas .fn-box{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(4,22,27,.45)}
+#mod-posvendas .fn-box h5{margin:0 0 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px;align-items:center}
+#mod-posvendas .fn-cnt{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#mod-posvendas .fn-cntitem .lin{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#mod-posvendas .fn-cntitem b{font-size:13px}
+#mod-posvendas .fn-cntitem .wk{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+#mod-posvendas .fn-plus{all:unset;cursor:pointer;padding:7px 12px;border-radius:10px;font-weight:800;font-size:12.5px;background:linear-gradient(180deg,#ffb840,#e58f0c);color:#2a1700}
+#mod-posvendas .fn-minus{all:unset;cursor:pointer;padding:6px 9px;border-radius:9px;font-weight:800;font-size:12px;border:1px solid var(--line-strong);color:var(--muted)}
+#mod-posvendas .fn-bar2{position:relative;height:10px;border-radius:999px;background:rgba(141,176,179,.15);margin:10px 0 4px;overflow:visible}
+#mod-posvendas .fn-bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--bad)}
+#mod-posvendas .fn-bar2 i.ok{background:var(--good)}
+#mod-posvendas .fn-bar2 em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);opacity:.55}
+#mod-posvendas .fn-mt{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);font-family:var(--f-mono)}
+#mod-posvendas .fn-mt .ok{color:var(--good);font-weight:800}
+#mod-posvendas .fn-crit{margin-top:10px;padding:7px 10px;border-radius:9px;background:var(--bad-soft);color:var(--bad);font-size:12px;font-weight:800}
+#mod-posvendas .fn-hisw{margin-top:10px}
+#mod-posvendas .fn-hisw summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--muted)}
+#mod-posvendas .fn-hisw table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+#mod-posvendas .fn-hisw th,#mod-posvendas .fn-hisw td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}
+#mod-posvendas .fn-hisw td.r,#mod-posvendas .fn-hisw th.r{text-align:right;font-family:var(--f-mono)}
+#mod-posvendas .fn-hisw .ok{color:var(--good);font-weight:800} #mod-posvendas .fn-hisw .bad{color:var(--bad);font-weight:800}
+#mod-posvendas .fn-oc{display:flex;flex-direction:column;gap:7px}
+#mod-posvendas .fn-ocr{display:grid;grid-template-columns:120px 1fr 84px;gap:8px;align-items:center;font-size:12px}
+#mod-posvendas .fn-ocr .t{height:8px;border-radius:999px;background:rgba(141,176,179,.15);position:relative;overflow:hidden}
+#mod-posvendas .fn-ocr .t i{position:absolute;left:0;top:0;bottom:0;background:var(--o)}
+#mod-posvendas .fn-ocr .n{font-family:var(--f-mono);text-align:right;color:var(--muted)}
+@media (max-width:900px){#mod-posvendas .fn-x2,#mod-posvendas .fn-cnt{grid-template-columns:1fr}#mod-posvendas .fn-kpis.k8{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #mod-posvendas .fn-titrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 #mod-posvendas .fn-pick{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:12px;border:1px solid rgba(245,165,36,.55);background:rgba(245,165,36,.1);color:var(--warn);font-weight:800;font-size:13px;cursor:pointer}
 #mod-posvendas .fn-pick select{all:unset;cursor:pointer;color:var(--fg);font-weight:800;padding-right:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23f5a524' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right center}
@@ -1546,7 +1592,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 16h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 17h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -2352,19 +2398,20 @@ window.APPAUTH = window.APPAUTH || {};
         <div><div class="upd"><span class="dot"></span>Jornada do cliente</div>
           <div class="fn-titrow"><h1 id="fnTit">Funil CS</h1><label class="fn-pick"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg><select id="fnFunil" aria-label="Escolher funil">
             <optgroup label="Customer Success"><option value="cs">CS · Adriele e Sharon</option></optgroup>
-            <optgroup label="Comercial · Felipe"><option value="felipe">Felipe · todas as origens</option><option value="felipe:solarz">Felipe · SolarZ</option><option value="felipe:prosp">Felipe · Prospecção</option><option value="felipe:chamou">Felipe · Cliente chamou</option><option value="felipe:indic">Felipe · Indicação</option></optgroup>
+            <optgroup label="Comercial · Felipe"><option value="felipe">Felipe · todas as origens</option><option value="felipe:solarz">Felipe · SolarZ</option><option value="felipe:prosp">Felipe · Prospecção</option><option value="felipe:chamou">Felipe · Cliente chamou</option><option value="felipe:indic">Felipe · Indicação</option><option value="felipe:ano1">Felipe · Prospecção 1 ano</option></optgroup>
             <optgroup label="Gestores de Usinas"><option value="gestores">Kuka e Thiago · usinas</option></optgroup>
           </select></label></div>
           <p class="pvsub" id="fnSub"></p></div>
         <div class="ctrl-row"><button class="pvbtn" type="button" id="fnNovo">+ Novo cliente</button></div>
       </div>
       <div class="fn-kpis" id="fnKpis"></div>
+      <div id="fnExtra"></div>
       <div class="fn-demo" id="fnDemo" hidden><b>Exemplos</b> <span style="flex:1">Os cards marcados como EXEMPLO servem para simular: dá para abrir, colocar etiqueta, mover e fechar. Nada disso é salvo nem conta no dashboard (some ao recarregar a página).</span></div>
       <div class="fn-bar">
         <div class="fld q"><label for="fnQ">Buscar</label><input id="fnQ" placeholder="Cliente, cidade ou protocolo"></div>
         <div class="fld"><label for="fnResp">Responsável</label><select id="fnResp"></select></div>
         <div class="fld"><label for="fnTag">Etiqueta</label><select id="fnTag"></select></div>
-        <div class="fld"><label for="fnFu">Follow-up</label><select id="fnFu"><option value="">Todos</option><option value="atr">Atrasados</option><option value="hoje">Para hoje</option><option value="sem">Sem próximo follow-up</option></select></div>
+        <div class="fld"><label for="fnFu">Follow-up</label><select id="fnFu"><option value="">Todos</option><option value="atr">Atrasados</option><option value="hoje">Para hoje</option><option value="sem">Sem próximo follow-up</option><option value="pend" id="fnFuPend">Pendências técnicas abertas</option></select></div>
       </div>
       <div class="fn-vis" id="fnVis" hidden><button type="button" data-vis="mes" class="on">Por mês</button><button type="button" data-vis="com">Visão comercial</button></div>
       <div class="fn-nav"><span class="fn-navlbl">Role para o lado para ver todas as etapas</span><div class="fn-navbtns"><button type="button" class="pvbtn ghost sm" id="fnExBtn">Esconder exemplos</button><button type="button" class="fn-sc" data-sc="-1" aria-label="Rolar para a esquerda">‹</button><button type="button" class="fn-sc" data-sc="1" aria-label="Rolar para a direita">›</button></div></div>
@@ -11103,20 +11150,33 @@ const FN_ETAPAS = [
   {id:"delegado",   nome:"Delegado",          sub:"Kuka ou Thiago · acompanhamento da usina", c:"#9be564"}
 ];
 const FN_RET = "Retorno futuro";
-const FN_ORIGENS = [{id:"solarz", n:"SolarZ", c:"#5ee6dc"}, {id:"prosp", n:"Prospecção", c:"#c48bff"}, {id:"chamou", n:"Cliente chamou", c:"#7cc4ff"}, {id:"indic", n:"Indicação", c:"#ffd166"}];
+const FN_ORIGENS = [{id:"solarz", n:"SolarZ", c:"#5ee6dc"}, {id:"prosp", n:"Prospecção", c:"#c48bff"}, {id:"chamou", n:"Cliente chamou", c:"#7cc4ff"}, {id:"indic", n:"Indicação", c:"#ffd166"}, {id:"ano1", n:"Prospecção 1 ano", c:"#9be564"}];
+const FN_PEND = "Pendência técnica";
+const FN_MOT_FELIPE = ["Não quis","Já tem seguro","Sem resposta (encerramento enviado)","Preço","Outro"];
+const FN_MOT_PADRAO = ["Preço","Sem interesse","Sem retorno do cliente","Fechou com concorrente","Sem condição financeira","Outro"];
+const FN_METAS = { ind:{min:30, ideal:40, sup:80, nome:"Indicações"}, aval:{min:6, ideal:10, sup:16, nome:"Avaliações Google"} };
 const fnOrigNome = id => (FN_ORIGENS.find(o=>o.id===id)||{}).n || "";
 const fnOrigCor = id => (FN_ORIGENS.find(o=>o.id===id)||{}).c || "#8db0b3";
 const FN_FUNIS = {
   cs: { titulo:"Funil CS", resp:["adriele","sharon"], respPadrao:"adriele", delega:true,
     sub:"Assumir o cliente, acompanhar até o sistema ligar, apresentar seguro ou manutenção e, no fim, delegar para o Kuka ou o Thiago acompanharem a usina. Em negociação entra no dashboard como negócio em aberto; ao fechar, conta como venda.",
     svc: x => /seguro|manuten/i.test(x.nome) || ["seguro","manut"].includes(x.id),
-    tags: null, quick:["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Pediu orçamento","Apresentei o seguro"], nomes:{} },
+    tags: [FN_RET,"Seguro","Limpeza","Manutenção","Indicação","Avaliação Google","NPS","Cooperativa","Prioridade","Sem resposta","Reclamação"], quick:["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Pediu orçamento","Apresentei o seguro"], nomes:{} },
   felipe: { titulo:"Funil Comercial · Felipe", resp:["felipe"], respPadrao:"felipe", delega:false,
-    sub:"Leads de SolarZ, prospecção, clientes que chamaram e indicações. Felipe vende preventiva, expansão e seguro. Em negociação entra no dashboard como negócio em aberto; ao fechar, conta como venda.",
+    sub:"Leads de SolarZ, prospecção, prospecção 1 ano, clientes que chamaram e indicações. Felipe vende preventiva, expansão e seguro. Em negociação e Link enviado contam como negócio em aberto; só vira venda em Negócio fechado.",
     svc: x => /seguro|manuten|preventiv|amplia|expans/i.test(x.nome) || ["seguro","manut","ampliacao"].includes(x.id),
-    tags: [FN_RET,"Preventiva","Expansão","Seguro","Prioridade","Sem resposta"],
-    quick:["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Enviei proposta","Apresentei a preventiva","Apresentei a expansão"],
-    nomes:{ carteira:{nome:"Lead recebido", sub:"Entrou pela origem · primeiro contato"}, acomp:{nome:"Acompanhamento", sub:"Contato e qualificação do cliente"}, apresentar:{nome:"Apresentar", sub:"Preventiva, expansão ou seguro"} } }
+    tags: [FN_RET,"Pendência técnica","Preventiva","Expansão","Seguro","Prioridade","Sem resposta"],
+    quick:["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Enviei proposta","Apresentei a preventiva","Apresentei a expansão","Enviei o link de pagamento"],
+    nomes:{}, perdido:true, comercialFelipe:true,
+    etapas:[
+      {id:"carteira",   nome:"Lead recebido",      sub:"Entrou pela origem · primeiro contato", c:"#7cc4ff"},
+      {id:"acomp",      nome:"Acompanhamento",     sub:"Contato e qualificação do cliente", c:"#5ee6dc"},
+      {id:"apresentar", nome:"Apresentar",         sub:"Preventiva, expansão ou seguro", c:"#c48bff"},
+      {id:"negociacao", nome:"Em negociação",      sub:"Proposta na mesa", c:"#f5a524"},
+      {id:"link",       nome:"Link enviado",       sub:"Cliente aceitou · aguardando pagamento", c:"#38bdf8"},
+      {id:"fechado",    nome:"Negócio fechado",    sub:"Pago · conta como venda", c:"#3ee39a"},
+      {id:"perdido",    nome:"Perdido / encerrado", sub:"Não avançou · pode retomar", c:"#ff8fa3", recolhe:true}
+    ] }
 };
 FN_FUNIS.gestores = { titulo:"Funil Gestores de Usinas", resp:["kuka","thiago"], respPadrao:"kuka", delega:false, gestores:true,
   sub:"A usina chega da CS e anda um mês a cada relatório apresentado. A venda (seguro, preventiva, expansão) pode acontecer em qualquer mês: use o selo comercial do card. Em negociação entra no dashboard; ao fechar, conta como venda.",
@@ -11138,7 +11198,13 @@ const FN_COM = [
   {id:"fechado", nome:"Fechado", sub:"Vendido · conta no dashboard", c:"#3ee39a"}
 ];
 const fnComInfo = id => FN_COM.find(x=>x.id===id) || FN_COM[0];
-const fnComSt = c => (c.funil==="gestores") ? (c.comercial||"sem") : (c.etapa==="negociacao" ? "negociacao" : c.etapa==="fechado" ? "fechado" : "sem");
+const fnComSt = c => (c.funil==="gestores") ? (c.comercial||"sem") : ((c.etapa==="negociacao" || c.etapa==="link") ? "negociacao" : c.etapa==="fechado" ? "fechado" : "sem");
+const fnAmanha = () => { const d = new Date(); d.setDate(d.getDate()+1); return iso(d); };
+const fnEhSeguro = id => !!id && (id==="seguro" || /seguro/i.test(sName(id)));
+const fnTemPend = c => (c.etiquetas||[]).includes(FN_PEND);
+const fnPendAberta = c => fnTemPend(c) && !["fechado","perdido"].includes(c.etapa);
+const fnLinkPerto = c => c.etapa==="link" && c.linkVence && dayDiff(todayISO, c.linkVence) <= 2;
+let fnColMin = {perdido:true}; try { const v = JSON.parse(localStorage.getItem("ello-fn-colmin")||"null"); if(v) fnColMin = v; } catch(e) {}
 let fnVisao = "mes"; try { fnVisao = localStorage.getItem("ello-fn-visao")==="com" ? "com" : "mes"; } catch(e) {}
 let fnFunil = "cs", fnOrigem = "";
 try { const v = localStorage.getItem("ello-fn-funil"); if(v){ const [f,o] = v.split(":"); if(FN_FUNIS[f]){ fnFunil = f; fnOrigem = o||""; } } } catch(e) {}
@@ -11148,7 +11214,8 @@ const fnEhG = () => !!fnCfg().gestores;
 const FN_TAGS = [
   {n:FN_RET, c:"#ffd166"}, {n:"Seguro", c:"#3ee39a"}, {n:"Limpeza", c:"#5ee6dc"}, {n:"Manutenção", c:"#7cc4ff"}, {n:"Indicação", c:"#c48bff"},
   {n:"Avaliação Google", c:"#ffd166"}, {n:"NPS", c:"#9be564"}, {n:"Cooperativa", c:"#ff8fa3"}, {n:"Prioridade", c:"#ff6b6b"},
-  {n:"Sem resposta", c:"#f5a524"}, {n:"Reclamação", c:"#ff8f5a"}
+  {n:"Sem resposta", c:"#f5a524"}, {n:"Reclamação", c:"#ff8f5a"}, {n:"Pendência técnica", c:"#ff4d4d"},
+  {n:"Preventiva", c:"#7cc4ff"}, {n:"Expansão", c:"#c48bff"}
 ];
 const FN_CS = ["adriele","sharon"];
 const FN_DELEG = ["kuka","thiago"];   // quem recebe o cliente para o acompanhamento da usina (relatórios mês 1, 2, 3, 4…)
@@ -11191,7 +11258,10 @@ function fnExemplos(){
   ];
   if(fnFunil === "felipe") return [
     {id:"ex_f1", cliente:"Mercado Bom Preço", cidade:"Itajaí", resp:"felipe", origem:"prosp", etapa:"carteira", etapaEm:ts(1), etiquetas:["Expansão"], proxFollow:d(0), historico:h("Visitei a região e deixei cartão. Usina de 20 kWp, conta ainda alta")},
-    {id:"ex_f2", cliente:"Usina Schmitt", cidade:"Navegantes", resp:"felipe", origem:"solarz", etapa:"acomp", etapaEm:ts(3), etiquetas:["Preventiva"], proxFollow:d(2), historico:h("SolarZ apontou queda de geração de 18%. Liguei e agendei visita", 2)},
+    {id:"ex_f2", cliente:"Usina Schmitt", cidade:"Navegantes", resp:"felipe", origem:"solarz", etapa:"acomp", etapaEm:ts(3), etiquetas:["Preventiva", FN_PEND], pendOS:"4521", pendProm:d(3), proxFollow:d(2), historico:h("SolarZ apontou queda de geração de 18%. Inversor com erro, abri OS com o operacional", 2)},
+    {id:"ex_f7", cliente:"Antônio Becker", cidade:"Itajaí", resp:"felipe", origem:"ano1", etapa:"apresentar", etapaEm:ts(1), etiquetas:["Seguro"], proxFollow:d(1), servico:"seguro", valorSistema:30000, valor:1200, historico:h("Usina completa 1 ano. Expliquei a diferença entre garantia e clima e apresentei o seguro")},
+    {id:"ex_f8", cliente:"Farmácia Popular Centro", cidade:"Itajaí", resp:"felipe", origem:"chamou", etapa:"link", etapaEm:ts(2), etiquetas:["Seguro"], proxFollow:d(0), linkVence:d(1), servico:"seguro", valorSistema:42000, valor:1680, negEntrada:d(-4), historico:h("Aceitou o seguro. Enviei o link de pagamento, vence amanhã", 2)},
+    {id:"ex_f9", cliente:"Marcenaria Kraus", cidade:"Gaspar", resp:"felipe", origem:"solarz", etapa:"perdido", etapaEm:ts(6), etiquetas:["Seguro"], motivo:"Já tem seguro", retomarEm:d(120), historico:h("Já tem seguro pelo banco até fevereiro. Combinei de retomar antes do vencimento", 6)},
     {id:"ex_f3", cliente:"Jorge Lenzi", cidade:"Itajaí", resp:"felipe", origem:"chamou", etapa:"apresentar", etapaEm:ts(2), etiquetas:["Expansão"], proxFollow:d(1), servico:"ampliacao", valor:6800, historico:h("Cliente chamou: comprou ar-condicionado e quer aumentar o sistema")},
     {id:"ex_f4", cliente:"Clínica Sorriso", cidade:"Balneário Camboriú", resp:"felipe", origem:"solarz", etapa:"negociacao", etapaEm:ts(4), etiquetas:["Preventiva","Seguro"], proxFollow:d(1), servico:"manut", valor:1300, historico:h("Enviei proposta de preventiva + seguro, ficou de aprovar com o sócio")},
     {id:"ex_f5", cliente:"Pousada Mar Azul", cidade:"Penha", resp:"felipe", origem:"indic", etapa:"fechado", etapaEm:ts(0), etiquetas:["Seguro"], servico:"seguro", valor:750, historico:h("Indicação da Clínica Vida. Fechou o Seguro Elétron", 0)},
@@ -11235,6 +11305,7 @@ function fnFiltros(){
   $("#fnTit").textContent = fnCfg().titulo + (fnOrigem ? " · " + fnOrigNome(fnOrigem) : "");
   $("#fnSub").textContent = fnCfg().sub;
   $("#fnNovo").textContent = fnFunil==="cs" ? "+ Novo cliente" : fnFunil==="gestores" ? "+ Nova usina" : "+ Novo lead";
+  $("#fnFuPend").hidden = fnFunil !== "felipe"; if(fnFunil !== "felipe" && $("#fnFu").value === "pend") $("#fnFu").value = "";
   $("#fnVis").hidden = !fnEhG(); $$("#fnVis button").forEach(b=>b.classList.toggle("on", b.dataset.vis===fnVisao));
   const ts = $("#fnTag"), kt = ts.value; const set = new Set(fnCfg().tags || FN_TAGS.map(t=>t.n)); fnLista().forEach(c => (c.etiquetas||[]).forEach(t=>set.add(t)));
   ts.innerHTML = '<option value="">Todas</option>' + Array.from(set).map(t=>'<option>'+esc(t)+'</option>').join(""); ts.value = kt;
@@ -11246,12 +11317,27 @@ function fnFiltrados(){
     if(r && r !== "cs" && r !== "*" && c.resp !== r) return false;
     if(fnOrigem && c.origem !== fnOrigem) return false;
     if(t && !(c.etiquetas||[]).includes(t)) return false;
-    if(fu && fnFuSt(c) !== fu) return false;
+    if(fu === "pend"){ if(!fnPendAberta(c)) return false; }
+    else if(fu && fnFuSt(c) !== fu) return false;
     if(q && !((c.cliente||"")+" "+(c.cidade||"")+" "+(c.protocolo||"")).toLowerCase().includes(q)) return false;
     return true;
   });
 }
-function renderFunil(){ fnOuvir(); fnFiltros(); renderFunilBoard(); }
+function renderFunil(){ fnOuvir(); fnAutoRetomar(); fnFiltros(); renderFunilBoard(); }
+/* Perdido com "Retomar em": quando a data chega, volta para Acompanhamento com a etiqueta Retorno futuro */
+const fnRetomando = new Set();
+function fnAutoRetomar(){
+  if(!fnCarregado) return;
+  const lista = Object.keys(fnCards).map(id => Object.assign({}, fnCards[id], {id})).concat(Object.keys(fnExMem).map(id => Object.assign({}, fnGet(id), {id})));
+  lista.forEach(c => {
+    if(c._apagado || c.etapa !== "perdido" || !c.retomarEm || c.retomarEm > todayISO || fnRetomando.has(c.id)) return;
+    fnRetomando.add(c.id);
+    const n = Object.assign({}, c); delete n.id; const agora = new Date().toISOString();
+    n.historico = (n.historico||[]).concat([{em:agora, por:"Sistema", tipo:"sys", txt:"Retomado automaticamente (Retomar em "+fmtDM(c.retomarEm)+"). Motivo anterior: "+(c.motivo||"—")}]);
+    n.etapa = "acomp"; n.etapaEm = agora; n.etiquetas = Array.from(new Set((n.etiquetas||[]).concat([FN_RET]))); n.proxFollow = c.retomarEm; n.retomarEm = ""; n.motivo = ""; n.atualizadoEm = agora;
+    fnSalvar(c.id, n).then(()=>fnSincNegocio(c.id, n)).catch(()=>{});
+  });
+}
 function renderFunilBoard(){
   const todos = fnFiltrados(); const reais = todos.filter(c=>!String(c.id).startsWith("ex_")); const cards = reais.length ? reais : todos; const mes = todayISO.slice(0,7);
   $("#fnDemo").hidden = !(fnCarregado && fnVerEx);
@@ -11263,6 +11349,8 @@ function renderFunilBoard(){
   const perdM = cards.filter(c=>c.etapa==="perdido" && (c.etapaEm||"").startsWith(mes));
   const conv = (fechM.length+perdM.length) ? fechM.length/(fechM.length+perdM.length) : NaN;
   const semProp = ativos.filter(c=>fnComSt(c)==="sem" && ["m2","m3","m4"].includes(c.etapa)).length;
+  const F = fnFunil === "felipe"; const pend = cards.filter(fnPendAberta).length;
+  $("#fnKpis").classList.toggle("k8", F);
   $("#fnKpis").innerHTML = (G ? [
     ["Usinas em acompanhamento", INT(abertos.length), ""],
     ["Follow-ups atrasados", INT(atr), atr?"bad":""],
@@ -11277,13 +11365,18 @@ function renderFunilBoard(){
     ["Em negociação", BRL(neg.reduce((a,c)=>a+(+c.valor||0),0)), "warn"],
     ["Fechado no mês", BRL(fechM.reduce((a,c)=>a+(+c.valor||0),0)), "ok"],
     ["Retornos futuros", INT(ativos.filter(fnTemRet).length), ""]
-  ]).map(k=>'<div class="fn-kpi '+k[2]+'"><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
+  ].concat(F ? [
+    ["Conversão do mês", PCT(conv), conv>=0.5?"ok":"", "", (fechM.length)+" fechados ÷ "+(fechM.length+perdM.length)+" (fechados + perdidos)"],
+    ["Pendências técnicas abertas", INT(pend), pend?"bad":"", "pend", "Clique para filtrar e levar na reunião com o operacional"]
+  ] : [])).map(k=>'<div class="fn-kpi '+k[2]+(k[3]?' clk':'')+(k[3] && $("#fnFu").value===k[3]?' on':'')+'"'+(k[3]?' data-kf="'+k[3]+'"':'')+(k[4]?' title="'+esc(k[4])+'"':'')+'><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
+  fnRenderExtra(cards);
   const porCom = G && fnVisao === "com"; const primeira = fnCols()[0].id;
   $("#fnBoard").innerHTML = (porCom ? FN_COM : fnCols()).map(e => {
     const lst = todos.filter(c => porCom ? fnComSt(c) === e.id : (c.etapa||"carteira") === e.id).sort((a,b)=>{
       const fa = a.proxFollow||"9999", fb2 = b.proxFollow||"9999"; return fa===fb2 ? (b.etapaEm||"").localeCompare(a.etapaEm||"") : fa.localeCompare(fb2); });
     const tot = lst.reduce((a,c)=>a+(+c.valor||0),0);
-    return '<div class="fn-col" '+(porCom?'data-com':'data-etapa')+'="'+e.id+'" style="--c:'+e.c+'"><div class="fn-colh"><h4>'+esc(e.nome)+'<span>'+lst.length+'</span></h4><p>'+esc(e.sub)+'</p>'+(tot?'<div class="tot">'+BRL(tot)+'</div>':'')+'</div>'+
+    const min = !porCom && e.recolhe && fnColMin[e.id];
+    return '<div class="fn-col'+(min?' min':'')+'" '+(porCom?'data-com':'data-etapa')+'="'+e.id+'" style="--c:'+e.c+'"><div class="fn-colh">'+(e.recolhe && !porCom ? '<button type="button" class="fn-colmin" data-colmin="'+e.id+'" title="'+(min?'Abrir coluna':'Recolher coluna')+'">'+(min?'⇥':'⇤')+'</button>' : '')+'<h4>'+esc(e.nome)+'<span>'+lst.length+'</span></h4><p>'+esc(e.sub)+'</p>'+(tot?'<div class="tot">'+BRL(tot)+'</div>':'')+'</div>'+
       (!porCom && e.id===primeira?'<button class="fn-add" type="button" data-novo="'+e.id+'">+ '+(fnFunil==="cs"?"Adicionar cliente":G?"Adicionar usina":"Adicionar lead")+'</button>':'')+
       '<div class="fn-list">'+(lst.length? lst.map(fnCardHtml).join("") : '<div class="fn-empty">Arraste um card para cá</div>')+'</div></div>';
   }).join("");
@@ -11292,20 +11385,24 @@ function renderFunilBoard(){
 function fnCardHtml(c){
   const st = fnFuSt(c), dias = dayDiff((c.etapaEm||c.criadoEm||todayISO).slice(0,10), todayISO);
   const ult = (c.historico||[]).filter(h=>h.tipo!=="sys").slice(-1)[0];
-  const fu = st==="fim" ? '<span class="fn-fu">'+(c.etapa==="fim"?"Plano concluído ":"Fechado ")+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
+  const fu = st==="fim" ? '<span class="fn-fu">'+(c.etapa==="fim"?"Plano concluído ":"Fechado ")+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+(c.retomarEm?' · retomar '+fmtDM(c.retomarEm):'')+'</span>' :
     st==="del" ? '<span class="fn-fu">Delegado → '+esc(c.delegadoPara||"")+'</span>' :
     st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   const ex = String(c.id).startsWith("ex_");
-  return '<div class="fn-card st-'+st+(ex?' ex':'')+'" draggable="true" data-id="'+esc(c.id)+'">'+
+  const seg = fnEhSeguro(c.servico) && +c.valor > 0;
+  return '<div class="fn-card st-'+st+(fnLinkPerto(c)?' st-linkv':'')+(ex?' ex':'')+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+(ex?'EXEMPLO':dias+'d')+'</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
     ((c.etiquetas||[]).length || c.origem ?'<div class="fn-tags">'+(c.origem?'<span class="fn-orig" style="--o:'+fnOrigCor(c.origem)+'">'+esc(fnOrigNome(c.origem))+'</span>':'')+(c.etiquetas||[]).map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+(t===FN_RET && c.proxFollow?' · '+fmtDM(c.proxFollow):'')+'</span>').join("")+'</div>':'')+
+    (seg ? '<div class="fn-segval">'+BRL2(+c.valor)+' à vista · 12x '+BRL2(Math.round(+c.valor/12*100)/100)+'</div>' : '')+
+    (c.etapa==="link" && c.linkVence ? '<span class="fn-linkchip">'+(c.linkVence < todayISO ? 'Link vencido em ' : 'Link vence ')+fmtDM(c.linkVence)+'</span>' : '')+
+    (fnTemPend(c) ? '<div class="fn-pend">⚠ Resolver a pendência antes de vender'+((c.pendOS||c.pendProm) ? '<small>'+[c.pendOS?'OS nº '+esc(c.pendOS):'', c.pendProm?(c.pendProm < todayISO ? 'prometido p/ '+fmtDM(c.pendProm)+' (atrasada)' : 'prometido p/ '+fmtDM(c.pendProm)):''].filter(Boolean).join(' · ')+'</small>' : '')+'</div>' : '')+
     (c.funil==="gestores" ? (()=>{ const k = fnComInfo(c.comercial||"sem"); const prox = FN_COM[FN_COM.findIndex(x=>x.id===k.id)+1];
       return '<button type="button" class="fn-com" data-cm="'+(prox?prox.id:'')+'" style="--k:'+k.c+'" title="'+(prox?'Avançar para '+esc(prox.nome):'Negócio fechado')+'">'+esc(k.nome)+(prox?' ›':' ✓')+'</button>'+
         ((k.id==="sem" && ["m2","m3","m4"].includes(c.etapa)) ? '<div class="fn-hint">'+(c.etapa==="m4"?"Última chance: apresentar antes do fim da degustação":"Hora de apresentar seguro ou preventiva")+'</div>' : ''); })() : '')+
     (ult?'<div class="fn-last">'+esc(ult.txt)+'</div>':'')+
-    '<div class="fn-foot">'+fu+(+c.valor?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
+    '<div class="fn-foot">'+fu+(+c.valor && !seg?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
       '<span class="fn-resp"><span class="fn-av" style="--a:'+fnVendCor(c.resp)+'">'+esc(fnIni(vName(c.resp)))+'</span>'+esc(vName(c.resp)||"")+'</span>'+
       '<span class="fn-mv">'+(FN_PAUSA.includes(c.etapa) ? '<button type="button" data-mv="ret" title="Retomar o acompanhamento">↺</button>' :
         (i>0?'<button type="button" data-mv="-1" title="Etapa anterior">‹</button>':'')+(i>=0 && i<fnCols().length-1?'<button type="button" data-mv="1" title="'+(fnCols()[i+1].id==="delegado"?'Delegar para Kuka ou Thiago':'Próxima etapa')+'">›</button>':''))+'</span></div>'+
@@ -11317,17 +11414,19 @@ async function fnMover(id, etapa, extra){
   const de = c.etapa || "carteira"; if(de === etapa && !extra) return;
   Object.assign(c, extra||{});
   if(etapa === "fechado" && (!(+c.valor > 0) || !c.servico)){ fnAbrir(id, {etapaAlvo:"fechado", aviso:"Para fechar o negócio, informe o serviço e o valor."}); return; }
-  if(etapa === "perdido" && !c.motivo){ fnAbrir(id, {etapaAlvo:"perdido", aviso:"Escolha o motivo da perda."}); return; }
+  if(etapa === "perdido" && !(extra && extra.motivo)){ fnAbrir(id, {etapaAlvo:"perdido", aviso:"Escolha o motivo do encerramento. Se quiser, marque quando retomar."}); return; }
   if(etapa === "delegado"){ if(fnCfg().delega) fnEscolherDeleg(id); return; }
   c.etapa = etapa; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
   if(de !== etapa){ c.historico = (c.historico||[]).concat([{em:c.etapaEm, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(etapa).nome}]); }
-  if(etapa === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
+  if((etapa === "negociacao" || etapa === "link") && !c.negEntrada) c.negEntrada = todayISO;
+  if(etapa === "link" && de !== "link"){ c.proxFollow = fnAmanha(); c.historico.push({em:c.etapaEm, por:"Sistema", tipo:"sys", txt:"Follow-up automático para amanhã (link de pagamento enviado)"}); }
+  if(de === "perdido" && etapa !== "perdido"){ c.motivo = ""; c.retomarEm = ""; }
   try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast((etapa==="fechado" ? (fnEhEx(id) ? "Negócio fechado" : "Negócio fechado! Já está no dashboard.") : "Movido para "+fnEtapa(etapa).nome) + (fnEhEx(id) ? " (simulação)" : "")); }
   catch(e){ handleWriteErr(e); }
 }
 async function fnSincNegocio(id, c){
   if(!db || fnEhEx(id)) return; const nid = "f_"+id; const tem = realDeals.some(d=>d.id===nid);
-  const k = fnComSt(c); const st = k==="negociacao" ? "aberto" : k==="fechado" ? "ganho" : null;
+  const k = fnComSt(c); const st = k==="negociacao" ? "aberto" : k==="fechado" ? "ganho" : (c.etapa==="perdido" && c.negEntrada && c.funil==="felipe") ? "perdido" : null;
   if(!st){ if(tem) await db.doc("negocios/"+nid).delete(); return; }
   const prev = realDeals.find(d=>d.id===nid) || {};
   const body = Object.assign({}, prev, { cliente:c.cliente, vendedor:c.resp, servico:c.servico || (cfg.servicos||[])[0]?.id || "", valor:Math.max(0,+c.valor||0), status:st,
@@ -11337,6 +11436,56 @@ async function fnSincNegocio(id, c){
   delete body.id; if(!tem) body.criadoEm = new Date().toISOString();
   await db.doc("negocios/"+nid).set(body);
 }
+/* ---- contadores de indicações e avaliações Google (Felipe) ----
+   shared_data/funil_contadores → { felipe: { inicio:"AAAA-MM-DD", dias: { "AAAA-MM-DD": {ind, aval} } } }
+   Semana zera toda segunda; metas da remuneração variável são mensais. */
+let fnCont = {}, fnContOuvindo = false;
+function fnContRef(){ return window.fb.doc(window.fb.db, "shared_data", "funil_contadores"); }
+function fnContOuvir(){ if(fnContOuvindo || !window.fb || !connected) return; fnContOuvindo = true; window.fb.onSnapshot(fnContRef(), sn => { fnCont = sn.exists() ? (sn.data()||{}) : {}; if(!$("#v-funil").hidden && fnFunil==="felipe") renderFunilBoard(); }, ()=>{}); }
+const fnSegunda = s => { const d = parse(s); const w = (d.getDay()+6)%7; d.setDate(d.getDate()-w); return iso(d); };
+function fnContSoma(quem, filtro){ const dias = ((fnCont[quem]||{}).dias)||{}; const t = {ind:0, aval:0}; Object.keys(dias).forEach(k=>{ if(filtro(k)){ t.ind += +dias[k].ind||0; t.aval += +dias[k].aval||0; } }); return t; }
+async function fnContAdd(tipo, delta){
+  const quem = "felipe"; const reg = (((fnCont[quem]||{}).dias)||{})[todayISO] || {};
+  const nv = Math.max(0, (+reg[tipo]||0) + delta);
+  if(delta < 0 && !(+reg[tipo] > 0)){ toast("Nada para desfazer hoje.", true); return; }
+  const upd = {[quem]: {dias: {[todayISO]: {[tipo]: nv}}}}; if(!(fnCont[quem]||{}).inicio) upd[quem].inicio = todayISO;
+  try { await window.fb.setDoc(fnContRef(), upd, {merge:true}); toast((delta>0?"+1 ":"−1 ")+(tipo==="ind"?"indicação":"avaliação Google")); } catch(e){ handleWriteErr(e); }
+}
+function fnBarra(v, m){
+  const top = m.sup * 1.05, p = x => Math.min(100, x/top*100).toFixed(1)+"%";
+  return '<div class="fn-bar2"><i class="'+(v>=m.min?'ok':'')+'" style="width:'+p(v)+'"></i><em style="left:'+p(m.min)+'"></em><em style="left:'+p(m.ideal)+'"></em><em style="left:'+p(m.sup)+'"></em></div>'+
+    '<div class="fn-mt"><span class="'+(v>=m.min?'ok':'')+'">Mín '+m.min+'</span><span class="'+(v>=m.ideal?'ok':'')+'">Ideal '+m.ideal+'</span><span class="'+(v>=m.sup?'ok':'')+'">Super '+m.sup+'</span></div>';
+}
+function fnRenderExtra(cards){
+  const box = $("#fnExtra"); if(fnFunil !== "felipe"){ box.innerHTML = ""; return; }
+  fnContOuvir();
+  const quem = "felipe", ini = (fnCont[quem]||{}).inicio || "", seg = fnSegunda(todayISO), mes = todayISO.slice(0,7);
+  const sem = fnContSoma(quem, k => k >= seg && k <= todayISO), mm = fnContSoma(quem, k => k.startsWith(mes));
+  // histórico semanal (8 semanas) e mensal (6 meses, só desde o início dos registros)
+  const semanas = []; for(let i=0;i<8;i++){ const d = parse(seg); d.setDate(d.getDate()-7*i); const a = iso(d), b = new Date(d); b.setDate(b.getDate()+6); const bb = iso(b); semanas.push({a, t:fnContSoma(quem, k => k>=a && k<=bb)}); }
+  const meses = []; for(let i=0;i<6;i++){ const d = parse(mes+"-01"); d.setMonth(d.getMonth()-i); const m = iso(d).slice(0,7); if(!ini || m < ini.slice(0,7)) continue; meses.push({m, t:fnContSoma(quem, k => k.startsWith(m)), atual: m===mes}); }
+  const fechadosAbaixo = meses.filter(x=>!x.atual);
+  let seq = 0; for(const x of fechadosAbaixo){ if(x.t.ind < FN_METAS.ind.min || x.t.aval < FN_METAS.aval.min) seq++; else break; }
+  const nomeMes = m => { const [y,mo] = m.split("-"); return ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"][+mo-1]+"/"+y.slice(2); };
+  // conversão por origem
+  const base = fnBase().filter(c => !fnEhEx(c.id)); const usar = base.length ? base : fnBase();
+  const oc = FN_ORIGENS.map(o => { const l = usar.filter(c=>c.origem===o.id); const f = l.filter(c=>c.etapa==="fechado").length; return {o, n:l.length, f}; });
+  box.innerHTML = '<div class="fn-x2">'+
+    '<div class="fn-box"><h5>Indicações e avaliações Google · Felipe <span style="text-transform:none;letter-spacing:0">semana desde '+fmtDM(seg)+' (zera toda segunda)</span></h5><div class="fn-cnt">'+
+      ['ind','aval'].map(t => { const m = FN_METAS[t];
+        return '<div class="fn-cntitem"><div class="lin"><button type="button" class="fn-plus" data-cnt="'+t+'">+1 '+(t==="ind"?"indicação":"avaliação Google")+'</button><button type="button" class="fn-minus" data-cnt="'+t+'" data-neg="1" title="Desfazer um lançamento de hoje">−1</button></div>'+
+          '<div class="lin" style="margin-top:8px"><b>'+m.nome+'</b><span class="wk">semana '+sem[t]+' · mês '+mm[t]+'</span></div>'+fnBarra(mm[t], m)+'</div>'; }).join("")+
+    '</div>'+(seq>=3 ? '<div class="fn-crit">Crítico: '+seq+' meses seguidos abaixo do mínimo</div>' : seq>0 ? '<div class="fn-crit" style="background:var(--warn-soft);color:var(--warn)">Atenção: '+seq+' mês(es) seguido(s) abaixo do mínimo · 3 seguidos é crítico</div>' : '')+
+    '<details class="fn-hisw"><summary>Histórico</summary>'+
+      '<table><thead><tr><th>Semana</th><th class="r">Indicações</th><th class="r">Avaliações</th></tr></thead><tbody>'+semanas.map(w=>'<tr><td>'+fmtDM(w.a)+'</td><td class="r">'+w.t.ind+'</td><td class="r">'+w.t.aval+'</td></tr>').join("")+'</tbody></table>'+
+      '<table><thead><tr><th>Mês</th><th class="r">Indicações (mín '+FN_METAS.ind.min+')</th><th class="r">Avaliações (mín '+FN_METAS.aval.min+')</th></tr></thead><tbody>'+(meses.length ? meses.map(x=>'<tr><td>'+nomeMes(x.m)+(x.atual?' (atual)':'')+'</td><td class="r '+(x.t.ind>=FN_METAS.ind.min?'ok':x.atual?'':'bad')+'">'+x.t.ind+'</td><td class="r '+(x.t.aval>=FN_METAS.aval.min?'ok':x.atual?'':'bad')+'">'+x.t.aval+'</td></tr>').join("") : '<tr><td colspan="3">Sem registros ainda.</td></tr>')+'</tbody></table>'+
+    '</details></div>'+
+    '<div class="fn-box"><h5>Conversão por origem <span style="text-transform:none;letter-spacing:0">entraram × fecharam'+(base.length?'':' · exemplos')+'</span></h5><div class="fn-oc">'+
+      oc.map(r=>'<div class="fn-ocr" style="--o:'+r.o.c+'"><span>'+esc(r.o.n)+'</span><span class="t"><i style="width:'+(r.n? (r.f/r.n*100).toFixed(0) : 0)+'%"></i></span><span class="n">'+r.f+'/'+r.n+(r.n?' · '+Math.round(r.f/r.n*100)+'%':'')+'</span></div>').join("")+
+    '</div></div>'+
+  '</div>';
+}
+$("#fnExtra").addEventListener("click", ev=>{ const b = ev.target.closest("[data-cnt]"); if(!b) return; fnContAdd(b.dataset.cnt, b.dataset.neg ? -1 : 1); });
 /* ---- delegar para Kuka / Thiago ---- */
 function fnAplicarDeleg(c, pid, mot, quem){
   const nome = vName(pid) || pid; const agora = new Date().toISOString();
@@ -11403,6 +11552,10 @@ function fnAbrir(id, opt){
       ((c.funil||"cs")==="felipe" ? '<div class="fld"><label for="fmOrig">Origem do lead</label><select id="fmOrig"><option value="">—</option>'+FN_ORIGENS.map(o=>'<option value="'+o.id+'"'+(o.id===c.origem?' selected':'')+'>'+esc(o.n)+'</option>').join("")+'</select></div>' : '')+
     '</div></div>'+
     '<div class="fn-sec"><h5>Etiquetas</h5><div class="fn-tagpick" id="fnTagPick">'+tagsAll.map(t=>'<button type="button" data-tg="'+esc(t)+'" style="--t:'+fnTagCor(t)+'" class="'+(fnEdit.tags.has(t)?'on':'')+'">'+esc(t)+'</button>').join("")+'<input id="fmNovaTag" maxlength="24" placeholder="+ nova etiqueta (Enter)"></div></div>'+
+    '<div class="fn-sec" id="fnPendSec"><h5 style="color:#ff8080">Pendência técnica · resolver antes de vender</h5><div class="fn-g2">'+
+      '<div class="fld"><label for="fmOS">OS nº</label><input id="fmOS" maxlength="30" value="'+esc(c.pendOS||"")+'"></div>'+
+      '<div class="fld"><label for="fmProm">Prometido para</label><input id="fmProm" type="date" value="'+esc(c.pendProm||"")+'"></div>'+
+    '</div></div>'+
     '<div class="fn-sec"><h5>Follow-up</h5><div class="fn-g2">'+
       '<div class="fld"><label for="fmFuTxt">O que foi feito agora</label><textarea id="fmFuTxt" rows="2" maxlength="400" placeholder="Ex.: Liguei, cliente satisfeito com a usina, pediu orçamento de limpeza em novembro"></textarea>'+
         '<div class="fn-quick">'+fnCfg().quick.map(q=>'<button type="button" data-q="'+esc(q)+'">'+esc(q)+'</button>').join("")+'</div></div>'+
@@ -11415,26 +11568,38 @@ function fnAbrir(id, opt){
     '</div>'+(c.delegadoPara?'<span class="hint" style="font-size:11px;color:var(--dim)">Delegado para '+esc(c.delegadoPara)+(c.delegadoDe?' por '+esc(c.delegadoDe):'')+'</span>':'')+'</div>'+
     '<div class="fn-sec" id="fnVenda"><h5>Venda</h5>'+((c.funil||fnFunil)==="gestores" ? '<div class="fn-seg" id="fnSeg">'+FN_COM.map(k=>'<button type="button" data-sg="'+k.id+'" style="--k:'+k.c+'" class="'+(k.id===fnEdit.com?'on':'')+'">'+esc(k.nome)+'</button>').join("")+'</div>' : '')+'<div class="fn-g3">'+
       '<div class="fld"><label for="fmSvc">Serviço</label><select id="fmSvc"><option value="">—</option>'+(fnSvcFunil().length ? fnSvcFunil().concat(ss.filter(x=>x.id===c.servico && !fnSvcFunil().includes(x))) : ss).map(s=>'<option value="'+esc(s.id)+'"'+(s.id===c.servico?' selected':'')+'>'+esc(s.nome)+'</option>').join("")+'</select></div>'+
-      '<div class="fld"><label for="fmVal">Valor (R$)</label><input id="fmVal" type="number" min="0" step="0.01" value="'+esc(c.valor||"")+'"></div>'+
-      '<div class="fld" id="fmMotW"><label for="fmMot">Motivo da perda</label><select id="fmMot"><option value="">—</option>'+["Preço","Sem interesse","Sem retorno do cliente","Fechou com concorrente","Sem condição financeira","Outro"].map(m=>'<option'+(m===c.motivo?' selected':'')+'>'+m+'</option>').join("")+'</select></div>'+
-    '</div><span class="hint" style="font-size:11px;color:var(--dim)">Em negociação o cliente entra como negócio em aberto no dashboard; ao fechar, conta como venda.</span></div>'+
+      ((c.funil||fnFunil)==="felipe" ? '<div class="fld"><label for="fmVSis">Valor do sistema (R$)</label><input id="fmVSis" type="number" min="0" step="0.01" value="'+esc(c.valorSistema||"")+'" placeholder="Ex.: 30000"></div>' : '')+
+      '<div class="fld"><label for="fmVal">Valor (R$)</label><input id="fmVal" type="number" min="0" step="0.01" value="'+esc(c.valor||"")+'"><span class="hint" id="fmSegHint" style="font-size:11px;color:var(--good)"></span></div>'+
+      '<div class="fld" id="fmLinkW"><label for="fmLinkV">Link vence em</label><input id="fmLinkV" type="date" value="'+esc(c.linkVence||"")+'"><span class="hint" style="font-size:11px;color:var(--dim)">Opcional. Faltando 2 dias ou menos, o card fica amarelo.</span></div>'+
+      '<div class="fld" id="fmMotW"><label for="fmMot">'+((c.funil||fnFunil)==="felipe"?"Motivo do encerramento":"Motivo da perda")+'</label><select id="fmMot"><option value="">—</option>'+((c.funil||fnFunil)==="felipe" ? FN_MOT_FELIPE : FN_MOT_PADRAO).map(m=>'<option'+(m===c.motivo?' selected':'')+'>'+esc(m)+'</option>').join("")+'</select></div>'+
+      '<div class="fld" id="fmRetW"><label for="fmRet">Retomar em</label><input id="fmRet" type="date" value="'+esc(c.retomarEm||"")+'"><span class="hint" style="font-size:11px;color:var(--dim)">Opcional. Na data, o card volta como Retorno futuro.</span></div>'+
+    '</div><span class="hint" style="font-size:11px;color:var(--dim)">'+((c.funil||fnFunil)==="felipe" ? 'Seguro: valor anual = 4% do valor do sistema (pode editar se der desconto). Em negociação e Link enviado contam como negócio em aberto; só vira venda em Negócio fechado.' : 'Em negociação o cliente entra como negócio em aberto no dashboard; ao fechar, conta como venda.')+'</span></div>'+
     '<div class="fld" style="margin-top:14px"><label for="fmObs">Observações</label><textarea id="fmObs" rows="2" maxlength="600">'+esc(c.obs||"")+'</textarea></div>'+
     '<div class="fn-mf"><div>'+(novo?'':'<button class="pvbtn danger sm" type="button" data-fx="del">Excluir card</button>')+'</div><div style="display:flex;gap:8px"><button class="pvbtn ghost" type="button" data-fx="close">Cancelar</button><button class="pvbtn" type="button" data-fx="save">'+(novo?"Adicionar ao funil":"Salvar")+'</button></div></div>'+
   '</div></div>';
-  fnVendaVis();
+  fnVendaVis(); fnSegCalc(false);
   setTimeout(()=>{ const el = (opt.etapaAlvo==="fechado" || opt.comAlvo==="fechado") ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
 }
+function fnSegCalc(recalc){
+  const sv = $("#fmSvc"), vs = $("#fmVSis"), vl = $("#fmVal"), hint = $("#fmSegHint"); if(!sv || !vl) return;
+  const seg = fnEhSeguro(sv.value);
+  if(recalc && seg && vs && +vs.value > 0) vl.value = (Math.round(+vs.value * 0.04 * 100) / 100).toFixed(2);
+  const v = +vl.value; hint.textContent = (seg && v > 0) ? BRL2(v)+" à vista · 12x "+BRL2(Math.round(v/12*100)/100) : "";
+}
 function fnVendaVis(){ if(!fnEdit || fnEdit.rapido) return; const a = fnEdit.alvo, i = fnIdx(a); $("#fnVenda").hidden = fnEhG() ? false : (i < 2 || a==="retorno" || a==="delegado"); $("#fmMotW").hidden = a !== "perdido";
+  $("#fmRetW").hidden = !(a === "perdido" && fnCfg().perdido); $("#fmLinkW").hidden = a !== "link"; $("#fnPendSec").hidden = !fnEdit.tags.has(FN_PEND);
   $("#fmFuDtL").textContent = fnEdit.tags.has(FN_RET) ? "Data do retorno" : "Próximo follow-up"; $("#fnDeleg").classList.toggle("on", a==="delegado"); }
 function fnFechar(){ fnEdit = null; $("#fnModalHost").innerHTML = ""; renderFunilBoard(); }
 async function fnGravarModal(){
   const E = fnEdit; if(!E) return; const c = E.c;
   const cli = $("#fmCli").value.trim(); if(!cli){ toast("Informe o nome do cliente.", true); $("#fmCli").focus(); return; }
+  if($("#fmVSis")) c.valorSistema = Math.max(0, parseFloat($("#fmVSis").value)||0);
+  Object.assign(c, { linkVence:$("#fmLinkV").value, retomarEm:$("#fmRet").value, pendOS:$("#fmOS").value.trim(), pendProm:$("#fmProm").value });
   if($("#fmOrig")){ c.origem = $("#fmOrig").value; if(!c.origem){ toast("Escolha a origem do lead.", true); $("#fmOrig").focus(); return; } }
   Object.assign(c, { cliente:cli, resp:$("#fmResp").value, cidade:$("#fmCid").value.trim(), protocolo:$("#fmProt").value.trim(), telefone:$("#fmTel").value.trim(),
     etiquetas:Array.from(E.tags), proxFollow:$("#fmFuDt").value, servico:$("#fmSvc").value, valor:Math.max(0, parseFloat($("#fmVal").value)||0), motivo:$("#fmMot").value, obs:$("#fmObs").value.trim() });
   if((E.alvo==="fechado" || E.com==="fechado") && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
-  if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo da perda.", true); return; }
+  if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo do encerramento.", true); $("#fmMot").focus(); return; }
   const del = $("#fmDel").value, delMot = $("#fmDelMot").value.trim(), quem = fnUsuario();
   if(E.tags.has(FN_RET) && !c.proxFollow){ toast("Retorno futuro: escolha a data do retorno.", true); $("#fmFuDt").focus(); return; }
   if(E.alvo==="delegado" && !del && !(c.etapa==="delegado" && c.delegadoPara)){ toast("Escolha para quem delegar.", true); $("#fmDel").focus(); return; }
@@ -11443,11 +11608,15 @@ async function fnGravarModal(){
   c.historico = c.historico || [];
   if(txt){ c.historico.push({em:agora, por:fnUsuario(), tipo:"fu", txt}); c.ultimoFollow = agora; }
   const id = E.id || ("c" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
-  if(c.etapa==="retorno" || c.etapa==="perdido"){ c.etapa = "acomp"; if(E.alvo==="retorno"||E.alvo==="perdido") E.alvo = "acomp"; }
+  if(c.etapa==="retorno" || (c.etapa==="perdido" && !fnCfg().perdido)){ c.etapa = "acomp"; if(E.alvo==="retorno"||E.alvo==="perdido") E.alvo = "acomp"; }
   const de = E.id ? (c.etapa||"carteira") : null;
   if(!E.id){ c.criadoEm = agora; c.etapa = E.alvo; c.etapaEm = agora; c.historico.unshift({em:agora, por:fnUsuario(), tipo:"sys", txt:"Entrou no funil em "+fnEtapa(E.alvo).nome}); try{ const u=window.APPAUTH&&window.APPAUTH.usuarioAtual; if(u) c.criadoPorEmail=u.email||""; }catch(e){} }
   else if(de !== E.alvo){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(E.alvo).nome}); c.etapa = E.alvo; c.etapaEm = agora; }
-  if(c.etapa==="negociacao" && !c.negEntrada) c.negEntrada = todayISO;
+  if((c.etapa==="negociacao" || c.etapa==="link") && !c.negEntrada) c.negEntrada = todayISO;
+  if(c.etapa==="link" && (de !== "link")){ c.proxFollow = fnAmanha(); c.historico.push({em:agora, por:"Sistema", tipo:"sys", txt:"Follow-up automático para amanhã (link de pagamento enviado)"}); }
+  if(c.etapa!=="perdido"){ c.motivo = ""; c.retomarEm = ""; }
+  if(c.etapa!=="link") c.linkVence = c.linkVence || "";
+  if(!E.tags.has(FN_PEND)){ c.pendOS = ""; c.pendProm = ""; }
   c.atualizadoEm = agora; delete c.id;
   if(fnEhG()){ const nv = E.com || c.comercial || "sem"; if(nv !== (c.comercial||"sem")){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Comercial: "+fnComInfo(c.comercial||"sem").nome+" → "+fnComInfo(nv).nome}); c.comercial = nv; c.comercialEm = agora; if(nv==="negociacao" && !c.negEntrada) c.negEntrada = todayISO; } }
   try { await fnSalvar(id, c); await fnSincNegocio(id, c); if(E.criarG) await fnCriarNoGestores(id, c); toast(fnEhEx(id) ? "Exemplo atualizado (simulação: não é salvo nem vai pro dashboard)" : E.id ? ((c.etapa==="fechado" && de!=="fechado") || (E.com==="fechado") ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
@@ -11467,10 +11636,12 @@ $("#fnModalHost").addEventListener("click", async ev=>{
   }
   const sg = ev.target.closest("[data-sg]"); if(sg){ E.com = sg.dataset.sg; $$("#fnSeg button").forEach(b=>b.classList.toggle("on", b===sg)); return; }
   const et = ev.target.closest("[data-et]"); if(et){ E.alvo = et.dataset.et; $$("#fnSteps button").forEach(b=>b.classList.toggle("on", b===et)); fnVendaVis(); return; }
-  const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); if(t===FN_RET){ fnVendaVis(); if(E.tags.has(t)){ const f=$("#fmFuDt"); if(!f.value || f.value<=todayISO){ const d=new Date(); d.setDate(d.getDate()+30); f.value=iso(d); } toast("Retorno futuro: confira a data do retorno"); } } return; }
+  const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); if(t===FN_PEND) fnVendaVis(); if(t===FN_RET){ fnVendaVis(); if(E.tags.has(t)){ const f=$("#fmFuDt"); if(!f.value || f.value<=todayISO){ const d=new Date(); d.setDate(d.getDate()+30); f.value=iso(d); } toast("Retorno futuro: confira a data do retorno"); } } return; }
   const q = ev.target.closest("[data-q]"); if(q){ const ta = $("#fmFuTxt"); ta.value = (ta.value ? ta.value.replace(/\s*$/," ") : "") + q.dataset.q + (q.dataset.q==="Sem resposta"?"":": "); ta.focus(); return; }
   const d = ev.target.closest("[data-d]"); if(d){ const dt = new Date(); dt.setDate(dt.getDate() + (+d.dataset.d)); $("#fmFuDt").value = iso(dt); return; }
 });
+$("#fnModalHost").addEventListener("input", ev=>{ const id = ev.target.id; if(id==="fmVSis") fnSegCalc(true); else if(id==="fmVal") fnSegCalc(false); });
+$("#fnModalHost").addEventListener("change", ev=>{ if(ev.target.id==="fmSvc") fnSegCalc(true); });
 $("#fnModalHost").addEventListener("keydown", ev=>{
   if(ev.key==="Escape"){ fnFechar(); return; }
   if(ev.target.id==="fmNovaTag" && ev.key==="Enter"){ ev.preventDefault(); const t = ev.target.value.trim(); if(!t || !fnEdit) return; fnEdit.tags.add(t);
@@ -11481,6 +11652,8 @@ $("#fnModalHost").addEventListener("keydown", ev=>{
 /* ---- board: clique, setas e arrastar ---- */
 $("#fnNovo").addEventListener("click", ()=>fnAbrir(null));
 $("#fnBoard").addEventListener("click", ev=>{
+  const cm0 = ev.target.closest("[data-colmin]") || (ev.target.closest(".fn-col.min") && !ev.target.closest(".fn-card") ? ev.target.closest(".fn-col.min") : null);
+  if(cm0){ const k = cm0.dataset.colmin || cm0.dataset.etapa; fnColMin[k] = !fnColMin[k]; try{ localStorage.setItem("ello-fn-colmin", JSON.stringify(fnColMin)); }catch(e){} renderFunilBoard(); return; }
   const add = ev.target.closest("[data-novo]"); if(add){ fnAbrir(null, {etapa:add.dataset.novo}); return; }
   const card = ev.target.closest(".fn-card"); if(!card) return; const id = card.dataset.id;
   const cm = ev.target.closest("[data-cm]"); if(cm){ ev.stopPropagation(); if(cm.dataset.cm) fnSetCom(id, cm.dataset.cm); return; }
@@ -11495,6 +11668,7 @@ $("#fnBoard").addEventListener("dragover", ev=>{ const col = ev.target.closest("
 $("#fnBoard").addEventListener("drop", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); col.classList.remove("over"); const id = fnDrag; fnDrag = null; if(col.dataset.com) fnSetCom(id, col.dataset.com); else fnMover(id, col.dataset.etapa); });
 ["fnQ","fnResp","fnTag","fnFu"].forEach(id=>$("#"+id).addEventListener("input", renderFunilBoard));
 $("#fnFunil").addEventListener("change", ev=>fnTrocarFunil(ev.target.value));
+$("#fnKpis").addEventListener("click", ev=>{ const k = ev.target.closest("[data-kf]"); if(!k) return; const f = $("#fnFu"); f.value = f.value === k.dataset.kf ? "" : k.dataset.kf; renderFunilBoard(); });
 $("#fnExBtn").addEventListener("click", ()=>{ fnVerEx = !fnVerEx; try{ localStorage.setItem("ello-fn-ex", fnVerEx?"1":"0"); }catch(e){} renderFunilBoard(); });
 $("#fnVis").addEventListener("click", ev=>{ const b = ev.target.closest("[data-vis]"); if(!b) return; fnVisao = b.dataset.vis; try{ localStorage.setItem("ello-fn-visao", fnVisao); }catch(e){} renderFunil(); });
 /* ---- rolagem lateral: botões, roda do mouse, arrastar o fundo e auto-rolagem ao arrastar card ---- */
