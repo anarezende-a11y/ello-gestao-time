@@ -11397,7 +11397,7 @@ function fnCardHtml(c){
     st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   const ex = String(c.id).startsWith("ex_");
-  const seg = c.funil==="felipe" && fnEhSeguro(c.servico) && +c.valor > 0;
+  const seg = (c.funil||fnFunil)==="felipe" && fnEhSeguro(c.servico) && +c.valor > 0;
   return '<div class="fn-card st-'+st+(fnLinkPerto(c)?' st-linkv':'')+(ex?' ex':'')+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+(ex?'EXEMPLO':dias+'d')+'</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
