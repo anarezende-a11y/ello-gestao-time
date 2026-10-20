@@ -1217,6 +1217,81 @@ body {
 #mod-posvendas .tbl-wrap{margin-top:10px}
 #mod-posvendas .pvsub{margin:0}
 
+
+/* ===== Funil CS (kanban) ===== */
+#mod-posvendas .fn-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:16px}
+#mod-posvendas .fn-kpi{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(4,22,27,.45)}
+#mod-posvendas .fn-kpi small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#mod-posvendas .fn-kpi b{display:block;font-size:20px;margin-top:4px;font-family:var(--f-mono)}
+#mod-posvendas .fn-kpi.bad b{color:var(--bad)} #mod-posvendas .fn-kpi.warn b{color:var(--warn)} #mod-posvendas .fn-kpi.ok b{color:var(--good)}
+#mod-posvendas .fn-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:14px}
+#mod-posvendas .fn-bar .fld{min-width:150px;flex:1}
+#mod-posvendas .fn-bar .fld.q{flex:2;min-width:220px}
+#mod-posvendas .fn-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(272px,1fr);gap:14px;overflow-x:auto;padding:4px 2px 14px;margin-top:14px;align-items:start}
+#mod-posvendas .fn-col{border:1px solid var(--line);border-radius:16px;background:rgba(4,22,27,.42);display:flex;flex-direction:column;max-height:calc(100vh - 190px);min-height:240px}
+#mod-posvendas .fn-col.over{border-color:var(--cyan);background:rgba(94,230,220,.07)}
+#mod-posvendas .fn-colh{padding:12px 14px 10px;border-bottom:1px solid var(--line);border-top:3px solid var(--c);border-radius:16px 16px 0 0}
+#mod-posvendas .fn-colh h4{margin:0;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+#mod-posvendas .fn-colh h4 span{font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(141,176,179,.14);color:var(--muted)}
+#mod-posvendas .fn-colh p{margin:3px 0 0;font-size:11.5px;color:var(--muted)}
+#mod-posvendas .fn-colh .tot{font-size:11.5px;color:var(--c);font-weight:800;margin-top:3px}
+#mod-posvendas .fn-add{all:unset;cursor:pointer;margin:10px 10px 0;padding:7px;border:1px dashed var(--line-strong);border-radius:10px;text-align:center;font-size:12px;font-weight:700;color:var(--muted)}
+#mod-posvendas .fn-add:hover{color:var(--fg);border-color:var(--cyan)}
+#mod-posvendas .fn-list{padding:10px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+#mod-posvendas .fn-empty{font-size:12px;color:var(--dim);text-align:center;padding:18px 6px}
+#mod-posvendas .fn-card{position:relative;border:1px solid var(--line);border-left:4px solid var(--line-strong);border-radius:12px;padding:11px 12px 10px;background:linear-gradient(160deg,rgba(22,78,88,.55),rgba(9,38,46,.75));cursor:pointer;transition:transform .12s, border-color .12s}
+#mod-posvendas .fn-card:hover{transform:translateY(-1px);border-color:var(--line-strong)}
+#mod-posvendas .fn-card.dragging{opacity:.45}
+#mod-posvendas .fn-card.st-atr{border-left-color:var(--bad)}
+#mod-posvendas .fn-card.st-hoje{border-left-color:var(--warn)}
+#mod-posvendas .fn-card.st-ok{border-left-color:var(--cyan)}
+#mod-posvendas .fn-card.st-fim{border-left-color:var(--good)}
+#mod-posvendas .fn-card.st-perd{border-left-color:#ff8fa3;opacity:.8}
+#mod-posvendas .fn-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+#mod-posvendas .fn-nome{font-weight:800;font-size:13.5px;line-height:1.25;word-break:break-word}
+#mod-posvendas .fn-dias{flex:none;font-family:var(--f-mono);font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(94,230,220,.13);color:var(--cyan)}
+#mod-posvendas .fn-dias.velho{background:var(--bad-soft);color:var(--bad)}
+#mod-posvendas .fn-sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+#mod-posvendas .fn-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+#mod-posvendas .fn-tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--t) 45%,transparent);color:var(--t);background:color-mix(in srgb,var(--t) 14%,transparent)}
+#mod-posvendas .fn-last{font-size:11.5px;color:var(--fg);opacity:.85;margin-top:8px;padding:6px 8px;border-radius:8px;background:rgba(3,18,22,.45);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#mod-posvendas .fn-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font-size:11.5px}
+#mod-posvendas .fn-fu{font-weight:700;color:var(--muted)}
+#mod-posvendas .fn-fu.atr{color:var(--bad)} #mod-posvendas .fn-fu.hoje{color:var(--warn)}
+#mod-posvendas .fn-resp{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--muted)}
+#mod-posvendas .fn-av{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:10px;font-weight:800;color:#04161b;background:var(--a)}
+#mod-posvendas .fn-val{font-family:var(--f-mono);font-weight:800;color:var(--good)}
+#mod-posvendas .fn-mv{display:flex;gap:4px}
+#mod-posvendas .fn-mv button{all:unset;cursor:pointer;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;border:1px solid var(--line);color:var(--muted);font-size:12px}
+#mod-posvendas .fn-mv button:hover{color:var(--fg);border-color:var(--cyan)}
+#mod-posvendas .fn-ov{position:fixed;inset:0;z-index:300;background:rgba(2,10,13,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+#mod-posvendas .fn-modal{width:min(760px,100%);background:linear-gradient(160deg,#0d3a45,#071f26);border:1px solid var(--line-strong);border-radius:18px;padding:20px 20px 18px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+#mod-posvendas .fn-mh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+#mod-posvendas .fn-mh h3{margin:0;font-size:18px}
+#mod-posvendas .fn-mh p{margin:4px 0 0;font-size:12px;color:var(--muted)}
+#mod-posvendas .fn-x{all:unset;cursor:pointer;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--line-strong);color:var(--muted)}
+#mod-posvendas .fn-steps{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 4px}
+#mod-posvendas .fn-steps button{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:7px 11px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted)}
+#mod-posvendas .fn-steps button.on{background:color-mix(in srgb,var(--c) 22%,transparent);border-color:var(--c);color:var(--fg)}
+#mod-posvendas .fn-sec{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+#mod-posvendas .fn-sec h5{margin:0 0 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#mod-posvendas .fn-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#mod-posvendas .fn-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#mod-posvendas .fn-tagpick{display:flex;flex-wrap:wrap;gap:6px}
+#mod-posvendas .fn-tagpick button{all:unset;cursor:pointer;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted)}
+#mod-posvendas .fn-tagpick button.on{color:var(--t);border-color:var(--t);background:color-mix(in srgb,var(--t) 16%,transparent)}
+#mod-posvendas .fn-tagpick input{all:unset;font-size:11.5px;padding:5px 10px;border-radius:999px;border:1px dashed var(--line-strong);min-width:120px}
+#mod-posvendas .fn-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#mod-posvendas .fn-quick button{all:unset;cursor:pointer;font-size:11px;font-weight:700;padding:4px 9px;border-radius:8px;background:rgba(141,176,179,.12);color:var(--muted)}
+#mod-posvendas .fn-quick button:hover{color:var(--fg)}
+#mod-posvendas .fn-hist{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;margin-top:10px}
+#mod-posvendas .fn-h{font-size:12.5px;padding:8px 10px;border-radius:10px;background:rgba(3,18,22,.5);border:1px solid var(--line)}
+#mod-posvendas .fn-h small{display:block;color:var(--dim);font-size:10.5px;margin-bottom:2px}
+#mod-posvendas .fn-h.sys{opacity:.7;font-style:italic}
+#mod-posvendas .fn-mf{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+#mod-posvendas .fn-warn{font-size:12px;color:var(--warn);margin-top:8px}
+@media (max-width:900px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#mod-posvendas .fn-g3{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#mod-posvendas .fn-g3,#mod-posvendas .fn-g2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1426,7 +1501,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 13/10 · 11h40</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 13h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -2058,6 +2133,7 @@ window.APPAUTH = window.APPAUTH || {};
     <nav class="nav" id="nav">
       <button data-view="dash" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 4v4h6V4z"/></svg>Comercial · Pós-vendas</button>
       <button data-view="neg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h12"/></svg>Negócios</button>
+      <button data-view="funil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>Funil CS</button>
       <button data-view="admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Admin · Metas</button>
       <button data-view="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17.5v.01"/></svg>Como funciona</button>
     </nav>
@@ -2223,6 +2299,23 @@ window.APPAUTH = window.APPAUTH || {};
         </div>
         <div class="tbl-wrap"><table id="negTbl"><thead><tr><th>Cliente</th><th>Vendedor</th><th>Serviço</th><th class="r">Valor</th><th>Status</th><th>Entrada</th><th class="r">Dias</th><th></th></tr></thead><tbody></tbody></table></div>
       </article>
+    </section>
+
+    <!-- ================= FUNIL CS ================= -->
+    <section class="view" id="v-funil" hidden>
+      <div class="page-h">
+        <div><div class="upd"><span class="dot"></span>Jornada do cliente</div><h1>Funil CS</h1><p class="pvsub">Primeiro ganhar o cliente e acompanhar. A venda vem depois: em negociação entra como negócio em aberto e, ao fechar, cai no dashboard.</p></div>
+        <div class="ctrl-row"><button class="pvbtn" type="button" id="fnNovo">+ Novo cliente</button></div>
+      </div>
+      <div class="fn-kpis" id="fnKpis"></div>
+      <div class="fn-bar">
+        <div class="fld q"><label for="fnQ">Buscar</label><input id="fnQ" placeholder="Cliente, cidade ou protocolo"></div>
+        <div class="fld"><label for="fnResp">Responsável</label><select id="fnResp"></select></div>
+        <div class="fld"><label for="fnTag">Etiqueta</label><select id="fnTag"></select></div>
+        <div class="fld"><label for="fnFu">Follow-up</label><select id="fnFu"><option value="">Todos</option><option value="atr">Atrasados</option><option value="hoje">Para hoje</option><option value="sem">Sem próximo follow-up</option></select></div>
+      </div>
+      <div class="fn-board" id="fnBoard"></div>
+      <div id="fnModalHost"></div>
     </section>
 
     <!-- ================= ADMIN ================= -->
@@ -10925,7 +11018,7 @@ var show = function(v){
   $$(".view").forEach(s=>s.hidden = s.id !== "v-"+v);
   $$("#nav button").forEach(b=>{ if(b.dataset.view===v) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   try{ localStorage.setItem("ello-pv-view", v); }catch(e){}
-  if(v==="dash") renderDash(); if(v==="neg") renderNeg(); if(v==="admin") renderAdmin();
+  if(v==="dash") renderDash(); if(v==="neg") renderNeg(); if(v==="admin") renderAdmin(); if(v==="funil") renderFunil();
   window.scrollTo({top:0});
 };
 $("#nav").addEventListener("click", ev=>{ const b=ev.target.closest("button[data-view]"); if(b) show(b.dataset.view); });
@@ -10935,12 +11028,227 @@ function applyPerms(){
   $("#negRo").hidden = canWrite; $$("#negForm input, #negForm select, #negForm button").forEach(i=>i.disabled = !canWrite);
   try { aplicarColaborador(); } catch(e) {}
 }
-function afterCfg(){ fillSelects(); const cur=$(".view:not([hidden])")?.id; if(cur==="v-dash") renderDash(); if(cur==="v-neg") renderNeg(); if(cur==="v-admin" && document.activeElement?.closest("#v-admin")==null) renderAdmin(); }
+function afterCfg(){ fillSelects(); const cur=$(".view:not([hidden])")?.id; if(cur==="v-dash") renderDash(); if(cur==="v-neg") renderNeg(); if(cur==="v-funil" && !fnEdit) renderFunil(); if(cur==="v-admin" && document.activeElement?.closest("#v-admin")==null) renderAdmin(); }
 
 $("#fMes").addEventListener("change", renderDash); $("#fVend").addEventListener("change", renderDash);
 $("#btnRefresh").addEventListener("click", ()=>{ renderDash(); toast("Painel atualizado"); });
 $("#demoOff").addEventListener("click", ()=>{ demoForced=null; renderDash(); });
 let rz; window.addEventListener("resize", ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(isActive() && !$("#v-dash").hidden) renderDash(); }, 120); });
+
+
+/* ================= FUNIL CS (kanban de jornada) =================
+   shared_data/funil_cs → um campo por card.
+   Em negociação  → cria/atualiza negócio "aberto" em posvendas_negocios (id f_<card>)
+   Negócio fechado → negócio "ganho"; Perdido (depois de negociar) → "perdido". Volta pra etapa anterior → negócio sai do dashboard. */
+const FN_ETAPAS = [
+  {id:"carteira",   nome:"Carteira assumida", sub:"Ganhar o cliente", c:"#7cc4ff"},
+  {id:"acomp",      nome:"Acompanhamento",    sub:"Relacionamento e follow-up", c:"#5ee6dc"},
+  {id:"apresentar", nome:"Apresentar",        sub:"Serviço ou oferta a apresentar", c:"#c48bff"},
+  {id:"negociacao", nome:"Em negociação",     sub:"Proposta na mesa", c:"#f5a524"},
+  {id:"fechado",    nome:"Negócio fechado",   sub:"Vendido · vai pro dashboard", c:"#3ee39a"},
+  {id:"perdido",    nome:"Perdido",           sub:"Não avançou", c:"#ff8fa3"}
+];
+const FN_TAGS = [
+  {n:"Seguro", c:"#3ee39a"}, {n:"Limpeza", c:"#5ee6dc"}, {n:"Manutenção", c:"#7cc4ff"}, {n:"Indicação", c:"#c48bff"},
+  {n:"Avaliação Google", c:"#ffd166"}, {n:"NPS", c:"#9be564"}, {n:"Cooperativa", c:"#ff8fa3"}, {n:"Prioridade", c:"#ff6b6b"},
+  {n:"Sem resposta", c:"#f5a524"}, {n:"Reclamação", c:"#ff8f5a"}
+];
+const FN_CS = ["adriele","sharon"];
+const fnEtapa = id => FN_ETAPAS.find(e=>e.id===id) || FN_ETAPAS[0];
+const fnTagCor = n => (FN_TAGS.find(t=>t.n.toLowerCase()===String(n).toLowerCase())||{c:"#8db0b3"}).c;
+const fnIdx = id => FN_ETAPAS.findIndex(e=>e.id===id);
+let fnCards = {}, fnOuvindo = false, fnDrag = null, fnEdit = null;
+function fnRef(){ const fb = window.fb; return fb.doc(fb.db, "shared_data", "funil_cs"); }
+function fnOuvir(){
+  if(fnOuvindo || !window.fb || !connected) return; fnOuvindo = true;
+  window.fb.onSnapshot(fnRef(), sn => { fnCards = sn.exists() ? (sn.data()||{}) : {}; if(!$("#v-funil").hidden && !fnEdit) renderFunil(); else if(!$("#v-funil").hidden) renderFunilBoard(); }, e => toast(permDenied(e) ? "Sem permissão para ler o funil." : "O funil ficou indisponível.", true));
+}
+const fnSalvar = (id, d) => window.fb.setDoc(fnRef(), {[id]: d}, {merge:true});
+const fnLista = () => Object.keys(fnCards).map(id => Object.assign({}, fnCards[id], {id})).filter(c => c && !c._apagado && c.cliente);
+const fnVendCor = id => { const i = (cfg.vendedores||[]).findIndex(v=>v.id===id); return COLORS[(i<0?0:i) % COLORS.length]; };
+const fnIni = n => String(n||"?").trim().slice(0,1).toUpperCase();
+function fnFuSt(c){
+  if(c.etapa==="fechado") return "fim"; if(c.etapa==="perdido") return "perd";
+  if(!c.proxFollow) return "sem"; if(c.proxFollow < todayISO) return "atr"; if(c.proxFollow === todayISO) return "hoje"; return "ok";
+}
+function fnUsuario(){ const u = window.APPAUTH && window.APPAUTH.usuarioAtual; return u ? (u.nome || String(u.email||"").split("@")[0]) : ""; }
+function fnFiltros(){
+  const rs = $("#fnResp"), vs = cfg.vendedores||[]; const keep = rs.value;
+  rs.innerHTML = '<option value="cs">CS (Adriele e Sharon)</option><option value="">Todo o time</option>' + vs.map(v=>'<option value="'+esc(v.id)+'">'+esc(v.nome)+'</option>').join("");
+  rs.value = keep || "cs"; if(rs.value !== (keep||"cs")) rs.value = "cs";
+  const ts = $("#fnTag"), kt = ts.value; const set = new Set(FN_TAGS.map(t=>t.n)); fnLista().forEach(c => (c.etiquetas||[]).forEach(t=>set.add(t)));
+  ts.innerHTML = '<option value="">Todas</option>' + Array.from(set).map(t=>'<option>'+esc(t)+'</option>').join(""); ts.value = kt;
+}
+function fnFiltrados(){
+  const q = $("#fnQ").value.trim().toLowerCase(), r = $("#fnResp").value, t = $("#fnTag").value, fu = $("#fnFu").value;
+  return fnLista().filter(c => {
+    if(r === "cs" && !FN_CS.includes(c.resp)) return false;
+    if(r && r !== "cs" && c.resp !== r) return false;
+    if(t && !(c.etiquetas||[]).includes(t)) return false;
+    if(fu && fnFuSt(c) !== fu) return false;
+    if(q && !((c.cliente||"")+" "+(c.cidade||"")+" "+(c.protocolo||"")).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+function renderFunil(){ fnOuvir(); fnFiltros(); renderFunilBoard(); }
+function renderFunilBoard(){
+  const cards = fnFiltrados(); const mes = todayISO.slice(0,7);
+  const abertos = cards.filter(c=>!["fechado","perdido"].includes(c.etapa));
+  const atr = abertos.filter(c=>fnFuSt(c)==="atr").length, hoje = abertos.filter(c=>fnFuSt(c)==="hoje").length;
+  const neg = cards.filter(c=>c.etapa==="negociacao"); const fechM = cards.filter(c=>c.etapa==="fechado" && (c.etapaEm||"").startsWith(mes));
+  const perdM = cards.filter(c=>c.etapa==="perdido" && (c.etapaEm||"").startsWith(mes));
+  const conv = (fechM.length+perdM.length) ? fechM.length/(fechM.length+perdM.length) : NaN;
+  $("#fnKpis").innerHTML = [
+    ["Clientes em acompanhamento", INT(abertos.length), ""],
+    ["Follow-ups atrasados", INT(atr), atr?"bad":""],
+    ["Follow-ups para hoje", INT(hoje), hoje?"warn":""],
+    ["Em negociação", BRL(neg.reduce((a,c)=>a+(+c.valor||0),0)), "warn"],
+    ["Fechado no mês", BRL(fechM.reduce((a,c)=>a+(+c.valor||0),0)), "ok"],
+    ["Conversão no mês", PCT(conv), ""]
+  ].map(k=>'<div class="fn-kpi '+k[2]+'"><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
+  $("#fnBoard").innerHTML = FN_ETAPAS.map(e => {
+    const lst = cards.filter(c => (c.etapa||"carteira") === e.id).sort((a,b)=>{
+      const fa = a.proxFollow||"9999", fb2 = b.proxFollow||"9999"; return fa===fb2 ? (b.etapaEm||"").localeCompare(a.etapaEm||"") : fa.localeCompare(fb2); });
+    const tot = lst.reduce((a,c)=>a+(+c.valor||0),0);
+    return '<div class="fn-col" data-etapa="'+e.id+'" style="--c:'+e.c+'"><div class="fn-colh"><h4>'+esc(e.nome)+'<span>'+lst.length+'</span></h4><p>'+esc(e.sub)+'</p>'+(tot?'<div class="tot">'+BRL(tot)+'</div>':'')+'</div>'+
+      (e.id==="carteira"?'<button class="fn-add" type="button" data-novo="'+e.id+'">+ Adicionar cliente</button>':'')+
+      '<div class="fn-list">'+(lst.length? lst.map(fnCardHtml).join("") : '<div class="fn-empty">Arraste um card para cá</div>')+'</div></div>';
+  }).join("");
+}
+function fnCardHtml(c){
+  const st = fnFuSt(c), dias = dayDiff((c.etapaEm||c.criadoEm||todayISO).slice(0,10), todayISO);
+  const ult = (c.historico||[]).filter(h=>h.tipo!=="sys").slice(-1)[0];
+  const fu = st==="fim" ? '<span class="fn-fu">Fechado '+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
+    st==="sem" ? '<span class="fn-fu atr">Sem follow-up</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
+  const i = fnIdx(c.etapa||"carteira");
+  return '<div class="fn-card st-'+st+'" draggable="true" data-id="'+esc(c.id)+'">'+
+    '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+dias+'d</span></div>'+
+    '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
+    ((c.etiquetas||[]).length?'<div class="fn-tags">'+c.etiquetas.map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+'</span>').join("")+'</div>':'')+
+    (ult?'<div class="fn-last">'+esc(ult.txt)+'</div>':'')+
+    '<div class="fn-foot">'+fu+(+c.valor?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
+      '<span class="fn-resp"><span class="fn-av" style="--a:'+fnVendCor(c.resp)+'">'+esc(fnIni(vName(c.resp)))+'</span>'+esc(vName(c.resp)||"")+'</span>'+
+      '<span class="fn-mv">'+(i>0?'<button type="button" data-mv="-1" title="Etapa anterior">‹</button>':'')+(i<4?'<button type="button" data-mv="1" title="Próxima etapa">›</button>':'')+'</span></div></div>';
+}
+/* ---- mover de etapa (com integração ao dashboard) ---- */
+async function fnMover(id, etapa, extra){
+  const c = Object.assign({}, fnCards[id]||{}); if(!c.cliente) return;
+  const de = c.etapa || "carteira"; if(de === etapa && !extra) return;
+  Object.assign(c, extra||{});
+  if(etapa === "fechado" && (!(+c.valor > 0) || !c.servico)){ fnAbrir(id, {etapaAlvo:"fechado", aviso:"Para fechar o negócio, informe o serviço e o valor."}); return; }
+  if(etapa === "perdido" && !c.motivo){ fnAbrir(id, {etapaAlvo:"perdido", aviso:"Escolha o motivo da perda."}); return; }
+  c.etapa = etapa; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
+  if(de !== etapa){ c.historico = (c.historico||[]).concat([{em:c.etapaEm, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(etapa).nome}]); }
+  if(etapa === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(etapa==="fechado" ? "Negócio fechado! Já está no dashboard." : "Movido para "+fnEtapa(etapa).nome); }
+  catch(e){ handleWriteErr(e); }
+}
+async function fnSincNegocio(id, c){
+  if(!db) return; const nid = "f_"+id; const tem = realDeals.some(d=>d.id===nid);
+  const st = c.etapa==="negociacao" ? "aberto" : c.etapa==="fechado" ? "ganho" : (c.etapa==="perdido" && c.negEntrada) ? "perdido" : null;
+  if(!st){ if(tem) await db.doc("negocios/"+nid).delete(); return; }
+  const prev = realDeals.find(d=>d.id===nid) || {};
+  const body = Object.assign({}, prev, { cliente:c.cliente, vendedor:c.resp, servico:c.servico || (cfg.servicos||[])[0]?.id || "", valor:Math.max(0,+c.valor||0), status:st,
+    entrada: c.negEntrada || todayISO, fechamento: st==="aberto" ? "" : todayISO, motivo: st==="perdido" ? (c.motivo||"Outro") : "",
+    obs: "Funil CS"+(c.protocolo?" · #"+c.protocolo:""), origem:"funil_cs", funilId:id, atualizadoEm:new Date().toISOString(), _apagado:false });
+  if(prev.status === st && prev.fechamento) body.fechamento = prev.fechamento;
+  delete body.id; if(!tem) body.criadoEm = new Date().toISOString();
+  await db.doc("negocios/"+nid).set(body);
+}
+/* ---- modal ---- */
+function fnAbrir(id, opt){
+  opt = opt || {};
+  const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", resp: (FN_CS.includes(acharMeuVend())? acharMeuVend() : ($("#fnResp").value && $("#fnResp").value!=="cs" ? $("#fnResp").value : "adriele")), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(Object.assign({}, fnCards[id], {id})));
+  const alvo = opt.etapaAlvo || c.etapa || "carteira";
+  fnEdit = {id, c, alvo, tags:new Set(c.etiquetas||[])};
+  const vs = cfg.vendedores||[], ss = cfg.servicos||[];
+  const tagsAll = Array.from(new Set(FN_TAGS.map(t=>t.n).concat(c.etiquetas||[])));
+  $("#fnModalHost").innerHTML = '<div class="fn-ov" id="fnOv"><div class="fn-modal" role="dialog" aria-modal="true" aria-labelledby="fnMT">'+
+    '<div class="fn-mh"><div><h3 id="fnMT">'+(novo?"Novo cliente no funil":esc(c.cliente))+'</h3><p>'+(novo?"Entra em Carteira assumida. O foco agora é ganhar o cliente.":"Na etapa "+esc(fnEtapa(c.etapa).nome)+(c.criadoEm?" · no funil desde "+fmtDM(c.criadoEm.slice(0,10)):""))+'</p></div><button class="fn-x" type="button" data-fx="close" aria-label="Fechar">✕</button></div>'+
+    (opt.aviso?'<div class="fn-warn">'+esc(opt.aviso)+'</div>':'')+
+    '<div class="fn-steps" id="fnSteps">'+FN_ETAPAS.map(e=>'<button type="button" data-et="'+e.id+'" style="--c:'+e.c+'" class="'+(e.id===alvo?'on':'')+'">'+esc(e.nome)+'</button>').join("")+'</div>'+
+    '<div class="fn-sec"><h5>Cliente</h5><div class="fn-g3">'+
+      '<div class="fld" style="grid-column:span 2"><label for="fmCli">Nome do cliente</label><input id="fmCli" maxlength="120" value="'+esc(c.cliente||"")+'" placeholder="Nome do cliente ou da usina"></div>'+
+      '<div class="fld"><label for="fmResp">Responsável</label><select id="fmResp">'+vs.map(v=>'<option value="'+esc(v.id)+'"'+(v.id===c.resp?' selected':'')+'>'+esc(v.nome)+'</option>').join("")+'</select></div>'+
+      '<div class="fld"><label for="fmCid">Cidade</label><input id="fmCid" maxlength="60" value="'+esc(c.cidade||"")+'" placeholder="Itajaí"></div>'+
+      '<div class="fld"><label for="fmProt">Protocolo / nº</label><input id="fmProt" maxlength="40" value="'+esc(c.protocolo||"")+'"></div>'+
+      '<div class="fld"><label for="fmTel">Telefone</label><input id="fmTel" maxlength="30" value="'+esc(c.telefone||"")+'" placeholder="(47) 9…"></div>'+
+    '</div></div>'+
+    '<div class="fn-sec"><h5>Etiquetas</h5><div class="fn-tagpick" id="fnTagPick">'+tagsAll.map(t=>'<button type="button" data-tg="'+esc(t)+'" style="--t:'+fnTagCor(t)+'" class="'+(fnEdit.tags.has(t)?'on':'')+'">'+esc(t)+'</button>').join("")+'<input id="fmNovaTag" maxlength="24" placeholder="+ nova etiqueta (Enter)"></div></div>'+
+    '<div class="fn-sec"><h5>Follow-up</h5><div class="fn-g2">'+
+      '<div class="fld"><label for="fmFuTxt">O que foi feito agora</label><textarea id="fmFuTxt" rows="2" maxlength="400" placeholder="Ex.: Liguei, cliente satisfeito com a usina, pediu orçamento de limpeza em novembro"></textarea>'+
+        '<div class="fn-quick">'+["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Pediu orçamento","Apresentei o seguro"].map(q=>'<button type="button" data-q="'+esc(q)+'">'+esc(q)+'</button>').join("")+'</div></div>'+
+      '<div class="fld"><label for="fmFuDt">Próximo follow-up</label><input id="fmFuDt" type="date" value="'+esc(c.proxFollow||"")+'">'+
+        '<div class="fn-quick">'+[["Amanhã",1],["+3 dias",3],["+1 semana",7],["+15 dias",15],["+30 dias",30]].map(q=>'<button type="button" data-d="'+q[1]+'">'+q[0]+'</button>').join("")+'</div></div>'+
+    '</div>'+((c.historico||[]).length?'<div class="fn-hist">'+c.historico.slice().reverse().map(h=>'<div class="fn-h'+(h.tipo==="sys"?" sys":"")+'"><small>'+esc(new Date(h.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+(h.por?" · "+esc(h.por):"")+'</small>'+esc(h.txt)+'</div>').join("")+'</div>':'')+'</div>'+
+    '<div class="fn-sec" id="fnVenda"><h5>Venda</h5><div class="fn-g3">'+
+      '<div class="fld"><label for="fmSvc">Serviço</label><select id="fmSvc"><option value="">—</option>'+ss.map(s=>'<option value="'+esc(s.id)+'"'+(s.id===c.servico?' selected':'')+'>'+esc(s.nome)+'</option>').join("")+'</select></div>'+
+      '<div class="fld"><label for="fmVal">Valor (R$)</label><input id="fmVal" type="number" min="0" step="0.01" value="'+esc(c.valor||"")+'"></div>'+
+      '<div class="fld" id="fmMotW"><label for="fmMot">Motivo da perda</label><select id="fmMot"><option value="">—</option>'+["Preço","Sem interesse","Sem retorno do cliente","Fechou com concorrente","Sem condição financeira","Outro"].map(m=>'<option'+(m===c.motivo?' selected':'')+'>'+m+'</option>').join("")+'</select></div>'+
+    '</div><span class="hint" style="font-size:11px;color:var(--dim)">Em negociação o cliente entra como negócio em aberto no dashboard; ao fechar, conta como venda.</span></div>'+
+    '<div class="fld" style="margin-top:14px"><label for="fmObs">Observações</label><textarea id="fmObs" rows="2" maxlength="600">'+esc(c.obs||"")+'</textarea></div>'+
+    '<div class="fn-mf"><div>'+(novo?'':'<button class="pvbtn danger sm" type="button" data-fx="del">Excluir card</button>')+'</div><div style="display:flex;gap:8px"><button class="pvbtn ghost" type="button" data-fx="close">Cancelar</button><button class="pvbtn" type="button" data-fx="save">'+(novo?"Adicionar ao funil":"Salvar")+'</button></div></div>'+
+  '</div></div>';
+  fnVendaVis();
+  setTimeout(()=>{ const el = opt.etapaAlvo==="fechado" ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
+}
+function fnVendaVis(){ if(!fnEdit) return; const i = fnIdx(fnEdit.alvo); $("#fnVenda").hidden = i < 2; $("#fmMotW").hidden = fnEdit.alvo !== "perdido"; }
+function fnFechar(){ fnEdit = null; $("#fnModalHost").innerHTML = ""; renderFunilBoard(); }
+async function fnGravarModal(){
+  const E = fnEdit; if(!E) return; const c = E.c;
+  const cli = $("#fmCli").value.trim(); if(!cli){ toast("Informe o nome do cliente.", true); $("#fmCli").focus(); return; }
+  Object.assign(c, { cliente:cli, resp:$("#fmResp").value, cidade:$("#fmCid").value.trim(), protocolo:$("#fmProt").value.trim(), telefone:$("#fmTel").value.trim(),
+    etiquetas:Array.from(E.tags), proxFollow:$("#fmFuDt").value, servico:$("#fmSvc").value, valor:Math.max(0, parseFloat($("#fmVal").value)||0), motivo:$("#fmMot").value, obs:$("#fmObs").value.trim() });
+  if(E.alvo==="fechado" && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
+  if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo da perda.", true); return; }
+  const agora = new Date().toISOString(); const txt = $("#fmFuTxt").value.trim();
+  c.historico = c.historico || [];
+  if(txt){ c.historico.push({em:agora, por:fnUsuario(), tipo:"fu", txt}); c.ultimoFollow = agora; }
+  const id = E.id || ("c" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  const de = E.id ? (c.etapa||"carteira") : null;
+  if(!E.id){ c.criadoEm = agora; c.etapa = E.alvo; c.etapaEm = agora; c.historico.unshift({em:agora, por:fnUsuario(), tipo:"sys", txt:"Entrou no funil em "+fnEtapa(E.alvo).nome}); try{ const u=window.APPAUTH&&window.APPAUTH.usuarioAtual; if(u) c.criadoPorEmail=u.email||""; }catch(e){} }
+  else if(de !== E.alvo){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(E.alvo).nome}); c.etapa = E.alvo; c.etapaEm = agora; }
+  if(c.etapa==="negociacao" && !c.negEntrada) c.negEntrada = todayISO;
+  c.atualizadoEm = agora; delete c.id;
+  try { await fnSalvar(id, c); await fnSincNegocio(id, c); toast(E.id ? (c.etapa==="fechado" && de!=="fechado" ? "Negócio fechado! Já está no dashboard." : "Card salvo") : "Cliente adicionado ao funil"); fnFechar(); }
+  catch(e){ handleWriteErr(e); }
+}
+let fnDelOk = false;
+$("#fnModalHost").addEventListener("click", async ev=>{
+  const E = fnEdit; if(!E) return;
+  if(ev.target.id === "fnOv"){ fnFechar(); return; }
+  const fx = ev.target.closest("[data-fx]"); if(fx){
+    if(fx.dataset.fx==="close") fnFechar();
+    if(fx.dataset.fx==="save") fnGravarModal();
+    if(fx.dataset.fx==="del"){ if(!fnDelOk){ fnDelOk = true; fx.textContent = "Confirmar exclusão?"; setTimeout(()=>{ fnDelOk=false; if(fx.isConnected) fx.textContent="Excluir card"; }, 3000); return; }
+      fnDelOk = false; try{ await fnSalvar(E.id, {_apagado:true, apagadoEm:new Date().toISOString()}); if(realDeals.some(d=>d.id==="f_"+E.id)) await db.doc("negocios/f_"+E.id).delete(); toast("Card excluído"); fnFechar(); }catch(e){ handleWriteErr(e); } }
+    return;
+  }
+  const et = ev.target.closest("[data-et]"); if(et){ E.alvo = et.dataset.et; $$("#fnSteps button").forEach(b=>b.classList.toggle("on", b===et)); fnVendaVis(); return; }
+  const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); return; }
+  const q = ev.target.closest("[data-q]"); if(q){ const ta = $("#fmFuTxt"); ta.value = (ta.value ? ta.value.replace(/\s*$/," ") : "") + q.dataset.q + (q.dataset.q==="Sem resposta"?"":": "); ta.focus(); return; }
+  const d = ev.target.closest("[data-d]"); if(d){ const dt = new Date(); dt.setDate(dt.getDate() + (+d.dataset.d)); $("#fmFuDt").value = iso(dt); return; }
+});
+$("#fnModalHost").addEventListener("keydown", ev=>{
+  if(ev.key==="Escape"){ fnFechar(); return; }
+  if(ev.target.id==="fmNovaTag" && ev.key==="Enter"){ ev.preventDefault(); const t = ev.target.value.trim(); if(!t || !fnEdit) return; fnEdit.tags.add(t);
+    if(!$('#fnTagPick [data-tg="'+CSS.escape(t)+'"]')){ const b = document.createElement("button"); b.type="button"; b.dataset.tg=t; b.className="on"; b.style.setProperty("--t", fnTagCor(t)); b.textContent=t; ev.target.before(b); }
+    else $('#fnTagPick [data-tg="'+CSS.escape(t)+'"]').classList.add("on");
+    ev.target.value=""; }
+});
+/* ---- board: clique, setas e arrastar ---- */
+$("#fnNovo").addEventListener("click", ()=>fnAbrir(null));
+$("#fnBoard").addEventListener("click", ev=>{
+  const add = ev.target.closest("[data-novo]"); if(add){ fnAbrir(null, {etapa:add.dataset.novo}); return; }
+  const card = ev.target.closest(".fn-card"); if(!card) return; const id = card.dataset.id;
+  const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnCards[id]; const i = fnIdx(c.etapa||"carteira") + (+mv.dataset.mv); if(FN_ETAPAS[i]) fnMover(id, FN_ETAPAS[i].id); return; }
+  fnAbrir(id);
+});
+$("#fnBoard").addEventListener("dragstart", ev=>{ const c = ev.target.closest(".fn-card"); if(!c) return; fnDrag = c.dataset.id; c.classList.add("dragging"); try{ ev.dataTransfer.setData("text/plain", fnDrag); ev.dataTransfer.effectAllowed="move"; }catch(e){} });
+$("#fnBoard").addEventListener("dragend", ev=>{ const c = ev.target.closest(".fn-card"); if(c) c.classList.remove("dragging"); $$("#fnBoard .fn-col.over").forEach(x=>x.classList.remove("over")); });
+$("#fnBoard").addEventListener("dragover", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); $$("#fnBoard .fn-col.over").forEach(x=>{ if(x!==col) x.classList.remove("over"); }); col.classList.add("over"); });
+$("#fnBoard").addEventListener("drop", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); col.classList.remove("over"); const id = fnDrag; fnDrag = null; fnMover(id, col.dataset.etapa); });
+["fnQ","fnResp","fnTag","fnFu"].forEach(id=>$("#"+id).addEventListener("input", renderFunilBoard));
 
 /* ================= boot (plataforma ello-gestao-time) ================= */
 const isActive = () => { const v = ROOT.closest(".tool-view"); return !!(v && v.classList.contains("active")); };
@@ -10971,6 +11279,7 @@ function tryConnect(){
   }, e=>{ realLoaded = true;
     toast(permDenied(e) ? "Sem permissão para ler os negócios no Firebase." : "A base de negócios ficou indisponível.", true);
     renderDash(); });
+  fnOuvir();
 }
 window.addEventListener("fbReady", tryConnect);
 window.addEventListener("userAuthed", tryConnect);
