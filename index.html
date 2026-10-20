@@ -1354,11 +1354,18 @@ body {
 #mod-posvendas .fn-cntitem .lin{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 #mod-posvendas .fn-cntitem b{font-size:13px}
 #mod-posvendas .fn-cntitem .wk{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+#mod-posvendas .fn-who{all:unset;cursor:pointer;margin-left:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);font-size:11px;letter-spacing:.04em}
+#mod-posvendas .fn-who.on{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
 #mod-posvendas .fn-plus{all:unset;cursor:pointer;padding:7px 12px;border-radius:10px;font-weight:800;font-size:12.5px;background:linear-gradient(180deg,#ffb840,#e58f0c);color:#2a1700}
 #mod-posvendas .fn-minus{all:unset;cursor:pointer;padding:6px 9px;border-radius:9px;font-weight:800;font-size:12px;border:1px solid var(--line-strong);color:var(--muted)}
 #mod-posvendas .fn-bar2{position:relative;height:10px;border-radius:999px;background:rgba(141,176,179,.15);margin:10px 0 4px;overflow:visible}
-#mod-posvendas .fn-bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--bad)}
-#mod-posvendas .fn-bar2 i.ok{background:var(--good)}
+#mod-posvendas .fn-bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:rgba(141,176,179,.45)}
+#mod-posvendas .fn-bar2 i.min{background:#ff6b6b}
+#mod-posvendas .fn-bar2 i.ideal{background:#ffd166}
+#mod-posvendas .fn-bar2 i.sup{background:#3ee39a}
+#mod-posvendas .fn-bar2 em.min{background:#ff6b6b;opacity:.9} #mod-posvendas .fn-bar2 em.ideal{background:#ffd166;opacity:.9} #mod-posvendas .fn-bar2 em.sup{background:#3ee39a;opacity:.9}
+#mod-posvendas .fn-mt .t-min{color:rgba(255,107,107,.7)} #mod-posvendas .fn-mt .t-ideal{color:rgba(255,209,102,.7)} #mod-posvendas .fn-mt .t-sup{color:rgba(62,227,154,.7)}
+#mod-posvendas .fn-mt .hit{font-weight:800;opacity:1;filter:brightness(1.25)}
 #mod-posvendas .fn-bar2 em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);opacity:.55}
 #mod-posvendas .fn-mt{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);font-family:var(--f-mono)}
 #mod-posvendas .fn-mt .ok{color:var(--good);font-weight:800}
@@ -1592,7 +1599,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 17h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 17h45</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -11390,7 +11397,7 @@ function fnCardHtml(c){
     st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   const ex = String(c.id).startsWith("ex_");
-  const seg = fnEhSeguro(c.servico) && +c.valor > 0;
+  const seg = c.funil==="felipe" && fnEhSeguro(c.servico) && +c.valor > 0;
   return '<div class="fn-card st-'+st+(fnLinkPerto(c)?' st-linkv':'')+(ex?' ex':'')+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+(ex?'EXEMPLO':dias+'d')+'</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
@@ -11439,27 +11446,33 @@ async function fnSincNegocio(id, c){
 /* ---- contadores de indicações e avaliações Google (Felipe) ----
    shared_data/funil_contadores → { felipe: { inicio:"AAAA-MM-DD", dias: { "AAAA-MM-DD": {ind, aval} } } }
    Semana zera toda segunda; metas da remuneração variável são mensais. */
-let fnCont = {}, fnContOuvindo = false;
+let fnCont = {}, fnContOuvindo = false, fnContSel = {};
+function fnContQuem(){
+  const lista = fnCfg().resp; const sel = fnContSel[fnFunil]; if(lista.includes(sel)) return sel;
+  const r = $("#fnResp").value; if(lista.includes(r)) return r;
+  const eu = acharMeuVend(); return lista.includes(eu) ? eu : lista[0];
+}
 function fnContRef(){ return window.fb.doc(window.fb.db, "shared_data", "funil_contadores"); }
-function fnContOuvir(){ if(fnContOuvindo || !window.fb || !connected) return; fnContOuvindo = true; window.fb.onSnapshot(fnContRef(), sn => { fnCont = sn.exists() ? (sn.data()||{}) : {}; if(!$("#v-funil").hidden && fnFunil==="felipe") renderFunilBoard(); }, ()=>{}); }
+function fnContOuvir(){ if(fnContOuvindo || !window.fb || !connected) return; fnContOuvindo = true; window.fb.onSnapshot(fnContRef(), sn => { fnCont = sn.exists() ? (sn.data()||{}) : {}; if(!$("#v-funil").hidden) renderFunilBoard(); }, ()=>{}); }
 const fnSegunda = s => { const d = parse(s); const w = (d.getDay()+6)%7; d.setDate(d.getDate()-w); return iso(d); };
 function fnContSoma(quem, filtro){ const dias = ((fnCont[quem]||{}).dias)||{}; const t = {ind:0, aval:0}; Object.keys(dias).forEach(k=>{ if(filtro(k)){ t.ind += +dias[k].ind||0; t.aval += +dias[k].aval||0; } }); return t; }
 async function fnContAdd(tipo, delta){
-  const quem = "felipe"; const reg = (((fnCont[quem]||{}).dias)||{})[todayISO] || {};
+  const quem = fnContQuem(); const reg = (((fnCont[quem]||{}).dias)||{})[todayISO] || {};
   const nv = Math.max(0, (+reg[tipo]||0) + delta);
   if(delta < 0 && !(+reg[tipo] > 0)){ toast("Nada para desfazer hoje.", true); return; }
   const upd = {[quem]: {dias: {[todayISO]: {[tipo]: nv}}}}; if(!(fnCont[quem]||{}).inicio) upd[quem].inicio = todayISO;
-  try { await window.fb.setDoc(fnContRef(), upd, {merge:true}); toast((delta>0?"+1 ":"−1 ")+(tipo==="ind"?"indicação":"avaliação Google")); } catch(e){ handleWriteErr(e); }
+  try { await window.fb.setDoc(fnContRef(), upd, {merge:true}); toast((delta>0?"+1 ":"−1 ")+(tipo==="ind"?"indicação":"avaliação Google")+" · "+vName(quem)); } catch(e){ handleWriteErr(e); }
 }
 function fnBarra(v, m){
   const top = m.sup * 1.05, p = x => Math.min(100, x/top*100).toFixed(1)+"%";
-  return '<div class="fn-bar2"><i class="'+(v>=m.min?'ok':'')+'" style="width:'+p(v)+'"></i><em style="left:'+p(m.min)+'"></em><em style="left:'+p(m.ideal)+'"></em><em style="left:'+p(m.sup)+'"></em></div>'+
-    '<div class="fn-mt"><span class="'+(v>=m.min?'ok':'')+'">Mín '+m.min+'</span><span class="'+(v>=m.ideal?'ok':'')+'">Ideal '+m.ideal+'</span><span class="'+(v>=m.sup?'ok':'')+'">Super '+m.sup+'</span></div>';
+  const tier = v>=m.sup ? "sup" : v>=m.ideal ? "ideal" : v>=m.min ? "min" : "";
+  return '<div class="fn-bar2"><i class="'+tier+'" style="width:'+p(v)+'"></i><em class="min" style="left:'+p(m.min)+'"></em><em class="ideal" style="left:'+p(m.ideal)+'"></em><em class="sup" style="left:'+p(m.sup)+'"></em></div>'+
+    '<div class="fn-mt"><span class="t-min'+(v>=m.min?' hit':'')+'">Mín '+m.min+'</span><span class="t-ideal'+(v>=m.ideal?' hit':'')+'">Ideal '+m.ideal+'</span><span class="t-sup'+(v>=m.sup?' hit':'')+'">Super '+m.sup+'</span></div>';
 }
 function fnRenderExtra(cards){
-  const box = $("#fnExtra"); if(fnFunil !== "felipe"){ box.innerHTML = ""; return; }
+  const box = $("#fnExtra"); const F = fnFunil === "felipe";
   fnContOuvir();
-  const quem = "felipe", ini = (fnCont[quem]||{}).inicio || "", seg = fnSegunda(todayISO), mes = todayISO.slice(0,7);
+  const quem = fnContQuem(), lista = fnCfg().resp, ini = (fnCont[quem]||{}).inicio || "", seg = fnSegunda(todayISO), mes = todayISO.slice(0,7);
   const sem = fnContSoma(quem, k => k >= seg && k <= todayISO), mm = fnContSoma(quem, k => k.startsWith(mes));
   // histórico semanal (8 semanas) e mensal (6 meses, só desde o início dos registros)
   const semanas = []; for(let i=0;i<8;i++){ const d = parse(seg); d.setDate(d.getDate()-7*i); const a = iso(d), b = new Date(d); b.setDate(b.getDate()+6); const bb = iso(b); semanas.push({a, t:fnContSoma(quem, k => k>=a && k<=bb)}); }
@@ -11470,8 +11483,8 @@ function fnRenderExtra(cards){
   // conversão por origem
   const base = fnBase().filter(c => !fnEhEx(c.id)); const usar = base.length ? base : fnBase();
   const oc = FN_ORIGENS.map(o => { const l = usar.filter(c=>c.origem===o.id); const f = l.filter(c=>c.etapa==="fechado").length; return {o, n:l.length, f}; });
-  box.innerHTML = '<div class="fn-x2">'+
-    '<div class="fn-box"><h5>Indicações e avaliações Google · Felipe <span style="text-transform:none;letter-spacing:0">semana desde '+fmtDM(seg)+' (zera toda segunda)</span></h5><div class="fn-cnt">'+
+  box.innerHTML = '<div class="fn-x2"'+(F?'':' style="grid-template-columns:1fr"')+'>'+
+    '<div class="fn-box"><h5><span>Indicações e avaliações Google · '+(lista.length>1 ? lista.map(id=>'<button type="button" class="fn-who'+(id===quem?' on':'')+'" data-who="'+esc(id)+'">'+esc(vName(id))+'</button>').join("") : esc(vName(quem)))+'</span> <span style="text-transform:none;letter-spacing:0">semana desde '+fmtDM(seg)+' (zera toda segunda)</span></h5><div class="fn-cnt">'+
       ['ind','aval'].map(t => { const m = FN_METAS[t];
         return '<div class="fn-cntitem"><div class="lin"><button type="button" class="fn-plus" data-cnt="'+t+'">+1 '+(t==="ind"?"indicação":"avaliação Google")+'</button><button type="button" class="fn-minus" data-cnt="'+t+'" data-neg="1" title="Desfazer um lançamento de hoje">−1</button></div>'+
           '<div class="lin" style="margin-top:8px"><b>'+m.nome+'</b><span class="wk">semana '+sem[t]+' · mês '+mm[t]+'</span></div>'+fnBarra(mm[t], m)+'</div>'; }).join("")+
@@ -11480,12 +11493,12 @@ function fnRenderExtra(cards){
       '<table><thead><tr><th>Semana</th><th class="r">Indicações</th><th class="r">Avaliações</th></tr></thead><tbody>'+semanas.map(w=>'<tr><td>'+fmtDM(w.a)+'</td><td class="r">'+w.t.ind+'</td><td class="r">'+w.t.aval+'</td></tr>').join("")+'</tbody></table>'+
       '<table><thead><tr><th>Mês</th><th class="r">Indicações (mín '+FN_METAS.ind.min+')</th><th class="r">Avaliações (mín '+FN_METAS.aval.min+')</th></tr></thead><tbody>'+(meses.length ? meses.map(x=>'<tr><td>'+nomeMes(x.m)+(x.atual?' (atual)':'')+'</td><td class="r '+(x.t.ind>=FN_METAS.ind.min?'ok':x.atual?'':'bad')+'">'+x.t.ind+'</td><td class="r '+(x.t.aval>=FN_METAS.aval.min?'ok':x.atual?'':'bad')+'">'+x.t.aval+'</td></tr>').join("") : '<tr><td colspan="3">Sem registros ainda.</td></tr>')+'</tbody></table>'+
     '</details></div>'+
-    '<div class="fn-box"><h5>Conversão por origem <span style="text-transform:none;letter-spacing:0">entraram × fecharam'+(base.length?'':' · exemplos')+'</span></h5><div class="fn-oc">'+
+    (!F ? '' : '<div class="fn-box"><h5>Conversão por origem <span style="text-transform:none;letter-spacing:0">entraram × fecharam'+(base.length?'':' · exemplos')+'</span></h5><div class="fn-oc">'+
       oc.map(r=>'<div class="fn-ocr" style="--o:'+r.o.c+'"><span>'+esc(r.o.n)+'</span><span class="t"><i style="width:'+(r.n? (r.f/r.n*100).toFixed(0) : 0)+'%"></i></span><span class="n">'+r.f+'/'+r.n+(r.n?' · '+Math.round(r.f/r.n*100)+'%':'')+'</span></div>').join("")+
-    '</div></div>'+
+    '</div></div>')+
   '</div>';
 }
-$("#fnExtra").addEventListener("click", ev=>{ const b = ev.target.closest("[data-cnt]"); if(!b) return; fnContAdd(b.dataset.cnt, b.dataset.neg ? -1 : 1); });
+$("#fnExtra").addEventListener("click", ev=>{ const w = ev.target.closest("[data-who]"); if(w){ fnContSel[fnFunil] = w.dataset.who; renderFunilBoard(); return; } const b = ev.target.closest("[data-cnt]"); if(!b) return; fnContAdd(b.dataset.cnt, b.dataset.neg ? -1 : 1); });
 /* ---- delegar para Kuka / Thiago ---- */
 function fnAplicarDeleg(c, pid, mot, quem){
   const nome = vName(pid) || pid; const agora = new Date().toISOString();
