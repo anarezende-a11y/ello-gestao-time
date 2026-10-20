@@ -1520,7 +1520,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 14h20</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 14h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -11066,18 +11066,18 @@ const FN_ETAPAS = [
   {id:"apresentar", nome:"Apresentar",        sub:"Serviço ou oferta a apresentar", c:"#c48bff"},
   {id:"negociacao", nome:"Em negociação",     sub:"Proposta na mesa", c:"#f5a524"},
   {id:"fechado",    nome:"Negócio fechado",   sub:"Vendido · vai pro dashboard", c:"#3ee39a"},
-  {id:"retorno",    nome:"Retorno futuro",    sub:"Cliente pediu para falar depois", c:"#ffd166"},
-  {id:"delegado",   nome:"Delegado",          sub:"Passado para outra pessoa ou setor", c:"#9be564"},
-  {id:"perdido",    nome:"Perdido",           sub:"Não avançou", c:"#ff8fa3"}
+  {id:"delegado",   nome:"Delegado",          sub:"Passado para outra pessoa ou setor", c:"#9be564"}
 ];
+const FN_RET = "Retorno futuro";
 const FN_TAGS = [
-  {n:"Seguro", c:"#3ee39a"}, {n:"Limpeza", c:"#5ee6dc"}, {n:"Manutenção", c:"#7cc4ff"}, {n:"Indicação", c:"#c48bff"},
+  {n:FN_RET, c:"#ffd166"}, {n:"Seguro", c:"#3ee39a"}, {n:"Limpeza", c:"#5ee6dc"}, {n:"Manutenção", c:"#7cc4ff"}, {n:"Indicação", c:"#c48bff"},
   {n:"Avaliação Google", c:"#ffd166"}, {n:"NPS", c:"#9be564"}, {n:"Cooperativa", c:"#ff8fa3"}, {n:"Prioridade", c:"#ff6b6b"},
   {n:"Sem resposta", c:"#f5a524"}, {n:"Reclamação", c:"#ff8f5a"}
 ];
 const FN_CS = ["adriele","sharon"];
 const FN_SETORES = ["Gestor de Usinas","Engenharia","Operacional","Financeiro","Comercial","Triagem"];
-const FN_PAUSA = ["retorno","delegado","perdido"];
+const FN_PAUSA = ["delegado"];
+const fnTemRet = c => (c.etiquetas||[]).includes(FN_RET);
 const fnEtapa = id => FN_ETAPAS.find(e=>e.id===id) || FN_ETAPAS[0];
 const fnTagCor = n => (FN_TAGS.find(t=>t.n.toLowerCase()===String(n).toLowerCase())||{c:"#8db0b3"}).c;
 const fnIdx = id => FN_ETAPAS.findIndex(e=>e.id===id);
@@ -11088,7 +11088,10 @@ function fnOuvir(){
   window.fb.onSnapshot(fnRef(), sn => { fnCards = sn.exists() ? (sn.data()||{}) : {}; if(!$("#v-funil").hidden && !fnEdit) renderFunil(); else if(!$("#v-funil").hidden) renderFunilBoard(); }, e => toast(permDenied(e) ? "Sem permissão para ler o funil." : "O funil ficou indisponível.", true));
 }
 const fnSalvar = (id, d) => window.fb.setDoc(fnRef(), {[id]: d}, {merge:true});
-const fnLista = () => Object.keys(fnCards).map(id => Object.assign({}, fnCards[id], {id})).filter(c => c && !c._apagado && c.cliente);
+const fnLista = () => Object.keys(fnCards).map(id => { const c = Object.assign({}, fnCards[id], {id});
+  if(c.etapa==="retorno"){ c.etapa = "acomp"; c.etiquetas = Array.from(new Set((c.etiquetas||[]).concat([FN_RET]))); }
+  else if(c.etapa && !FN_ETAPAS.some(e=>e.id===c.etapa)) c.etapa = "acomp";
+  return c; }).filter(c => c && !c._apagado && c.cliente);
 const fnVendCor = id => { const i = (cfg.vendedores||[]).findIndex(v=>v.id===id); return COLORS[(i<0?0:i) % COLORS.length]; };
 const fnIni = n => String(n||"?").trim().slice(0,1).toUpperCase();
 function fnFuSt(c){
@@ -11117,7 +11120,7 @@ function fnFiltrados(){
 function renderFunil(){ fnOuvir(); fnFiltros(); renderFunilBoard(); }
 function renderFunilBoard(){
   const cards = fnFiltrados(); const mes = todayISO.slice(0,7);
-  const ativos = cards.filter(c=>!["fechado","perdido","delegado"].includes(c.etapa)); const abertos = ativos.filter(c=>c.etapa!=="retorno");
+  const ativos = cards.filter(c=>!["fechado","perdido","delegado"].includes(c.etapa)); const abertos = ativos;
   const atr = ativos.filter(c=>fnFuSt(c)==="atr").length, hoje = ativos.filter(c=>fnFuSt(c)==="hoje").length;
   const neg = cards.filter(c=>c.etapa==="negociacao"); const fechM = cards.filter(c=>c.etapa==="fechado" && (c.etapaEm||"").startsWith(mes));
   const perdM = cards.filter(c=>c.etapa==="perdido" && (c.etapaEm||"").startsWith(mes));
@@ -11128,7 +11131,7 @@ function renderFunilBoard(){
     ["Follow-ups para hoje", INT(hoje), hoje?"warn":""],
     ["Em negociação", BRL(neg.reduce((a,c)=>a+(+c.valor||0),0)), "warn"],
     ["Fechado no mês", BRL(fechM.reduce((a,c)=>a+(+c.valor||0),0)), "ok"],
-    ["Conversão no mês", PCT(conv), ""]
+    ["Retornos futuros", INT(ativos.filter(fnTemRet).length), ""]
   ].map(k=>'<div class="fn-kpi '+k[2]+'"><small>'+k[0]+'</small><b>'+k[1]+'</b></div>').join("");
   $("#fnBoard").innerHTML = FN_ETAPAS.map(e => {
     const lst = cards.filter(c => (c.etapa||"carteira") === e.id).sort((a,b)=>{
@@ -11145,12 +11148,12 @@ function fnCardHtml(c){
   const ult = (c.historico||[]).filter(h=>h.tipo!=="sys").slice(-1)[0];
   const fu = st==="fim" ? '<span class="fn-fu">Fechado '+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
     st==="del" ? '<span class="fn-fu">Delegado → '+esc(c.delegadoPara||"")+'</span>' :
-    st==="sem" ? '<span class="fn-fu atr">'+(c.etapa==="retorno"?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":c.etapa==="retorno"?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
+    st==="sem" ? '<span class="fn-fu atr">'+(fnTemRet(c)?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":fnTemRet(c)?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   return '<div class="fn-card st-'+st+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+dias+'d</span></div>'+
     '<div class="fn-sub">'+[c.cidade, c.protocolo?("#"+c.protocolo):"", c.servico?sName(c.servico):""].filter(Boolean).map(esc).join(" · ")+'</div>'+
-    ((c.etiquetas||[]).length?'<div class="fn-tags">'+c.etiquetas.map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+'</span>').join("")+'</div>':'')+
+    ((c.etiquetas||[]).length?'<div class="fn-tags">'+c.etiquetas.map(t=>'<span class="fn-tag" style="--t:'+fnTagCor(t)+'">'+esc(t)+(t===FN_RET && c.proxFollow?' · '+fmtDM(c.proxFollow):'')+'</span>').join("")+'</div>':'')+
     (ult?'<div class="fn-last">'+esc(ult.txt)+'</div>':'')+
     '<div class="fn-foot">'+fu+(+c.valor?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
       '<span class="fn-resp"><span class="fn-av" style="--a:'+fnVendCor(c.resp)+'">'+esc(fnIni(vName(c.resp)))+'</span>'+esc(vName(c.resp)||"")+'</span>'+
@@ -11165,7 +11168,6 @@ async function fnMover(id, etapa, extra){
   Object.assign(c, extra||{});
   if(etapa === "fechado" && (!(+c.valor > 0) || !c.servico)){ fnAbrir(id, {etapaAlvo:"fechado", aviso:"Para fechar o negócio, informe o serviço e o valor."}); return; }
   if(etapa === "perdido" && !c.motivo){ fnAbrir(id, {etapaAlvo:"perdido", aviso:"Escolha o motivo da perda."}); return; }
-  if(etapa === "retorno" && !(c.proxFollow > todayISO && de === "retorno")){ fnAbrir(id, {etapaAlvo:"retorno", aviso:"Quando é o retorno? Escolha a data e anote o que o cliente pediu."}); return; }
   if(etapa === "delegado"){ fnAbrir(id, {etapaAlvo:"delegado", aviso:"Para quem você está delegando este cliente?"}); return; }
   c.etapa = etapa; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
   if(de !== etapa){ c.historico = (c.historico||[]).concat([{em:c.etapaEm, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(etapa).nome}]); }
@@ -11188,7 +11190,7 @@ async function fnSincNegocio(id, c){
 /* ---- modal ---- */
 function fnAbrir(id, opt){
   opt = opt || {};
-  const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", resp: (FN_CS.includes(acharMeuVend())? acharMeuVend() : ($("#fnResp").value && $("#fnResp").value!=="cs" ? $("#fnResp").value : "adriele")), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(Object.assign({}, fnCards[id], {id})));
+  const novo = !id; const c = novo ? {etapa: opt.etapa||"carteira", resp: (FN_CS.includes(acharMeuVend())? acharMeuVend() : ($("#fnResp").value && $("#fnResp").value!=="cs" ? $("#fnResp").value : "adriele")), etiquetas:[], historico:[], proxFollow:""} : JSON.parse(JSON.stringify(fnLista().find(x=>x.id===id) || Object.assign({}, fnCards[id], {id})));
   const alvo = opt.etapaAlvo || c.etapa || "carteira";
   fnEdit = {id, c, alvo, tags:new Set(c.etiquetas||[])};
   const vs = cfg.vendedores||[], ss = cfg.servicos||[];
@@ -11227,7 +11229,7 @@ function fnAbrir(id, opt){
   setTimeout(()=>{ const el = opt.etapaAlvo==="fechado" ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
 }
 function fnVendaVis(){ if(!fnEdit) return; const a = fnEdit.alvo, i = fnIdx(a); $("#fnVenda").hidden = i < 2 || a==="retorno" || a==="delegado"; $("#fmMotW").hidden = a !== "perdido";
-  $("#fmFuDtL").textContent = a==="retorno" ? "Data do retorno" : "Próximo follow-up"; $("#fnDeleg").classList.toggle("on", a==="delegado"); }
+  $("#fmFuDtL").textContent = fnEdit.tags.has(FN_RET) ? "Data do retorno" : "Próximo follow-up"; $("#fnDeleg").classList.toggle("on", a==="delegado"); }
 function fnFechar(){ fnEdit = null; $("#fnModalHost").innerHTML = ""; renderFunilBoard(); }
 async function fnGravarModal(){
   const E = fnEdit; if(!E) return; const c = E.c;
@@ -11237,7 +11239,7 @@ async function fnGravarModal(){
   if(E.alvo==="fechado" && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
   if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo da perda.", true); return; }
   const del = $("#fmDel").value, delMot = $("#fmDelMot").value.trim(), quem = fnUsuario();
-  if(E.alvo==="retorno" && !(c.proxFollow > todayISO)){ toast("Escolha a data do retorno (a partir de amanhã).", true); $("#fmFuDt").focus(); return; }
+  if(E.tags.has(FN_RET) && !c.proxFollow){ toast("Retorno futuro: escolha a data do retorno.", true); $("#fmFuDt").focus(); return; }
   if(E.alvo==="delegado" && !del && !(c.etapa==="delegado" && c.delegadoPara)){ toast("Escolha para quem delegar.", true); $("#fmDel").focus(); return; }
   if(del){
     const nomeDel = del.startsWith("p:") ? vName(del.slice(2)) : del.slice(2);
@@ -11251,6 +11253,7 @@ async function fnGravarModal(){
   c.historico = c.historico || [];
   if(txt){ c.historico.push({em:agora, por:fnUsuario(), tipo:"fu", txt}); c.ultimoFollow = agora; }
   const id = E.id || ("c" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  if(c.etapa==="retorno" || c.etapa==="perdido"){ c.etapa = "acomp"; if(E.alvo==="retorno"||E.alvo==="perdido") E.alvo = "acomp"; }
   const de = E.id ? (c.etapa||"carteira") : null;
   if(!E.id){ c.criadoEm = agora; c.etapa = E.alvo; c.etapaEm = agora; c.historico.unshift({em:agora, por:fnUsuario(), tipo:"sys", txt:"Entrou no funil em "+fnEtapa(E.alvo).nome}); try{ const u=window.APPAUTH&&window.APPAUTH.usuarioAtual; if(u) c.criadoPorEmail=u.email||""; }catch(e){} }
   else if(de !== E.alvo){ c.historico.push({em:agora, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(E.alvo).nome}); c.etapa = E.alvo; c.etapaEm = agora; }
@@ -11271,7 +11274,7 @@ $("#fnModalHost").addEventListener("click", async ev=>{
     return;
   }
   const et = ev.target.closest("[data-et]"); if(et){ E.alvo = et.dataset.et; $$("#fnSteps button").forEach(b=>b.classList.toggle("on", b===et)); fnVendaVis(); return; }
-  const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); return; }
+  const tg = ev.target.closest("[data-tg]"); if(tg){ const t = tg.dataset.tg; if(E.tags.has(t)) E.tags.delete(t); else E.tags.add(t); tg.classList.toggle("on", E.tags.has(t)); if(t===FN_RET){ fnVendaVis(); if(E.tags.has(t)){ const f=$("#fmFuDt"); if(!f.value || f.value<=todayISO){ const d=new Date(); d.setDate(d.getDate()+30); f.value=iso(d); } toast("Retorno futuro: confira a data do retorno"); } } return; }
   const q = ev.target.closest("[data-q]"); if(q){ const ta = $("#fmFuTxt"); ta.value = (ta.value ? ta.value.replace(/\s*$/," ") : "") + q.dataset.q + (q.dataset.q==="Sem resposta"?"":": "); ta.focus(); return; }
   const d = ev.target.closest("[data-d]"); if(d){ const dt = new Date(); dt.setDate(dt.getDate() + (+d.dataset.d)); $("#fmFuDt").value = iso(dt); return; }
 });
