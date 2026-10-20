@@ -1289,6 +1289,9 @@ body {
 #mod-posvendas .fn-h small{display:block;color:var(--dim);font-size:10.5px;margin-bottom:2px}
 #mod-posvendas .fn-h.sys{opacity:.7;font-style:italic}
 #mod-posvendas .fn-mf{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+#mod-posvendas .fn-card.st-del{border-left-color:#9be564}
+#mod-posvendas #fnDeleg.on{border-top-color:#9be564}
+#mod-posvendas #fnDeleg.on h5{color:#9be564}
 #mod-posvendas .fn-warn{font-size:12px;color:var(--warn);margin-top:8px}
 @media (max-width:900px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#mod-posvendas .fn-g3{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#mod-posvendas .fn-g3,#mod-posvendas .fn-g2{grid-template-columns:1fr}}
@@ -1501,7 +1504,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 13h40</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 14h10</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -11046,6 +11049,8 @@ const FN_ETAPAS = [
   {id:"apresentar", nome:"Apresentar",        sub:"Serviço ou oferta a apresentar", c:"#c48bff"},
   {id:"negociacao", nome:"Em negociação",     sub:"Proposta na mesa", c:"#f5a524"},
   {id:"fechado",    nome:"Negócio fechado",   sub:"Vendido · vai pro dashboard", c:"#3ee39a"},
+  {id:"retorno",    nome:"Retorno futuro",    sub:"Cliente pediu para falar depois", c:"#ffd166"},
+  {id:"delegado",   nome:"Delegado",          sub:"Passado para outra pessoa ou setor", c:"#9be564"},
   {id:"perdido",    nome:"Perdido",           sub:"Não avançou", c:"#ff8fa3"}
 ];
 const FN_TAGS = [
@@ -11054,6 +11059,8 @@ const FN_TAGS = [
   {n:"Sem resposta", c:"#f5a524"}, {n:"Reclamação", c:"#ff8f5a"}
 ];
 const FN_CS = ["adriele","sharon"];
+const FN_SETORES = ["Gestor de Usinas","Engenharia","Operacional","Financeiro","Comercial","Triagem"];
+const FN_PAUSA = ["retorno","delegado","perdido"];
 const fnEtapa = id => FN_ETAPAS.find(e=>e.id===id) || FN_ETAPAS[0];
 const fnTagCor = n => (FN_TAGS.find(t=>t.n.toLowerCase()===String(n).toLowerCase())||{c:"#8db0b3"}).c;
 const fnIdx = id => FN_ETAPAS.findIndex(e=>e.id===id);
@@ -11068,7 +11075,7 @@ const fnLista = () => Object.keys(fnCards).map(id => Object.assign({}, fnCards[i
 const fnVendCor = id => { const i = (cfg.vendedores||[]).findIndex(v=>v.id===id); return COLORS[(i<0?0:i) % COLORS.length]; };
 const fnIni = n => String(n||"?").trim().slice(0,1).toUpperCase();
 function fnFuSt(c){
-  if(c.etapa==="fechado") return "fim"; if(c.etapa==="perdido") return "perd";
+  if(c.etapa==="fechado") return "fim"; if(c.etapa==="perdido") return "perd"; if(c.etapa==="delegado") return "del";
   if(!c.proxFollow) return "sem"; if(c.proxFollow < todayISO) return "atr"; if(c.proxFollow === todayISO) return "hoje"; return "ok";
 }
 function fnUsuario(){ const u = window.APPAUTH && window.APPAUTH.usuarioAtual; return u ? (u.nome || String(u.email||"").split("@")[0]) : ""; }
@@ -11093,8 +11100,8 @@ function fnFiltrados(){
 function renderFunil(){ fnOuvir(); fnFiltros(); renderFunilBoard(); }
 function renderFunilBoard(){
   const cards = fnFiltrados(); const mes = todayISO.slice(0,7);
-  const abertos = cards.filter(c=>!["fechado","perdido"].includes(c.etapa));
-  const atr = abertos.filter(c=>fnFuSt(c)==="atr").length, hoje = abertos.filter(c=>fnFuSt(c)==="hoje").length;
+  const ativos = cards.filter(c=>!["fechado","perdido","delegado"].includes(c.etapa)); const abertos = ativos.filter(c=>c.etapa!=="retorno");
+  const atr = ativos.filter(c=>fnFuSt(c)==="atr").length, hoje = ativos.filter(c=>fnFuSt(c)==="hoje").length;
   const neg = cards.filter(c=>c.etapa==="negociacao"); const fechM = cards.filter(c=>c.etapa==="fechado" && (c.etapaEm||"").startsWith(mes));
   const perdM = cards.filter(c=>c.etapa==="perdido" && (c.etapaEm||"").startsWith(mes));
   const conv = (fechM.length+perdM.length) ? fechM.length/(fechM.length+perdM.length) : NaN;
@@ -11119,7 +11126,8 @@ function fnCardHtml(c){
   const st = fnFuSt(c), dias = dayDiff((c.etapaEm||c.criadoEm||todayISO).slice(0,10), todayISO);
   const ult = (c.historico||[]).filter(h=>h.tipo!=="sys").slice(-1)[0];
   const fu = st==="fim" ? '<span class="fn-fu">Fechado '+fmtDM((c.etapaEm||"").slice(0,10))+'</span>' : st==="perd" ? '<span class="fn-fu">'+esc(c.motivo||"Perdido")+'</span>' :
-    st==="sem" ? '<span class="fn-fu atr">Sem follow-up</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
+    st==="del" ? '<span class="fn-fu">Delegado → '+esc(c.delegadoPara||"")+'</span>' :
+    st==="sem" ? '<span class="fn-fu atr">'+(c.etapa==="retorno"?"Sem data de retorno":"Sem follow-up")+'</span>' : '<span class="fn-fu '+st+'">'+(st==="atr"?"Atrasado · ":st==="hoje"?"Hoje · ":c.etapa==="retorno"?"Retorno ":"Follow-up ")+fmtDM(c.proxFollow)+'</span>';
   const i = fnIdx(c.etapa||"carteira");
   return '<div class="fn-card st-'+st+'" draggable="true" data-id="'+esc(c.id)+'">'+
     '<div class="fn-top"><div class="fn-nome">'+esc(c.cliente)+'</div><span class="fn-dias'+(dias>7&&i<4?' velho':'')+'" title="Dias nesta etapa">'+dias+'d</span></div>'+
@@ -11128,7 +11136,9 @@ function fnCardHtml(c){
     (ult?'<div class="fn-last">'+esc(ult.txt)+'</div>':'')+
     '<div class="fn-foot">'+fu+(+c.valor?'<span class="fn-val">'+BRL(+c.valor)+'</span>':'')+
       '<span class="fn-resp"><span class="fn-av" style="--a:'+fnVendCor(c.resp)+'">'+esc(fnIni(vName(c.resp)))+'</span>'+esc(vName(c.resp)||"")+'</span>'+
-      '<span class="fn-mv">'+(i>0?'<button type="button" data-mv="-1" title="Etapa anterior">‹</button>':'')+(i<4?'<button type="button" data-mv="1" title="Próxima etapa">›</button>':'')+'</span></div></div>';
+      '<span class="fn-mv">'+(FN_PAUSA.includes(c.etapa) ? '<button type="button" data-mv="ret" title="Retomar o acompanhamento">↺</button>' :
+        (i>0?'<button type="button" data-mv="-1" title="Etapa anterior">‹</button>':'')+(i<4?'<button type="button" data-mv="1" title="Próxima etapa">›</button>':''))+'</span></div>'+
+    (c.delegadoDe?'<div class="fn-sub" style="margin-top:6px">Delegado por '+esc(c.delegadoDe)+'</div>':'')+'</div>';
 }
 /* ---- mover de etapa (com integração ao dashboard) ---- */
 async function fnMover(id, etapa, extra){
@@ -11137,6 +11147,8 @@ async function fnMover(id, etapa, extra){
   Object.assign(c, extra||{});
   if(etapa === "fechado" && (!(+c.valor > 0) || !c.servico)){ fnAbrir(id, {etapaAlvo:"fechado", aviso:"Para fechar o negócio, informe o serviço e o valor."}); return; }
   if(etapa === "perdido" && !c.motivo){ fnAbrir(id, {etapaAlvo:"perdido", aviso:"Escolha o motivo da perda."}); return; }
+  if(etapa === "retorno" && !(c.proxFollow > todayISO && de === "retorno")){ fnAbrir(id, {etapaAlvo:"retorno", aviso:"Quando é o retorno? Escolha a data e anote o que o cliente pediu."}); return; }
+  if(etapa === "delegado"){ fnAbrir(id, {etapaAlvo:"delegado", aviso:"Para quem você está delegando este cliente?"}); return; }
   c.etapa = etapa; c.etapaEm = new Date().toISOString(); c.atualizadoEm = c.etapaEm;
   if(de !== etapa){ c.historico = (c.historico||[]).concat([{em:c.etapaEm, por:fnUsuario(), tipo:"sys", txt:"Movido de "+fnEtapa(de).nome+" para "+fnEtapa(etapa).nome}]); }
   if(etapa === "negociacao" && !c.negEntrada) c.negEntrada = todayISO;
@@ -11178,9 +11190,13 @@ function fnAbrir(id, opt){
     '<div class="fn-sec"><h5>Follow-up</h5><div class="fn-g2">'+
       '<div class="fld"><label for="fmFuTxt">O que foi feito agora</label><textarea id="fmFuTxt" rows="2" maxlength="400" placeholder="Ex.: Liguei, cliente satisfeito com a usina, pediu orçamento de limpeza em novembro"></textarea>'+
         '<div class="fn-quick">'+["Liguei","Mandei WhatsApp","Sem resposta","Visita feita","Pediu orçamento","Apresentei o seguro"].map(q=>'<button type="button" data-q="'+esc(q)+'">'+esc(q)+'</button>').join("")+'</div></div>'+
-      '<div class="fld"><label for="fmFuDt">Próximo follow-up</label><input id="fmFuDt" type="date" value="'+esc(c.proxFollow||"")+'">'+
-        '<div class="fn-quick">'+[["Amanhã",1],["+3 dias",3],["+1 semana",7],["+15 dias",15],["+30 dias",30]].map(q=>'<button type="button" data-d="'+q[1]+'">'+q[0]+'</button>').join("")+'</div></div>'+
+      '<div class="fld"><label for="fmFuDt" id="fmFuDtL">Próximo follow-up</label><input id="fmFuDt" type="date" value="'+esc(c.proxFollow||"")+'">'+
+        '<div class="fn-quick">'+[["Amanhã",1],["+3 dias",3],["+1 semana",7],["+15 dias",15],["+30 dias",30],["+60 dias",60],["+90 dias",90],["+6 meses",182]].map(q=>'<button type="button" data-d="'+q[1]+'">'+q[0]+'</button>').join("")+'</div></div>'+
     '</div>'+((c.historico||[]).length?'<div class="fn-hist">'+c.historico.slice().reverse().map(h=>'<div class="fn-h'+(h.tipo==="sys"?" sys":"")+'"><small>'+esc(new Date(h.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+(h.por?" · "+esc(h.por):"")+'</small>'+esc(h.txt)+'</div>').join("")+'</div>':'')+'</div>'+
+    '<div class="fn-sec" id="fnDeleg"><h5>Delegar</h5><div class="fn-g2">'+
+      '<div class="fld"><label for="fmDel">Delegar para</label><select id="fmDel"><option value="">Não delegar</option><optgroup label="Pessoa do time (assume o cliente)">'+vs.filter(v=>v.id!==c.resp).map(v=>'<option value="p:'+esc(v.id)+'">'+esc(v.nome)+'</option>').join("")+'</optgroup><optgroup label="Setor (vai para a coluna Delegado)">'+FN_SETORES.map(x=>'<option value="s:'+esc(x)+'"'+(c.etapa==="delegado"&&c.delegadoPara===x?' selected':'')+'>'+esc(x)+'</option>').join("")+'</optgroup></select></div>'+
+      '<div class="fld"><label for="fmDelMot">Motivo / orientação</label><input id="fmDelMot" maxlength="200" placeholder="Ex.: cliente com queda de geração, precisa de visita técnica"></div>'+
+    '</div>'+(c.delegadoPara?'<span class="hint" style="font-size:11px;color:var(--dim)">Delegado para '+esc(c.delegadoPara)+(c.delegadoDe?' por '+esc(c.delegadoDe):'')+'</span>':'')+'</div>'+
     '<div class="fn-sec" id="fnVenda"><h5>Venda</h5><div class="fn-g3">'+
       '<div class="fld"><label for="fmSvc">Serviço</label><select id="fmSvc"><option value="">—</option>'+ss.map(s=>'<option value="'+esc(s.id)+'"'+(s.id===c.servico?' selected':'')+'>'+esc(s.nome)+'</option>').join("")+'</select></div>'+
       '<div class="fld"><label for="fmVal">Valor (R$)</label><input id="fmVal" type="number" min="0" step="0.01" value="'+esc(c.valor||"")+'"></div>'+
@@ -11192,7 +11208,8 @@ function fnAbrir(id, opt){
   fnVendaVis();
   setTimeout(()=>{ const el = opt.etapaAlvo==="fechado" ? $("#fmVal") : opt.etapaAlvo==="perdido" ? $("#fmMot") : novo ? $("#fmCli") : $("#fmFuTxt"); el && el.focus(); }, 30);
 }
-function fnVendaVis(){ if(!fnEdit) return; const i = fnIdx(fnEdit.alvo); $("#fnVenda").hidden = i < 2; $("#fmMotW").hidden = fnEdit.alvo !== "perdido"; }
+function fnVendaVis(){ if(!fnEdit) return; const a = fnEdit.alvo, i = fnIdx(a); $("#fnVenda").hidden = i < 2 || a==="retorno" || a==="delegado"; $("#fmMotW").hidden = a !== "perdido";
+  $("#fmFuDtL").textContent = a==="retorno" ? "Data do retorno" : "Próximo follow-up"; $("#fnDeleg").classList.toggle("on", a==="delegado"); }
 function fnFechar(){ fnEdit = null; $("#fnModalHost").innerHTML = ""; renderFunilBoard(); }
 async function fnGravarModal(){
   const E = fnEdit; if(!E) return; const c = E.c;
@@ -11201,6 +11218,17 @@ async function fnGravarModal(){
     etiquetas:Array.from(E.tags), proxFollow:$("#fmFuDt").value, servico:$("#fmSvc").value, valor:Math.max(0, parseFloat($("#fmVal").value)||0), motivo:$("#fmMot").value, obs:$("#fmObs").value.trim() });
   if(E.alvo==="fechado" && (!c.servico || !(c.valor>0))){ toast("Para fechar, informe serviço e valor.", true); return; }
   if(E.alvo==="perdido" && !c.motivo){ toast("Escolha o motivo da perda.", true); return; }
+  const del = $("#fmDel").value, delMot = $("#fmDelMot").value.trim(), quem = fnUsuario();
+  if(E.alvo==="retorno" && !(c.proxFollow > todayISO)){ toast("Escolha a data do retorno (a partir de amanhã).", true); $("#fmFuDt").focus(); return; }
+  if(E.alvo==="delegado" && !del && !(c.etapa==="delegado" && c.delegadoPara)){ toast("Escolha para quem delegar.", true); $("#fmDel").focus(); return; }
+  if(del){
+    const nomeDel = del.startsWith("p:") ? vName(del.slice(2)) : del.slice(2);
+    const msg = "Delegado"+(c.resp?" por "+vName(c.resp):"")+" para "+nomeDel+(delMot?": "+delMot:"");
+    (c.historico = c.historico||[]).push({em:new Date().toISOString(), por:quem, tipo:"del", txt:msg});
+    c.delegadoDe = vName(c.resp) || quem; c.delegadoPara = nomeDel; c.delegadoEm = new Date().toISOString(); c.delegadoMotivo = delMot;
+    if(del.startsWith("p:") && E.alvo!=="delegado"){ c.resp = del.slice(2); }
+    else E.alvo = "delegado";
+  }
   const agora = new Date().toISOString(); const txt = $("#fmFuTxt").value.trim();
   c.historico = c.historico || [];
   if(txt){ c.historico.push({em:agora, por:fnUsuario(), tipo:"fu", txt}); c.ultimoFollow = agora; }
@@ -11241,7 +11269,9 @@ $("#fnNovo").addEventListener("click", ()=>fnAbrir(null));
 $("#fnBoard").addEventListener("click", ev=>{
   const add = ev.target.closest("[data-novo]"); if(add){ fnAbrir(null, {etapa:add.dataset.novo}); return; }
   const card = ev.target.closest(".fn-card"); if(!card) return; const id = card.dataset.id;
-  const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnCards[id]; const i = fnIdx(c.etapa||"carteira") + (+mv.dataset.mv); if(FN_ETAPAS[i]) fnMover(id, FN_ETAPAS[i].id); return; }
+  const mv = ev.target.closest("[data-mv]"); if(mv){ ev.stopPropagation(); const c = fnCards[id];
+    if(mv.dataset.mv==="ret"){ fnMover(id, "acomp"); return; }
+    const i = fnIdx(c.etapa||"carteira") + (+mv.dataset.mv); if(FN_ETAPAS[i] && i<=4) fnMover(id, FN_ETAPAS[i].id); return; }
   fnAbrir(id);
 });
 $("#fnBoard").addEventListener("dragstart", ev=>{ const c = ev.target.closest(".fn-card"); if(!c) return; fnDrag = c.dataset.id; c.classList.add("dragging"); try{ ev.dataTransfer.setData("text/plain", fnDrag); ev.dataTransfer.effectAllowed="move"; }catch(e){} });
