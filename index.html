@@ -1599,7 +1599,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 17h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 18h00</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -11446,6 +11446,9 @@ async function fnSincNegocio(id, c){
 /* ---- contadores de indicações e avaliações Google (Felipe) ----
    shared_data/funil_contadores → { felipe: { inicio:"AAAA-MM-DD", dias: { "AAAA-MM-DD": {ind, aval} } } }
    Semana zera toda segunda; metas da remuneração variável são mensais. */
+const FN_CONTADORES = false;   // indicações/avaliações Google saíram daqui (vão para outra parte do Ello 360)
+const fnBoxOrigem = (base, oc) => '<div class="fn-box"><h5>Conversão por origem <span style="text-transform:none;letter-spacing:0">entraram × fecharam'+(base.length?'':' · exemplos')+'</span></h5><div class="fn-oc">'+
+  oc.map(r=>'<div class="fn-ocr" style="--o:'+r.o.c+'"><span>'+esc(r.o.n)+'</span><span class="t"><i style="width:'+(r.n? (r.f/r.n*100).toFixed(0) : 0)+'%"></i></span><span class="n">'+r.f+'/'+r.n+(r.n?' · '+Math.round(r.f/r.n*100)+'%':'')+'</span></div>').join("")+'</div></div>';
 let fnCont = {}, fnContOuvindo = false, fnContSel = {};
 function fnContQuem(){
   const lista = fnCfg().resp; const sel = fnContSel[fnFunil]; if(lista.includes(sel)) return sel;
@@ -11471,7 +11474,7 @@ function fnBarra(v, m){
 }
 function fnRenderExtra(cards){
   const box = $("#fnExtra"); const F = fnFunil === "felipe";
-  fnContOuvir();
+  if(FN_CONTADORES) fnContOuvir();
   const quem = fnContQuem(), lista = fnCfg().resp, ini = (fnCont[quem]||{}).inicio || "", seg = fnSegunda(todayISO), mes = todayISO.slice(0,7);
   const sem = fnContSoma(quem, k => k >= seg && k <= todayISO), mm = fnContSoma(quem, k => k.startsWith(mes));
   // histórico semanal (8 semanas) e mensal (6 meses, só desde o início dos registros)
@@ -11483,6 +11486,7 @@ function fnRenderExtra(cards){
   // conversão por origem
   const base = fnBase().filter(c => !fnEhEx(c.id)); const usar = base.length ? base : fnBase();
   const oc = FN_ORIGENS.map(o => { const l = usar.filter(c=>c.origem===o.id); const f = l.filter(c=>c.etapa==="fechado").length; return {o, n:l.length, f}; });
+  if(!FN_CONTADORES){ box.innerHTML = F ? '<div class="fn-x2" style="grid-template-columns:1fr">'+fnBoxOrigem(base, oc)+'</div>' : ''; return; }
   box.innerHTML = '<div class="fn-x2"'+(F?'':' style="grid-template-columns:1fr"')+'>'+
     '<div class="fn-box"><h5><span>Indicações e avaliações Google · '+(lista.length>1 ? lista.map(id=>'<button type="button" class="fn-who'+(id===quem?' on':'')+'" data-who="'+esc(id)+'">'+esc(vName(id))+'</button>').join("") : esc(vName(quem)))+'</span> <span style="text-transform:none;letter-spacing:0">semana desde '+fmtDM(seg)+' (zera toda segunda)</span></h5><div class="fn-cnt">'+
       ['ind','aval'].map(t => { const m = FN_METAS[t];
