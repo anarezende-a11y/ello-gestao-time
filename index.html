@@ -1227,7 +1227,23 @@ body {
 #mod-posvendas .fn-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:14px}
 #mod-posvendas .fn-bar .fld{min-width:150px;flex:1}
 #mod-posvendas .fn-bar .fld.q{flex:2;min-width:220px}
-#mod-posvendas .fn-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(272px,1fr);gap:14px;overflow-x:auto;padding:4px 2px 14px;margin-top:14px;align-items:start}
+#mod-posvendas .fn-board{display:grid;grid-auto-flow:column;grid-auto-columns:272px;gap:14px;overflow-x:auto;padding:4px 2px 14px;margin-top:8px;align-items:start}
+#mod-posvendas .fn-board{scrollbar-width:auto;scrollbar-color:rgba(94,230,220,.55) rgba(4,22,27,.6);scroll-behavior:smooth;cursor:grab}
+#mod-posvendas .fn-board.pan{cursor:grabbing;scroll-behavior:auto;user-select:none}
+#mod-posvendas .fn-board::-webkit-scrollbar{height:12px}
+#mod-posvendas .fn-board::-webkit-scrollbar-track{background:rgba(4,22,27,.6);border-radius:8px}
+#mod-posvendas .fn-board::-webkit-scrollbar-thumb{background:rgba(94,230,220,.45);border-radius:8px;border:2px solid rgba(4,22,27,.6)}
+#mod-posvendas .fn-board::-webkit-scrollbar-thumb:hover{background:rgba(94,230,220,.7)}
+#mod-posvendas .fn-wrap{position:relative}
+#mod-posvendas .fn-fade{position:absolute;top:14px;bottom:14px;width:46px;pointer-events:none;z-index:2}
+#mod-posvendas .fn-fade.l{left:0;background:linear-gradient(90deg,rgba(5,24,30,.95),transparent)}
+#mod-posvendas .fn-fade.r{right:0;background:linear-gradient(270deg,rgba(5,24,30,.95),transparent)}
+#mod-posvendas .fn-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+#mod-posvendas .fn-navlbl{font-size:11.5px;color:var(--dim)}
+#mod-posvendas .fn-navbtns{display:flex;gap:6px}
+#mod-posvendas .fn-sc{all:unset;cursor:pointer;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:800;border:1px solid var(--line-strong);color:var(--fg);background:var(--panel-2)}
+#mod-posvendas .fn-sc:hover{border-color:var(--cyan)}
+#mod-posvendas .fn-sc[disabled]{opacity:.3;pointer-events:none}
 #mod-posvendas .fn-col{border:1px solid var(--line);border-radius:16px;background:rgba(4,22,27,.42);display:flex;flex-direction:column;max-height:calc(100vh - 190px);min-height:240px}
 #mod-posvendas .fn-col.over{border-color:var(--cyan);background:rgba(94,230,220,.07)}
 #mod-posvendas .fn-colh{padding:12px 14px 10px;border-bottom:1px solid var(--line);border-top:3px solid var(--c);border-radius:16px 16px 0 0}
@@ -1504,7 +1520,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 14h10</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 14h20</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -2317,7 +2333,8 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="fld"><label for="fnTag">Etiqueta</label><select id="fnTag"></select></div>
         <div class="fld"><label for="fnFu">Follow-up</label><select id="fnFu"><option value="">Todos</option><option value="atr">Atrasados</option><option value="hoje">Para hoje</option><option value="sem">Sem próximo follow-up</option></select></div>
       </div>
-      <div class="fn-board" id="fnBoard"></div>
+      <div class="fn-nav"><span class="fn-navlbl">Role para o lado para ver todas as etapas</span><div class="fn-navbtns"><button type="button" class="fn-sc" data-sc="-1" aria-label="Rolar para a esquerda">‹</button><button type="button" class="fn-sc" data-sc="1" aria-label="Rolar para a direita">›</button></div></div>
+      <div class="fn-wrap"><div class="fn-board" id="fnBoard"></div><div class="fn-fade l" hidden></div><div class="fn-fade r"></div></div>
       <div id="fnModalHost"></div>
     </section>
 
@@ -11121,6 +11138,7 @@ function renderFunilBoard(){
       (e.id==="carteira"?'<button class="fn-add" type="button" data-novo="'+e.id+'">+ Adicionar cliente</button>':'')+
       '<div class="fn-list">'+(lst.length? lst.map(fnCardHtml).join("") : '<div class="fn-empty">Arraste um card para cá</div>')+'</div></div>';
   }).join("");
+  requestAnimationFrame(fnScrollUI);
 }
 function fnCardHtml(c){
   const st = fnFuSt(c), dias = dayDiff((c.etapaEm||c.criadoEm||todayISO).slice(0,10), todayISO);
@@ -11279,6 +11297,33 @@ $("#fnBoard").addEventListener("dragend", ev=>{ const c = ev.target.closest(".fn
 $("#fnBoard").addEventListener("dragover", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); $$("#fnBoard .fn-col.over").forEach(x=>{ if(x!==col) x.classList.remove("over"); }); col.classList.add("over"); });
 $("#fnBoard").addEventListener("drop", ev=>{ const col = ev.target.closest(".fn-col"); if(!col || !fnDrag) return; ev.preventDefault(); col.classList.remove("over"); const id = fnDrag; fnDrag = null; fnMover(id, col.dataset.etapa); });
 ["fnQ","fnResp","fnTag","fnFu"].forEach(id=>$("#"+id).addEventListener("input", renderFunilBoard));
+/* ---- rolagem lateral: botões, roda do mouse, arrastar o fundo e auto-rolagem ao arrastar card ---- */
+function fnScrollUI(){
+  const b = $("#fnBoard"); const max = b.scrollWidth - b.clientWidth;
+  const temMais = max > 4;
+  $(".fn-nav").hidden = !temMais;
+  $(".fn-fade.l").hidden = !temMais || b.scrollLeft <= 4;
+  $(".fn-fade.r").hidden = !temMais || b.scrollLeft >= max - 4;
+  $('.fn-sc[data-sc="-1"]').disabled = b.scrollLeft <= 4; $('.fn-sc[data-sc="1"]').disabled = b.scrollLeft >= max - 4;
+}
+$("#fnBoard").addEventListener("scroll", fnScrollUI, {passive:true});
+window.addEventListener("resize", ()=>{ if(!$("#v-funil").hidden) fnScrollUI(); });
+$$(".fn-sc").forEach(btn => btn.addEventListener("click", ()=>{ const b=$("#fnBoard"); b.scrollBy({left:(+btn.dataset.sc)*(286*2), behavior:"smooth"}); }));
+$("#fnBoard").addEventListener("wheel", ev=>{
+  const b = $("#fnBoard"); if(b.scrollWidth <= b.clientWidth) return;
+  if(ev.target.closest(".fn-list") && !ev.shiftKey){ const l = ev.target.closest(".fn-list"); if(l.scrollHeight > l.clientHeight) return; }
+  if(Math.abs(ev.deltaY) > Math.abs(ev.deltaX)){ ev.preventDefault(); b.style.scrollBehavior="auto"; b.scrollLeft += ev.deltaY; b.style.scrollBehavior=""; }
+}, {passive:false});
+let fnPan = null;
+$("#fnBoard").addEventListener("pointerdown", ev=>{
+  if(ev.button !== 0 || ev.pointerType === "touch" || ev.target.closest(".fn-card,button,a,input,select")) return;
+  fnPan = {x:ev.clientX, sl:$("#fnBoard").scrollLeft, mov:false};
+});
+window.addEventListener("pointermove", ev=>{ if(!fnPan) return; const dx = ev.clientX - fnPan.x; if(Math.abs(dx) > 4){ fnPan.mov = true; $("#fnBoard").classList.add("pan"); } if(fnPan.mov) $("#fnBoard").scrollLeft = fnPan.sl - dx; });
+window.addEventListener("pointerup", ()=>{ if(fnPan){ fnPan = null; $("#fnBoard").classList.remove("pan"); } });
+$("#fnBoard").addEventListener("dragover", ev=>{ if(!fnDrag) return; const b=$("#fnBoard"), r=b.getBoundingClientRect(); const z=80;
+  if(ev.clientX < r.left + z) b.scrollLeft -= 18; else if(ev.clientX > r.right - z) b.scrollLeft += 18; });
+
 
 /* ================= boot (plataforma ello-gestao-time) ================= */
 const isActive = () => { const v = ROOT.closest(".tool-view"); return !!(v && v.classList.contains("active")); };
