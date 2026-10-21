@@ -1588,7 +1588,7 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_provas" onclick="mostrarTool('provas')">
     <span class="di-icon">📝</span> Provas
   </button>
-  <button class="drawer-item admin-only" id="di_daily" onclick="mostrarTool('daily')">
+  <button class="drawer-item" id="di_daily" onclick="mostrarTool('daily')">
     <span class="di-icon">☀️</span> Daily
   </button>
   <button class="drawer-item" id="di_posvendas" onclick="mostrarTool('posvendas')">
@@ -1599,7 +1599,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 20/10 · 18h00</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 21/10 · 11h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -1658,7 +1658,7 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-desc">Processo de escolha do líder até dezembro: cronograma, placar ponderado, diário de observação e guia de análise.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
       </button>
-      <button class="home-card c-daily admin-only" onclick="mostrarTool('daily')">
+      <button class="home-card c-daily" onclick="mostrarTool('daily')">
         <div class="hc-icon">☀️</div>
         <div class="hc-title">Daily</div>
         <div class="hc-desc">Registro da daily das 08:30: o que foi falado, quem participou e relatório de presença do mês.</div>
@@ -3188,7 +3188,7 @@ function fecharDrawer() {
 function mostrarTool(nome) {
   var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
   var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
-  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl','daily'];
+  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
