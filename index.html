@@ -1005,6 +1005,7 @@ body {
 #view_checklist[data-tema="thiago"]  { --chk-fill:rgba(6,6,6,.58);      --chk-soft:rgba(0,0,0,.30);       --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema="adriele"] { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema="felipe"]  { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="amanda"]  { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema="eduardo"] { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema="sharon"]  { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema] .check-time-chip,
@@ -7127,6 +7128,36 @@ const DEFS = {
           'Organizar o chat e finalizar o dia' ] }
     ]
   },
+  amanda: {
+    label: 'Amanda',
+    counters: false,
+    blocks: [
+      { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
+      { id:'am1', time:'08h45–10h00', title:'Grupos · retorno dos clientes', type:'items', hint:'🎯 Foco da Amanda: validar o retorno, não vender', items:[
+          'Abrir os grupos e ver as mensagens novas desde ontem',
+          'Conferir se cada cliente foi respondido e se o retorno combinado foi dado',
+          'Cobrar de quem ficou devendo resposta no grupo',
+          'Anotar as pendências que ficaram abertas' ] },
+      { id:'am2', time:'10h00–11h30', title:'Documentações · validação', type:'items', items:[
+          'Conferir as documentações que chegaram (completas e corretas)',
+          'Validar os documentos recebidos e marcar o que está aprovado',
+          'Pedir o que faltou ou veio errado, no grupo ou direto com o cliente',
+          'Registrar o status de cada documentação' ] },
+      { id:'am3', time:'Almoço', title:'Pausa', type:'info' },
+      { id:'am4', time:'13h00–14h30', title:'Grupos · retorno dos clientes', type:'items', items:[
+          'Voltar do almoço olhando os grupos com mensagens novas',
+          'Conferir se os clientes foram respondidos e se os retornos prometidos foram dados',
+          'Cobrar os retornos pendentes' ] },
+      { id:'am5', time:'14h30–16h30', title:'Documentações · validação', type:'items', items:[
+          'Validar as documentações que faltam do dia',
+          'Cobrar os documentos pendentes e registrar a resposta',
+          'Avisar o responsável quando a documentação estiver validada ou travada' ] },
+      { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
+      { id:'am6', time:'Fechamento', title:'Fim do dia', type:'items', items:[
+          'Atualizar o status dos grupos e das documentações',
+          'Deixar anotado o que fica pendente para amanhã' ] }
+    ]
+  },
   eduardo: {
     label: 'Eduardo',
     counters: false,
@@ -7174,6 +7205,7 @@ function isMeetingDay(d){ const day = d.getDay(); return day === 2 || day === 4;
 const VENDA_REGISTRO = 'Anote o resultado: ofertou, interessado, fechou ou recusou (com o motivo). Se o cliente pediu tempo, deixe o retorno combinado.';
 function vendaPara(pessoa, b) {
   if (!b || b.type === 'info') return null;
+  if (pessoa === 'amanda') return null; // a Amanda não vende
   const cs = (pessoa === 'adriele' || pessoa === 'sharon');
   if (pessoa === 'felipe') {
     if (b.id === 'f2' || b.id === 'f5') return {
@@ -7208,7 +7240,7 @@ function vendaPara(pessoa, b) {
   return null;
 }
 const vendaAberta = {}; // estado aberto/fechado de cada painel (só na tela)
-const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true, felipe:true, eduardo:true }; // cores definidas no CSS (data-tema)
+const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true, felipe:true, amanda:true, eduardo:true }; // cores definidas no CSS (data-tema)
 
 // ---------- Anotações ----------
 let notaTimer = null;
