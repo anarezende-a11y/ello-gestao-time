@@ -983,7 +983,24 @@ body {
 .check-goal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted2); }
 .check-goal-value { font-size:17px; font-weight:900; color:#fff; margin-top:2px; }
 .check-goal-value span { font-size:11px; font-weight:700; color:var(--muted2); }
-@media print { .tool-checklist .check-stepper-btn, .tool-checklist .check-dateinput, .tool-checklist .check-seletor { display:none!important; } .check-block { break-inside:avoid; } }
+.check-block-body.com-notas { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:16px; align-items:start; }
+.check-block-main { min-width:0; }
+.check-venda { margin:8px 0 6px; border:1px solid rgba(253,116,0,.35); background:rgba(253,116,0,.07); border-radius:12px; }
+.check-venda summary { cursor:pointer; list-style:none; padding:9px 12px; font-size:12.5px; font-weight:700; color:var(--laranja); display:flex; align-items:center; gap:8px; user-select:none; }
+.check-venda summary::-webkit-details-marker { display:none; }
+.check-venda summary::after { content:'▾'; margin-left:auto; transition:transform .15s; }
+.check-venda[open] summary::after { transform:rotate(180deg); }
+.check-venda[open] summary { border-bottom:1px solid rgba(253,116,0,.25); }
+.check-venda-body { padding:10px 12px 12px; display:grid; gap:9px; }
+.check-venda-row { font-size:12.5px; line-height:1.5; color:var(--text); }
+.check-venda-row b { display:block; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:1px; }
+.check-notas { padding-top:8px; }
+.check-notas-label { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.check-notas textarea { width:100%; min-height:120px; resize:vertical; box-sizing:border-box; background:rgba(255,255,255,.06); border:1px solid var(--border2); border-radius:12px; color:var(--text); font-family:inherit; font-size:13px; line-height:1.45; padding:10px 12px; outline:none; transition:border-color .15s; }
+.check-notas textarea:focus { border-color:rgba(253,116,0,.5); }
+.check-notas textarea::placeholder { color:var(--muted2); }
+@media (max-width:760px) { .check-block-body.com-notas { grid-template-columns:1fr; } }
+@media print { .tool-checklist .check-stepper-btn, .tool-checklist .check-dateinput, .tool-checklist .check-seletor, .check-venda { display:none!important; } .check-block { break-inside:avoid; } }
 </style>
 <style id="pv-style">
 /* ===== Módulo Comercial Pós-vendas (CSS escopado em #mod-posvendas) ===== */
@@ -6933,6 +6950,48 @@ function blocosKukaThiago() {
 }
 function isMeetingDay(d){ const day = d.getDay(); return day === 2 || day === 4; }
 
+// ---------- Abordagem de venda por ponto de contato ----------
+const VENDA_REGISTRO = 'Anote o resultado: ofertou, interessado, fechou ou recusou (com o motivo). Se o cliente pediu tempo, deixe o retorno combinado.';
+function vendaPara(pessoa, b) {
+  if (!b || b.type === 'info') return null;
+  const cs = (pessoa === 'adriele' || pessoa === 'sharon');
+  if (cs) {
+    if (b.id === 'b2' || b.id === 'b6') return {
+      gancho: 'Nota alta é a melhor hora: o cliente está satisfeito com você.',
+      oferta: 'Peça INDICAÇÃO e AVALIAÇÃO e, na sequência, apresente o Seguro e a Manutenção. Nota baixa: não ofereça, resolva primeiro.',
+      registro: VENDA_REGISTRO };
+    if (b.id === 'b9') return null;
+    return {
+      gancho: 'Depois de resolver a dúvida ou o problema do cliente, use o próprio assunto da conversa. Cliente com reclamação aberta não recebe oferta.',
+      oferta: 'Apresente o Seguro e a Manutenção. O seguro só fecha depois que o sistema estiver instalado e ligado; durante a jornada, apenas introduza a solução.',
+      registro: VENDA_REGISTRO };
+  }
+  if (b.id === 'chatItems' || b.id === 'retornoItems') return {
+    gancho: 'O cliente já está falando com você: resolva o motivo do contato primeiro.',
+    oferta: 'Se houver espaço, ofereça o que ele ainda não contratou (Seguro ou Manutenção). Cliente com problema aberto não recebe oferta.',
+    registro: VENDA_REGISTRO };
+  if (b.id === 'relManha' || b.id === 'relTarde') return {
+    gancho: 'O relatório é o contato com a usina: use a geração do mês como assunto.',
+    oferta: 'Mês 1: Seguro. Mês 2: Manutenção. Mês 3: reforce o que o cliente ainda não contratou. Mês 4: última janela, junto com indicação e avaliação. Usina com problema: abra o ticket e ofereça a inspeção.',
+    registro: VENDA_REGISTRO };
+  return null;
+}
+const vendaAberta = {}; // estado aberto/fechado de cada painel (só na tela)
+
+// ---------- Anotações ----------
+let notaTimer = null;
+function notaInput(blockId, valor) {
+  if (!estadoAtual) return;
+  if (!estadoAtual.notas) estadoAtual.notas = {};
+  estadoAtual.notas[blockId] = valor;
+  clearTimeout(notaTimer);
+  notaTimer = setTimeout(() => { notaTimer = null; salvarEstado(); }, 700);
+}
+function flushNota() {
+  if (notaTimer) { clearTimeout(notaTimer); notaTimer = null; salvarEstado(); }
+}
+function vendaToggle(blockId, aberto) { vendaAberta[blockId] = aberto; }
+
 // Extrai os horários (hh:mm) de uma string tipo "08h30–10h00" ou "08:30–09:30"
 function extrairMinutos(str) {
   if (!str) return [];
@@ -6984,9 +7043,14 @@ function carregarEstado(pessoa) {
   const ref = window.fb.doc(window.fb.db, 'checklists_diarios', docId(pessoa));
   window.fb.onSnapshot(ref, (snap) => {
     if (pessoa !== pessoaAtual) return;
-    estadoAtual = snap.exists() ? snap.data() : { items:{}, counters:{} };
+    const foc = document.activeElement;
+    const idNotaFocada = (foc && foc.getAttribute) ? foc.getAttribute('data-nota') : null;
+    const textoLocal = idNotaFocada ? foc.value : null;
+    estadoAtual = snap.exists() ? snap.data() : { items:{}, counters:{}, notas:{} };
     if (!estadoAtual.items) estadoAtual.items = {};
     if (!estadoAtual.counters) estadoAtual.counters = {};
+    if (!estadoAtual.notas) estadoAtual.notas = {};
+    if (idNotaFocada) { estadoAtual.notas[idNotaFocada] = textoLocal; return; } // não atrapalha quem está digitando
     renderConteudo();
   }, err => console.error('CHECK snapshot error', err));
 }
@@ -7067,7 +7131,7 @@ function render() {
   if (!listenersAtivos[docId(pessoaAtual)]) {
     listenersAtivos = {}; // só mantém o listener ativo do doc atual
     listenersAtivos[docId(pessoaAtual)] = true;
-    estadoAtual = { items:{}, counters:{} };
+    estadoAtual = { items:{}, counters:{}, notas:{} };
     renderConteudo(); // mostra o checklist na hora, mesmo antes do Firestore responder
     carregarEstado(pessoaAtual);
   } else {
@@ -7076,12 +7140,14 @@ function render() {
 }
 
 function trocarPessoa(p) {
+  flushNota();
   pessoaAtual = p;
   listenersAtivos = {};
   render();
 }
 function trocarData(d) {
   if (!d) return;
+  flushNota();
   dataAtual = d;
   listenersAtivos = {};
   render();
@@ -7116,9 +7182,25 @@ function renderConteudo() {
       <div class="check-time-chip${b.type==='info'?' meeting':''}">${time}</div>
       <div class="check-block-title">${escapeHTML(b.title)}</div>
       ${ehAtual ? '<span class="check-atual-badge">📍 Agora</span>' : ''}
-    </div><div class="check-block-body">`;
+    </div>`;
+
+    const temNotas = (b.type !== 'info');
+    const venda = vendaPara(pessoaAtual, b);
+    html += `<div class="check-block-body${temNotas?' com-notas':''}"><div class="check-block-main">`;
 
     if (hint) html += `<span class="check-hint">${escapeHTML(hint)}</span>`;
+
+    if (venda) {
+      const aberto = (vendaAberta[b.id] === undefined) ? ehAtual : vendaAberta[b.id];
+      html += `<details class="check-venda"${aberto?' open':''} ontoggle="window.CHECK.vendaToggle('${b.id}',this.open)">
+        <summary>💡 Abordagem de venda neste contato</summary>
+        <div class="check-venda-body">
+          <div class="check-venda-row"><b>Gancho</b>${escapeHTML(venda.gancho)}</div>
+          <div class="check-venda-row"><b>Oferta</b>${escapeHTML(venda.oferta)}</div>
+          <div class="check-venda-row"><b>Registro</b>${escapeHTML(venda.registro)}</div>
+        </div>
+      </details>`;
+    }
 
     if (b.counters) {
       b.counters.forEach(c => {
@@ -7143,6 +7225,14 @@ function renderConteudo() {
           <div class="check-item-text">${escapeHTML(label)}</div>
         </div>`;
       });
+    }
+    html += `</div>`; // fecha check-block-main
+    if (temNotas) {
+      const nota = (estadoAtual.notas && estadoAtual.notas[b.id]) || '';
+      html += `<div class="check-notas">
+        <div class="check-notas-label">Anotações</div>
+        <textarea data-nota="${b.id}" placeholder="Cliente, o que foi ofertado, retorno combinado..." oninput="window.CHECK.notaInput('${b.id}',this.value)" onblur="window.CHECK.flushNota()">${escapeHTML(nota)}</textarea>
+      </div>`;
     }
     html += `</div></div>`;
   });
@@ -7169,6 +7259,9 @@ window.CHECK.trocarData = trocarData;
 window.CHECK.toggleItem = toggleItem;
 window.CHECK.step = step;
 window.CHECK.gerarPDF = gerarPDF;
+window.CHECK.notaInput = notaInput;
+window.CHECK.flushNota = flushNota;
+window.CHECK.vendaToggle = vendaToggle;
 
 })();
 </script>
