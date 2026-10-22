@@ -6850,29 +6850,29 @@ const DEFS = {
     counters: false,
     blocks: [
       { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
-      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Aplicar o NPS do cliente' ] },
-      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Dar atenção aos clientes antes de encerrar para o almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
       { id:'b4', time:'Almoço', title:'Pausa', type:'info' },
-      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Atenção no chat ao retornar do almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Conferir o NPS do cliente' ] },
-      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes resolvidos e orientados',
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
       { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
@@ -6887,33 +6887,62 @@ const DEFS = {
     counters: false,
     blocks: [
       { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
-      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Aplicar o NPS do cliente' ] },
-      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Dar atenção aos clientes antes de encerrar para o almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
       { id:'b4', time:'Almoço', title:'Pausa', type:'info' },
-      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Atenção no chat ao retornar do almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Conferir o NPS do cliente' ] },
-      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes resolvidos e orientados',
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
       { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
       { id:'b9', time:'Fechamento', title:'Fim do dia', type:'items', items:[
+          'Organizar o chat e finalizar o dia' ] }
+    ]
+  },
+  felipe: {
+    label: 'Felipe',
+    counters: false,
+    blocks: [
+      { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
+      { id:'f1', time:'08h45–10h00', title:'Chat · carteira de clientes', type:'items', items:[
+          'Responder e orientar os clientes da carteira',
+          'Conferir chamados e pendências técnicas em aberto',
+          'Se precisar de terceiros: anotar e cobrar o retorno' ] },
+      { id:'f2', time:'10h00–11h30', title:'Prospecção · clientes antigos', type:'items', items:[
+          'Separar os clientes antigos que serão contatados hoje',
+          'Contatar o cliente (ligação ou mensagem) e retomar o relacionamento',
+          'Apresentar o que ele ainda não tem',
+          'Registrar o resultado de cada contato' ] },
+      { id:'f3', time:'Almoço', title:'Pausa', type:'info' },
+      { id:'f4', time:'13h00–14h30', title:'Chat · carteira de clientes', type:'items', items:[
+          'Atenção no chat ao retornar do almoço',
+          'Responder e orientar os clientes da carteira',
+          'Cobrar retorno de terceiros' ] },
+      { id:'f5', time:'14h30–16h30', title:'Prospecção · clientes antigos', type:'items', items:[
+          'Contatar os clientes antigos que faltam do dia',
+          'Apresentar o que ele ainda não tem',
+          'Registrar o resultado de cada contato' ] },
+      { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
+      { id:'f6', time:'Fechamento', title:'Fim do dia', type:'items', items:[
+          'Atualizar o registro dos clientes contatados',
           'Organizar o chat e finalizar o dia' ] }
     ]
   }
@@ -6955,6 +6984,17 @@ const VENDA_REGISTRO = 'Anote o resultado: ofertou, interessado, fechou ou recus
 function vendaPara(pessoa, b) {
   if (!b || b.type === 'info') return null;
   const cs = (pessoa === 'adriele' || pessoa === 'sharon');
+  if (pessoa === 'felipe') {
+    if (b.id === 'f2' || b.id === 'f5') return {
+      gancho: 'Cliente antigo: retome pelo relacionamento (como está a usina, a geração, alguma dúvida) antes de falar de venda.',
+      oferta: 'Ofereça o que ele ainda não contratou, conforme o histórico: Seguro, Manutenção ou inspeção técnica.',
+      registro: VENDA_REGISTRO };
+    if (b.id === 'f1' || b.id === 'f4') return {
+      gancho: 'O cliente já está falando com você: resolva o motivo do contato primeiro.',
+      oferta: 'Se houver espaço, ofereça o que ele ainda não contratou. Cliente com problema aberto não recebe oferta.',
+      registro: VENDA_REGISTRO };
+    return null;
+  }
   if (cs) {
     if (b.id === 'b2' || b.id === 'b6') return {
       gancho: 'Nota alta é a melhor hora: o cliente está satisfeito com você.',
