@@ -12794,6 +12794,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     roleplay:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
     rco:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     campanha:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     checklist:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
     feedback:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     contratos:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
@@ -12807,7 +12808,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     dashboard:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     pop:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'
   };
-  var COR = { daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
+  var COR = { chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
     feedback:'v', contratos:'c', cargos:'o', posvendas:'g', pdl:'o', atualizacoes:'g', desafioreuniao:'r', provas:'c', dashboard:'v', pop:'g', home:'o' };
   function svg(k){ return P[k] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[k]+'</svg>' : ''; }
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
@@ -12855,7 +12856,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','checklist','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','chat','checklist','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
@@ -13328,9 +13329,11 @@ body{
     visivel:function(v){ visivel=v; if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
     iniciar:iniciar
   };
-  window.addEventListener('userAuthed', function(){ unsubs.__ok=false; iniciar(); });
+  function seAberto(){ var v=document.getElementById('view_chat'); if(v && v.classList.contains('active')) window.CHAT.visivel(true); }
+  window.addEventListener('userAuthed', function(){ unsubs.__ok=false; iniciar(); seAberto(); });
   if(U()) iniciar();
-  window.addEventListener('fbReady', iniciar);
+  window.addEventListener('fbReady', function(){ iniciar(); seAberto(); });
+  seAberto();
 })();
 
 </script>
