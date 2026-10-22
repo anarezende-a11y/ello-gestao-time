@@ -8,7 +8,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC7cNQNOQI4I68r2zkE2wOZU1tJZb7LbBw",
@@ -24,7 +24,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  window.fb = { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc };
+  window.fb = { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, limit };
   window.dispatchEvent(new Event('fbReady'));
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -983,7 +983,49 @@ body {
 .check-goal-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted2); }
 .check-goal-value { font-size:17px; font-weight:900; color:#fff; margin-top:2px; }
 .check-goal-value span { font-size:11px; font-weight:700; color:var(--muted2); }
-@media print { .tool-checklist .check-stepper-btn, .tool-checklist .check-dateinput, .tool-checklist .check-seletor { display:none!important; } .check-block { break-inside:avoid; } }
+.check-block-body.com-notas { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:16px; align-items:start; }
+.check-block-main { min-width:0; }
+.check-venda { margin:8px 0 6px; border:1px solid rgba(253,116,0,.35); background:rgba(253,116,0,.07); border-radius:12px; }
+.check-venda summary { cursor:pointer; list-style:none; padding:9px 12px; font-size:12.5px; font-weight:700; color:var(--laranja); display:flex; align-items:center; gap:8px; user-select:none; }
+.check-venda summary::-webkit-details-marker { display:none; }
+.check-venda summary::after { content:'▾'; margin-left:auto; transition:transform .15s; }
+.check-venda[open] summary::after { transform:rotate(180deg); }
+.check-venda[open] summary { border-bottom:1px solid rgba(253,116,0,.25); }
+.check-venda-body { padding:10px 12px 12px; display:grid; gap:9px; }
+.check-venda-row { font-size:12.5px; line-height:1.5; color:var(--text); }
+.check-venda-row b { display:block; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:1px; }
+.check-notas { padding-top:8px; }
+.check-notas-label { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.check-notas textarea { width:100%; min-height:120px; resize:vertical; box-sizing:border-box; background:rgba(255,255,255,.06); border:1px solid var(--border2); border-radius:12px; color:var(--text); font-family:inherit; font-size:13px; line-height:1.45; padding:10px 12px; outline:none; transition:border-color .15s; }
+.check-notas textarea:focus { border-color:rgba(253,116,0,.5); }
+.check-notas textarea::placeholder { color:var(--muted2); }
+@media (max-width:760px) { .check-block-body.com-notas { grid-template-columns:1fr; } }
+/* ----- Cor do checklist por pessoa (translúcido, no lugar do amarelo) ----- */
+#view_checklist[data-tema="kuka"]    { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="thiago"]  { --chk-fill:rgba(6,6,6,.58);      --chk-soft:rgba(0,0,0,.30);       --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="adriele"] { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="felipe"]  { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="eduardo"] { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="sharon"]  { --chk-fill:rgba(6,6,6,.58); --chk-soft:rgba(0,0,0,.30); --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema] .check-time-chip,
+#view_checklist[data-tema] .check-time-chip.meeting,
+#view_checklist[data-tema] .check-atual-badge,
+#view_checklist[data-tema] .check-hint,
+#view_checklist[data-tema] .tool-subbar .btn-amber,
+#view_checklist[data-tema] .check-stepper-btn { background:var(--chk-fill) !important; color:var(--chk-text) !important; border:1px solid var(--chk-line) !important; box-shadow:none !important; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+#view_checklist[data-tema] .check-block-atual { border:2px solid var(--chk-line) !important; box-shadow:0 8px 24px rgba(0,0,0,.18) !important; }
+#view_checklist[data-tema] .check-pessoa-card.active,
+#view_checklist[data-tema] .check-data-card.active { background:var(--chk-fill) !important; border-color:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-data-card.hoje:not(.active) { border-color:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-data-hoje-tag { color:var(--chk-strong) !important; }
+#view_checklist[data-tema] .check-pessoa-card.active .check-pessoa-avatar { background:var(--chk-fill) !important; color:var(--chk-text) !important; border:1px solid var(--chk-line); }
+#view_checklist[data-tema] .check-mini-bar-fill { background:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-venda { border-color:var(--chk-line); background:var(--chk-soft); }
+#view_checklist[data-tema] .check-venda summary { color:var(--chk-strong); }
+#view_checklist[data-tema] .check-venda[open] summary { border-bottom-color:var(--chk-line); }
+#view_checklist[data-tema] .check-notas textarea:focus { border-color:var(--chk-line); }
+#view_checklist[data-tema] .el-dot { background:var(--chk-strong) !important; box-shadow:none !important; }
+@media print { .tool-checklist .check-stepper-btn, .tool-checklist .check-dateinput, .tool-checklist .check-seletor, .check-venda { display:none!important; } .check-block { break-inside:avoid; } }
 </style>
 <style id="pv-style">
 /* ===== Módulo Comercial Pós-vendas (CSS escopado em #mod-posvendas) ===== */
@@ -1147,7 +1189,7 @@ body {
 #mod-posvendas .fld select option{background:#0b2d36}
 #mod-posvendas .fld .hint{font-size:11px;color:var(--dim)}
 #mod-posvendas .span2{grid-column:span 2}
-#mod-posvendas .pvbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;font-weight:800;font-size:13px;background:linear-gradient(180deg,#ffb840,#e58f0c);color:#2a1700}
+#mod-posvendas .pvbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:11px;font-weight:800;font-size:13px;background:rgba(6,6,6,.58);color:#fff;border:1px solid rgba(255,255,255,.32)}
 #mod-posvendas .pvbtn:hover{filter:brightness(1.08)}
 #mod-posvendas .pvbtn.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--fg);font-weight:700}
 #mod-posvendas .pvbtn.danger{background:var(--bad-soft);color:var(--bad);border:1px solid rgba(255,107,107,.4)}
@@ -1356,7 +1398,7 @@ body {
 #mod-posvendas .fn-cntitem .wk{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 #mod-posvendas .fn-who{all:unset;cursor:pointer;margin-left:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);font-size:11px;letter-spacing:.04em}
 #mod-posvendas .fn-who.on{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
-#mod-posvendas .fn-plus{all:unset;cursor:pointer;padding:7px 12px;border-radius:10px;font-weight:800;font-size:12.5px;background:linear-gradient(180deg,#ffb840,#e58f0c);color:#2a1700}
+#mod-posvendas .fn-plus{all:unset;cursor:pointer;padding:7px 12px;border-radius:10px;font-weight:800;font-size:12.5px;background:rgba(6,6,6,.58);color:#fff;border:1px solid rgba(255,255,255,.32)}
 #mod-posvendas .fn-minus{all:unset;cursor:pointer;padding:6px 9px;border-radius:9px;font-weight:800;font-size:12px;border:1px solid var(--line-strong);color:var(--muted)}
 #mod-posvendas .fn-bar2{position:relative;height:10px;border-radius:999px;background:rgba(141,176,179,.15);margin:10px 0 4px;overflow:visible}
 #mod-posvendas .fn-bar2 i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:rgba(141,176,179,.45)}
@@ -1390,6 +1432,60 @@ body {
 #mod-posvendas .fn-warn{font-size:12px;color:var(--warn);margin-top:8px}
 @media (max-width:900px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#mod-posvendas .fn-g3{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#mod-posvendas .fn-g3,#mod-posvendas .fn-g2{grid-template-columns:1fr}}
+
+/* ===== CHAT ===== */
+.chat-badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:99px;background:#e5484d;color:#fff;font-size:11px;font-weight:800;text-align:center;vertical-align:middle}
+.chat-badge[hidden]{display:none}
+.chat-wrap{display:grid;grid-template-columns:240px minmax(0,1fr);height:calc(100vh - 150px);min-height:460px;margin:14px;border:1px solid rgba(255,255,255,.22);border-radius:16px;overflow:hidden;background:rgba(6,6,6,.58);color:#fff;backdrop-filter:blur(8px)}
+.chat-side{border-right:1px solid rgba(255,255,255,.18);overflow-y:auto;padding:10px;background:rgba(0,0,0,.28)}
+.chat-side h4{margin:12px 6px 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.chat-item{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:#fff;font:inherit;font-size:14px;cursor:pointer;text-align:left}
+.chat-item:hover{background:rgba(255,255,255,.08)}
+.chat-item.active{background:rgba(255,255,255,.16);font-weight:700}
+.chat-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-dot{width:9px;height:9px;border-radius:50%;background:#555;flex:none}
+.chat-dot.on{background:#3ddc84}
+.chat-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.chat-head{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.18);font-weight:800;display:flex;gap:10px;align-items:center}
+.chat-head small{font-weight:400;opacity:.65}
+.chat-pin{padding:8px 16px;background:rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.18);font-size:13px}
+.chat-pin b{margin-right:6px}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.chat-day{align-self:center;margin:10px 0 6px;font-size:11px;opacity:.6;background:rgba(255,255,255,.08);padding:2px 10px;border-radius:99px}
+.chat-msg{position:relative;max-width:78%;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.1);align-self:flex-start;margin-top:6px;word-break:break-word}
+.chat-msg.eu{align-self:flex-end;background:rgba(255,255,255,.22)}
+.chat-msg .au{font-size:12px;font-weight:800;opacity:.8}
+.chat-msg .tx{white-space:pre-wrap;font-size:14px;line-height:1.4}
+.chat-msg .hr{font-size:10px;opacity:.55;margin-left:8px}
+.chat-msg .tx a{color:#fff;text-decoration:underline}
+.chat-msg .men{background:rgba(255,255,255,.28);border-radius:5px;padding:0 3px;font-weight:700}
+.chat-msg.paraMim{box-shadow:0 0 0 1.5px rgba(255,255,255,.65)}
+.chat-resp{border-left:3px solid rgba(255,255,255,.5);padding:2px 8px;margin-bottom:4px;font-size:12px;opacity:.75;background:rgba(0,0,0,.2);border-radius:4px}
+.chat-acts{position:absolute;top:-12px;right:6px;display:none;gap:2px;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:2px}
+.chat-msg:hover .chat-acts{display:flex}
+.chat-acts button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:13px;padding:2px 5px}
+.chat-comp{border-top:1px solid rgba(255,255,255,.18);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.chat-rbar{display:flex;justify-content:space-between;font-size:12px;opacity:.8;background:rgba(0,0,0,.25);padding:4px 8px;border-radius:6px}
+.chat-rbar[hidden]{display:none}
+.chat-row{display:flex;gap:8px;position:relative}
+.chat-row textarea{flex:1;resize:none;height:42px;max-height:120px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;padding:9px 12px;font:inherit;font-size:14px}
+.chat-row button.env{border-radius:10px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;padding:0 16px;font-weight:700;cursor:pointer}
+.chat-sug{position:absolute;bottom:48px;left:0;background:rgba(10,10,10,.95);border:1px solid rgba(255,255,255,.3);border-radius:10px;overflow:hidden;z-index:5}
+.chat-sug[hidden]{display:none}
+.chat-sug button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#fff;padding:7px 14px;cursor:pointer;font:inherit;font-size:14px}
+.chat-sug button:hover{background:rgba(255,255,255,.15)}
+.chat-so{padding:12px;text-align:center;opacity:.7;font-size:13px}
+.chat-erro{align-self:center;margin:10px;padding:8px 12px;border-radius:10px;background:rgba(229,72,77,.25);border:1px solid #e5484d;font-size:13px;text-align:center}
+.chat-vazio{margin:auto;opacity:.6;font-size:14px}
+.chat-row button.ico{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;align-self:center}
+.chat-row button.ico.rec{background:#e5484d;border-radius:10px;font-size:13px;padding:6px 10px;font-weight:700}
+.chat-emo{position:absolute;bottom:48px;left:0;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:rgba(10,10,10,.96);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:6px;z-index:6}
+.chat-emo[hidden]{display:none}
+.chat-emo button{border:0;background:transparent;font-size:20px;cursor:pointer;padding:3px 5px;border-radius:6px}
+.chat-emo button:hover{background:rgba(255,255,255,.18)}
+.chat-img{display:block;max-width:260px;max-height:260px;border-radius:8px;margin-top:4px;cursor:zoom-in}
+.chat-aud{display:block;height:36px;max-width:250px;margin-top:4px}
+@media(max-width:760px){.chat-wrap{grid-template-columns:1fr;height:calc(100vh - 120px)}.chat-side{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid rgba(255,255,255,.18);padding:6px;gap:4px}.chat-side h4{display:none}.chat-item{width:auto;white-space:nowrap}.chat-msg{max-width:92%}}
 </style>
 </head>
 <body>
@@ -1418,7 +1514,7 @@ window.APPAUTH = window.APPAUTH || {};
 (function(){
   const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
   // e-mails que não começam com o primeiro nome: força o nome usado nas listas do portal
-  const NOMES_POR_EMAIL = { 'robsonsamuelliborio@gmail.com': 'Robson', 'duardogon@gmail.com': 'Eduardo' };
+  const NOMES_POR_EMAIL = { 'duardogon@gmail.com': 'Eduardo' };
   const nomeDoEmail = e => NOMES_POR_EMAIL[String(e||'').trim().toLowerCase()] || String(e||'').split('@')[0];
   let fbReady = false;
 
@@ -1564,6 +1660,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_campanha" onclick="mostrarTool('campanha')">
     <span class="di-icon">🏆</span> Campanha
   </button>
+  <button class="drawer-item" id="di_chat" onclick="mostrarTool('chat')">
+    <span class="di-icon">💬</span> Chat <span class="chat-badge" id="chatBadgeDrawer" hidden></span>
+  </button>
   <button class="drawer-item" id="di_checklist" onclick="mostrarTool('checklist')">
     <span class="di-icon">✅</span> Checklist
   </button>
@@ -1681,6 +1780,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Campanha</div>
         <div class="hc-desc">Metas e competições do time: lance seus números, acompanhe o ranking e o progresso de cada campanha ativa.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-chat" onclick="mostrarTool('chat')">
+        <div class="hc-icon">💬</div>
+        <div class="hc-title">Chat do time <span class="chat-badge" id="chatBadgeHome" hidden></span></div>
+        <div class="hc-desc">Canais e conversas diretas para o time conversar sem sair da plataforma.</div>
+        <div class="hc-cta">Abrir chat →</div>
       </button>
       <button class="home-card c-checklist" onclick="mostrarTool('checklist')">
         <div class="hc-icon">✅</div>
@@ -1908,6 +2013,27 @@ window.APPAUTH = window.APPAUTH || {};
       <button class="camp-tab admin-only" id="campTab_pendencias" onclick="window.CAMP.mudarTab('pendencias')">Pendências <span id="campPendCount"></span></button>
     </div>
     <div id="camp_lista" class="camp-list"></div>
+  </div>
+</div>
+
+<!-- ================= TOOL: CHAT ================= -->
+<div class="tool-view tool-chat" id="view_chat">
+  <div class="tool-subbar"><span class="sb-title">💬 Chat do time</span></div>
+  <div class="chat-wrap">
+    <div class="chat-side" id="chatSide"></div>
+    <div class="chat-main">
+      <div class="chat-head" id="chatHead"></div>
+      <div class="chat-pin" id="chatPin" hidden></div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-comp" id="chatComp">
+        <div class="chat-rbar" id="chatRbar" hidden></div>
+        <div class="chat-row">
+          <div class="chat-sug" id="chatSug" hidden></div>
+          <textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea>
+          <button class="env" id="chatEnv">Enviar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3186,8 +3312,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -3211,6 +3337,7 @@ function mostrarTool(nome) {
   if (nome === 'reuniao' && window.PAUTA) window.PAUTA.renderAdminPanel();
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
+  if (window.CHAT) window.CHAT.visivel(nome === 'chat');
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   if (nome === 'cargos' && window.CARGOS) window.CARGOS.render();
@@ -3249,7 +3376,6 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
-  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
   { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
@@ -3660,7 +3786,6 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
-  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
   { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MOODS = ['😄','🙂','😐','😟','😤'];
@@ -4885,7 +5010,7 @@ render();
 window.RP = window.RP || {};
 (function(){
 const STORAGE_KEY = 'ello_roleplay_sessoes';
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 let modalId = null;
 let cachedData = null;
 let listenerAtivo_p = false;
@@ -5906,7 +6031,6 @@ const MEMBROS = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
-  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
   { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 
@@ -6833,29 +6957,29 @@ const DEFS = {
     counters: false,
     blocks: [
       { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
-      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Aplicar o NPS do cliente' ] },
-      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Dar atenção aos clientes antes de encerrar para o almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
       { id:'b4', time:'Almoço', title:'Pausa', type:'info' },
-      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Atenção no chat ao retornar do almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Conferir o NPS do cliente' ] },
-      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes resolvidos e orientados',
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
       { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
@@ -6870,34 +6994,73 @@ const DEFS = {
     counters: false,
     blocks: [
       { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
-      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b1', time:'08h30–10h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes respondidos e orientados',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b2', time:'10h00–11h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Aplicar o NPS do cliente' ] },
-      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b3', time:'11h30–12h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Dar atenção aos clientes antes de encerrar para o almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
       { id:'b4', time:'Almoço', title:'Pausa', type:'info' },
-      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b5', time:'13h00–13h30', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Atenção no chat ao retornar do almoço',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b6', time:'13h30–14h30', title:'NPS', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Conferir o NPS do cliente' ] },
-      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b7', time:'14h45–16h00', title:'Chat · INDICAÇÃO · AVALIAÇÃO', type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           'Deixar todos os clientes resolvidos e orientados',
           'Se precisar de terceiros pra resposta da solução: anotar e cobrar o terceiro',
           'Conferir se chegou atendimento novo e se apresentar ao cliente novo',
           'Lembrar de pedir INDICAÇÃO e AVALIAÇÃO (Google) ao cliente' ] },
-      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch do Seguro', items:[
+      { id:'b8', time:'16h00–17h30', timeFn: d => (d.getDay()===5 ? '16h00–16h30' : '16h00–17h30'), title:"NPS · Chat dos meninos · INDICAÇÃO · AVALIAÇÃO", type:'items', hint:'📞 Esse contato pode ser por ligação — aproveite pra fazer o pitch de venda', items:[
           "Verificar os NPS's novamente e pedir INDICAÇÃO e AVALIAÇÃO a quem respondeu",
           'Verificar o chat dos meninos (clientes que ela acompanha) e ver se todos estão respondidos' ] },
       { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
       { id:'b9', time:'Fechamento', title:'Fim do dia', type:'items', items:[
           'Organizar o chat e finalizar o dia' ] }
+    ]
+  },
+  felipe: {
+    label: 'Felipe',
+    counters: false,
+    blocks: [
+      { id:'daily', time:'08h30–08h45', title:'Daily do time', type:'info', onlyDays:[1,2,3,4,5], hint:'☀️ Todo dia útil às 08:30: daily com o time' },
+      { id:'f1', time:'08h45–10h00', title:'Chat · carteira de clientes', type:'items', items:[
+          'Responder e orientar os clientes da carteira',
+          'Conferir chamados e pendências técnicas em aberto',
+          'Se precisar de terceiros: anotar e cobrar o retorno' ] },
+      { id:'f2', time:'10h00–11h30', title:'Prospecção · clientes antigos', type:'items', items:[
+          'Separar os clientes antigos que serão contatados hoje',
+          'Contatar o cliente (ligação ou mensagem) e retomar o relacionamento',
+          'Apresentar o que ele ainda não tem',
+          'Registrar o resultado de cada contato' ] },
+      { id:'f3', time:'Almoço', title:'Pausa', type:'info' },
+      { id:'f4', time:'13h00–14h30', title:'Chat · carteira de clientes', type:'items', items:[
+          'Atenção no chat ao retornar do almoço',
+          'Responder e orientar os clientes da carteira',
+          'Cobrar retorno de terceiros' ] },
+      { id:'f5', time:'14h30–16h30', title:'Prospecção · clientes antigos', type:'items', items:[
+          'Contatar os clientes antigos que faltam do dia',
+          'Apresentar o que ele ainda não tem',
+          'Registrar o resultado de cada contato' ] },
+      { id:'treinoSexta', time:'16h30–18h00', title:'Treinamento do time', type:'info', onlyDays:[5], hint:'🎓 Toda sexta: treinamento com todo o time' },
+      { id:'f6', time:'Fechamento', title:'Fim do dia', type:'items', items:[
+          'Atualizar o registro dos clientes contatados',
+          'Organizar o chat e finalizar o dia' ] }
+    ]
+  },
+  eduardo: {
+    label: 'Eduardo',
+    counters: false,
+    blocks: [
+      { id:'e1', time:'Durante o dia', title:'Atendimento ao cliente', type:'items', hint:'Por enquanto, passe as informações para o Felipe', items:[
+          'Atender o cliente',
+          'Olhar o chat',
+          'Unir as informações e passar para o Felipe' ] }
     ]
   }
 };
@@ -6932,6 +7095,60 @@ function blocosKukaThiago() {
   ];
 }
 function isMeetingDay(d){ const day = d.getDay(); return day === 2 || day === 4; }
+
+// ---------- Abordagem de venda por ponto de contato ----------
+const VENDA_REGISTRO = 'Anote o resultado: ofertou, interessado, fechou ou recusou (com o motivo). Se o cliente pediu tempo, deixe o retorno combinado.';
+function vendaPara(pessoa, b) {
+  if (!b || b.type === 'info') return null;
+  const cs = (pessoa === 'adriele' || pessoa === 'sharon');
+  if (pessoa === 'felipe') {
+    if (b.id === 'f2' || b.id === 'f5') return {
+      gancho: 'Cliente antigo: retome pelo relacionamento (como está a usina, a geração, alguma dúvida) antes de falar de venda.',
+      oferta: 'Ofereça o que ele ainda não contratou, conforme o histórico: Seguro, Manutenção ou inspeção técnica.',
+      registro: VENDA_REGISTRO };
+    if (b.id === 'f1' || b.id === 'f4') return {
+      gancho: 'O cliente já está falando com você: resolva o motivo do contato primeiro.',
+      oferta: 'Se houver espaço, ofereça o que ele ainda não contratou. Cliente com problema aberto não recebe oferta.',
+      registro: VENDA_REGISTRO };
+    return null;
+  }
+  if (cs) {
+    if (b.id === 'b2' || b.id === 'b6') return {
+      gancho: 'Nota alta é a melhor hora: o cliente está satisfeito com você.',
+      oferta: 'Peça INDICAÇÃO e AVALIAÇÃO e, na sequência, apresente o Seguro e a Manutenção. Nota baixa: não ofereça, resolva primeiro.',
+      registro: VENDA_REGISTRO };
+    if (b.id === 'b9') return null;
+    return {
+      gancho: 'Depois de resolver a dúvida ou o problema do cliente, use o próprio assunto da conversa. Cliente com reclamação aberta não recebe oferta.',
+      oferta: 'Apresente o Seguro e a Manutenção. O seguro só fecha depois que o sistema estiver instalado e ligado; durante a jornada, apenas introduza a solução.',
+      registro: VENDA_REGISTRO };
+  }
+  if (b.id === 'chatItems' || b.id === 'retornoItems') return {
+    gancho: 'O cliente já está falando com você: resolva o motivo do contato primeiro.',
+    oferta: 'Se houver espaço, ofereça o que ele ainda não contratou (Seguro ou Manutenção). Cliente com problema aberto não recebe oferta.',
+    registro: VENDA_REGISTRO };
+  if (b.id === 'relManha' || b.id === 'relTarde') return {
+    gancho: 'O relatório é o contato com a usina: use a geração do mês como assunto.',
+    oferta: 'Mês 1: Seguro. Mês 2: Manutenção. Mês 3: reforce o que o cliente ainda não contratou. Mês 4: última janela, junto com indicação e avaliação. Usina com problema: abra o ticket e ofereça a inspeção.',
+    registro: VENDA_REGISTRO };
+  return null;
+}
+const vendaAberta = {}; // estado aberto/fechado de cada painel (só na tela)
+const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true, felipe:true, eduardo:true }; // cores definidas no CSS (data-tema)
+
+// ---------- Anotações ----------
+let notaTimer = null;
+function notaInput(blockId, valor) {
+  if (!estadoAtual) return;
+  if (!estadoAtual.notas) estadoAtual.notas = {};
+  estadoAtual.notas[blockId] = valor;
+  clearTimeout(notaTimer);
+  notaTimer = setTimeout(() => { notaTimer = null; salvarEstado(); }, 700);
+}
+function flushNota() {
+  if (notaTimer) { clearTimeout(notaTimer); notaTimer = null; salvarEstado(); }
+}
+function vendaToggle(blockId, aberto) { vendaAberta[blockId] = aberto; }
 
 // Extrai os horários (hh:mm) de uma string tipo "08h30–10h00" ou "08:30–09:30"
 function extrairMinutos(str) {
@@ -6984,9 +7201,14 @@ function carregarEstado(pessoa) {
   const ref = window.fb.doc(window.fb.db, 'checklists_diarios', docId(pessoa));
   window.fb.onSnapshot(ref, (snap) => {
     if (pessoa !== pessoaAtual) return;
-    estadoAtual = snap.exists() ? snap.data() : { items:{}, counters:{} };
+    const foc = document.activeElement;
+    const idNotaFocada = (foc && foc.getAttribute) ? foc.getAttribute('data-nota') : null;
+    const textoLocal = idNotaFocada ? foc.value : null;
+    estadoAtual = snap.exists() ? snap.data() : { items:{}, counters:{}, notas:{} };
     if (!estadoAtual.items) estadoAtual.items = {};
     if (!estadoAtual.counters) estadoAtual.counters = {};
+    if (!estadoAtual.notas) estadoAtual.notas = {};
+    if (idNotaFocada) { estadoAtual.notas[idNotaFocada] = textoLocal; return; } // não atrapalha quem está digitando
     renderConteudo();
   }, err => console.error('CHECK snapshot error', err));
 }
@@ -7062,12 +7284,15 @@ function render() {
     pessoaAtual = p;
   }
 
+  const viewEl = document.getElementById('view_checklist');
+  if (viewEl) { if (TEMAS[pessoaAtual]) viewEl.setAttribute('data-tema', pessoaAtual); else viewEl.removeAttribute('data-tema'); }
+
   try { if (window.DAILY && window.DAILY.checkTarefas) window.DAILY.checkTarefas((DEFS[pessoaAtual] && DEFS[pessoaAtual].label) || pessoaAtual); } catch(e) {}
 
   if (!listenersAtivos[docId(pessoaAtual)]) {
     listenersAtivos = {}; // só mantém o listener ativo do doc atual
     listenersAtivos[docId(pessoaAtual)] = true;
-    estadoAtual = { items:{}, counters:{} };
+    estadoAtual = { items:{}, counters:{}, notas:{} };
     renderConteudo(); // mostra o checklist na hora, mesmo antes do Firestore responder
     carregarEstado(pessoaAtual);
   } else {
@@ -7076,12 +7301,14 @@ function render() {
 }
 
 function trocarPessoa(p) {
+  flushNota();
   pessoaAtual = p;
   listenersAtivos = {};
   render();
 }
 function trocarData(d) {
   if (!d) return;
+  flushNota();
   dataAtual = d;
   listenersAtivos = {};
   render();
@@ -7116,9 +7343,25 @@ function renderConteudo() {
       <div class="check-time-chip${b.type==='info'?' meeting':''}">${time}</div>
       <div class="check-block-title">${escapeHTML(b.title)}</div>
       ${ehAtual ? '<span class="check-atual-badge">📍 Agora</span>' : ''}
-    </div><div class="check-block-body">`;
+    </div>`;
+
+    const temNotas = (b.type !== 'info');
+    const venda = vendaPara(pessoaAtual, b);
+    html += `<div class="check-block-body${temNotas?' com-notas':''}"><div class="check-block-main">`;
 
     if (hint) html += `<span class="check-hint">${escapeHTML(hint)}</span>`;
+
+    if (venda) {
+      const aberto = (vendaAberta[b.id] === undefined) ? ehAtual : vendaAberta[b.id];
+      html += `<details class="check-venda"${aberto?' open':''} ontoggle="window.CHECK.vendaToggle('${b.id}',this.open)">
+        <summary>💡 Abordagem de venda neste contato</summary>
+        <div class="check-venda-body">
+          <div class="check-venda-row"><b>Gancho</b>${escapeHTML(venda.gancho)}</div>
+          <div class="check-venda-row"><b>Oferta</b>${escapeHTML(venda.oferta)}</div>
+          <div class="check-venda-row"><b>Registro</b>${escapeHTML(venda.registro)}</div>
+        </div>
+      </details>`;
+    }
 
     if (b.counters) {
       b.counters.forEach(c => {
@@ -7143,6 +7386,14 @@ function renderConteudo() {
           <div class="check-item-text">${escapeHTML(label)}</div>
         </div>`;
       });
+    }
+    html += `</div>`; // fecha check-block-main
+    if (temNotas) {
+      const nota = (estadoAtual.notas && estadoAtual.notas[b.id]) || '';
+      html += `<div class="check-notas">
+        <div class="check-notas-label">Anotações</div>
+        <textarea data-nota="${b.id}" placeholder="Cliente, o que foi ofertado, retorno combinado..." oninput="window.CHECK.notaInput('${b.id}',this.value)" onblur="window.CHECK.flushNota()">${escapeHTML(nota)}</textarea>
+      </div>`;
     }
     html += `</div></div>`;
   });
@@ -7169,6 +7420,9 @@ window.CHECK.trocarData = trocarData;
 window.CHECK.toggleItem = toggleItem;
 window.CHECK.step = step;
 window.CHECK.gerarPDF = gerarPDF;
+window.CHECK.notaInput = notaInput;
+window.CHECK.flushNota = flushNota;
+window.CHECK.vendaToggle = vendaToggle;
 
 })();
 </script>
@@ -7177,7 +7431,7 @@ window.CHECK.gerarPDF = gerarPDF;
 <script>
 window.FEED = window.FEED || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
 
 let cachedData = null;
@@ -7594,7 +7848,7 @@ window.FEED.imprimirFeedbackView = imprimirFeedbackView;
 <script>
 window.CONTR = window.CONTR || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 const TIPOS = { contrato:'📄 Contrato de Prestação de Serviços', cargo:'🧾 Descritivo de Cargo / OTE', aditivo:'📎 Aditivo Contratual', outro:'📁 Outro documento' };
 
 let cachedData = null;
@@ -8203,7 +8457,7 @@ function renderConteudoVerPlano(p) {
   if (!(p.atividades || []).length) {
     document.getElementById('planover_lista').innerHTML = `<div style="padding:22px 4px; text-align:center;">
       <div style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">Este plano está sem as etapas (os quadradinhos). Clique no botão abaixo para trazê-las de volta.</div>
-      <button type="button" onclick="window.CARGOS.carregarAtividadesPlano()" style="background:var(--laranja); color:#fff; border:none; border-radius:10px; padding:13px 22px; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(253,116,0,.3);">📋 Trazer as etapas de volta</button>
+      <button type="button" onclick="window.CARGOS.carregarAtividadesPlano()" style="background:rgba(6,6,6,.58); color:#fff; border:1px solid rgba(255,255,255,.32); border-radius:10px; padding:13px 22px; font-family:inherit; font-size:14px; font-weight:800; cursor:pointer;">📋 Trazer as etapas de volta</button>
     </div>`;
     return;
   }
@@ -9312,7 +9566,7 @@ window.PDL.corrLancar = corrLancar;
 <script>
 window.ATUAL = window.ATUAL || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 const TIPOS = { salario:'💰 Aumento salarial', promocao:'🚀 Promoção', cargo:'🧾 Mudança de cargo', outro:'📌 Outro' };
 
 let cachedData = null;
@@ -9469,7 +9723,6 @@ const MEMBROS_INFO = [
   { nome:'Adriele', cor:'#DB2777', ini:'AD' },
   { nome:'Felipe',  cor:'#0891B2', ini:'FE' },
   { nome:'Sharon',  cor:'#9333EA', ini:'SH' },
-  { nome:'Robson',  cor:'#65A30D', ini:'RO' },
   { nome:'Eduardo', cor:'#0D9488', ini:'ED' },
 ];
 const MEMBROS = MEMBROS_INFO.map(m => m.nome);
@@ -9698,7 +9951,7 @@ window.DESAFIO.fecharView = fecharView;
 <script>
 window.PROVAS = window.PROVAS || {};
 (function(){
-const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Robson','Eduardo'];
+const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 const SEGURO_SOLAR_PERGUNTAS = [
   { texto: 'Qual a diferença central entre garantia e seguro?', opcoes: ['Garantia cobre defeitos de fabricação; seguro cobre danos de causa externa', 'Garantia e seguro cobrem exatamente as mesmas coisas', 'Seguro só cobre defeito de fabricação', 'Garantia cobre roubo e furto; seguro não'], correta: 0 },
   { texto: 'SITUAÇÃO: o cliente diz "Tenho garantia do fabricante, não preciso disso." Como você responde?', opcoes: ['Concordar e desistir da oferta', 'Explicar que garantia cobre defeitos internos e seguro protege contra eventos externos, como granizo, vendaval, raio ou roubo', 'Dizer que a garantia do fabricante não vale nada', 'Oferecer um desconto grande para compensar'], correta: 1 },
@@ -9933,7 +10186,7 @@ function listaPessoasTime() {
   try {
     if (window.EQUIPE && Array.isArray(window.EQUIPE.lista)) return window.EQUIPE.lista.map(u => u.nome).filter(Boolean);
   } catch(e) {}
-  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe','Robson','Eduardo'];
+  return ['Thiago','Sharon','Kuka','Amanda','Adriele','Felipe','Eduardo'];
 }
 function abrirQuick() {
   const data = getData();
@@ -11759,7 +12012,7 @@ $("#fMes").addEventListener("input", ()=>$("#fMes").dataset.touched="1");
 <script>
 window.DAILY = window.DAILY || {};
 (function(){
-const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Robson','Eduardo'];
+const PESSOAS = ['Adriele','Felipe','Kuka','Sharon','Thiago','Amanda','Eduardo'];
 let tarefas = {}, tarFiltroP = 'todos', tarFiltroS = 'abertas', fbIds = new Set(), fbCarregado = false, fbSincEm = 0;
 let cache = null, ouvindo = false, editId = null, abaAtual = 'rel', presenca = {}, porPessoa = {}, granolaUrl = '';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -12132,7 +12385,7 @@ Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, troc
   --el-good:#3ee39a; --el-bad:#ff6b6b; --el-warn:#f5a524; --el-violet:#c48bff; --el-cyan:#5ee6dc;
   --el-card-bg:linear-gradient(160deg,rgba(22,78,88,.55),rgba(9,38,46,.7));
   --el-card-shadow:0 10px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.04);
-  --el-btn:linear-gradient(180deg,#ffb840,#e58f0c);
+  --el-btn:rgba(6,6,6,.58); --el-btn-line:rgba(255,255,255,.32);
   --f-ui:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   --el-side:248px;
@@ -12215,7 +12468,7 @@ body {
 .tool-subbar .btn-amber, .tool-reuniao .btn-amber, .tool-oneone .btn-primary,
 .tr-resp-send-btn, .tr-pergunta-reply-btn, .tr-empty-btn, .tr-modal-foot .btn-amber,
 .camp-rank-roleta-btn, .check-stepper-btn, .auth-btn, .btn-new-conv {
-  background:var(--el-btn) !important; color:#2a1700 !important; border:0 !important; box-shadow:none !important; font-weight:800;
+  background:var(--el-btn) !important; color:#fff !important; border:1px solid var(--el-btn-line) !important; box-shadow:none !important; font-weight:800; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
 }
 .tool-subbar .btn-ghost, .tool-reuniao .btn-ghost, .tool-oneone .btn-ghost {
   background:transparent; border:1px solid var(--el-line-strong); color:var(--text); box-shadow:none;
@@ -12377,7 +12630,8 @@ body #mod-posvendas .side .brand, body #mod-posvendas .side .side-foot, body #mo
 }
 .btn:hover { filter:brightness(1.08); }
 .btn:disabled { opacity:.5; cursor:not-allowed; }
-.btn-amber, .btn-primary { background:var(--el-btn) !important; color:#2a1700 !important; border-color:transparent !important; box-shadow:none !important; }
+.btn-amber, .btn-primary { background:var(--el-btn) !important; color:#fff !important; border-color:var(--el-btn-line) !important; box-shadow:none !important; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.btn-amber:hover, .btn-primary:hover, .tr-resp-send-btn:hover, .tr-pergunta-reply-btn:hover, .tr-empty-btn:hover, .camp-rank-roleta-btn:hover, .check-stepper-btn:hover, .auth-btn:hover, .btn-new-conv:hover { background:rgba(6,6,6,.78) !important; }
 .btn-ghost { background:transparent !important; border:1px solid var(--el-line-strong) !important; color:var(--text) !important; box-shadow:none !important; }
 .btn-ghost:hover { background:rgba(125,211,214,.07) !important; }
 
@@ -12540,6 +12794,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     roleplay:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
     rco:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     campanha:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     checklist:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
     feedback:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     contratos:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
@@ -12553,7 +12808,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     dashboard:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     pop:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'
   };
-  var COR = { daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
+  var COR = { chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
     feedback:'v', contratos:'c', cargos:'o', posvendas:'g', pdl:'o', atualizacoes:'g', desafioreuniao:'r', provas:'c', dashboard:'v', pop:'g', home:'o' };
   function svg(k){ return P[k] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[k]+'</svg>' : ''; }
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
@@ -12601,7 +12856,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','checklist','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','chat','checklist','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
@@ -12813,5 +13068,384 @@ body{
 #mod-posvendas .card.ok, #mod-posvendas .card.bad { box-shadow:0 20px 44px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16) !important; }
 #mod-posvendas .dot, .el-dot, .home-eyebrow::before, #mod-posvendas .tier-st i, #mod-posvendas .status .live::before { box-shadow:none !important; }
 </style>
+<style id="neutro-thiago">
+/* Destaques amarelos de navegação trocados pela cor do Thiago (preto translúcido). Cores de status (alerta, justificada, prazo) ficam como estão. */
+.el-dot, .home-eyebrow::before { background:#e5e5e5 !important; box-shadow:none !important; }
+.tr-cat-tab.active { color:#fff !important; border-bottom-color:#fff !important; }
+.tr-card-cat, .el-ico-o, .tool-oneone .fh-icon, .tool-reuniao .fh-icon, .cargo-etapa-semana, .etapa-badge.semana { background:rgba(6,6,6,.58) !important; color:#fff !important; border:1px solid rgba(255,255,255,.32) !important; }
+.tool-oneone .history-tab.active, .tool-reuniao .week-tab.active { border-color:rgba(255,255,255,.55) !important; color:#fff !important; background:rgba(6,6,6,.58) !important; }
+.home-card .hc-cta { color:#fff !important; }
+.tr-card:hover, .home-card:hover, .camp-card:hover, .cargo-etapa-card:hover { border-color:rgba(255,255,255,.45) !important; }
+.drawer-item.active { background:rgba(6,6,6,.58) !important; color:#fff !important; box-shadow:inset 3px 0 0 rgba(255,255,255,.7) !important; }
+.dly-aba.on { background:rgba(6,6,6,.58) !important; color:#fff !important; box-shadow:inset 0 0 0 1px rgba(255,255,255,.32) !important; }
+.dly-fchip.on { background:rgba(6,6,6,.58) !important; border-color:rgba(255,255,255,.32) !important; color:#fff !important; }
+.pdl-tab.active, .pdl-let button.on { background:rgba(6,6,6,.58) !important; border-color:rgba(255,255,255,.55) !important; color:#fff !important; }
+.pdl-btn.on { background:rgba(6,6,6,.58) !important; border-color:rgba(255,255,255,.55) !important; color:#fff !important; }
+.pdl-btn:hover, .pdl-tab:hover, .pdl-let button:hover, .camp-file-btn:hover, .tr-cat-add:hover, .tool-reuniao .btn-new-week:hover, .tool-oneone .btn-new-conv:hover, .tool-reuniao .btn-add:hover, .tool-oneone .btn-add:hover { border-color:rgba(255,255,255,.55) !important; color:#fff !important; }
+.pop-abrir-arquivo-btn { background:rgba(6,6,6,.58) !important; border:1px solid rgba(255,255,255,.32) !important; color:#fff !important; box-shadow:none !important; }
+.pop-passo-num { background:rgba(6,6,6,.58) !important; border:1px solid rgba(255,255,255,.32) !important; color:#fff !important; }
+.tr-gostei-btn:hover { color:#fff !important; }
+</style>
+<script>
+/* ===== CHAT DO TIME ===== */
+(function(){
+  var CANAIS = [
+    {id:'geral',nome:'geral',desc:'Assuntos de todo o time'},
+    {id:'pos-vendas',nome:'pós-vendas',desc:'Rotina e clientes do pós-vendas'},
+    {id:'comercial',nome:'comercial',desc:'Vendas, ofertas e metas'},
+    {id:'avisos',nome:'avisos da Ana',desc:'Somente a Ana publica aqui',soAdmin:true}
+  ];
+  var MEMBROS = ['Ana','Adriele','Sharon','Kuka','Thiago','Amanda','Felipe','Eduardo'];
+  var ativo = 'geral', msgs = {}, unsubs = {}, lastRead = {}, presenca = {}, visivel = false;
+  var respondendo = null, editando = null, pinados = {}, hbTimer = null, presUnsub = null;
+
+  function erro(e){
+    var m=(e&&e.code==='permission-denied')?'O Firebase bloqueou o chat (falta liberar as regras do Firestore para chat_canais e chat_presenca).':'Não foi possível enviar: '+((e&&e.message)||'erro');
+    var el=document.getElementById('chatMsgs'); if(el){ var d=document.createElement('div'); d.className='chat-erro'; d.textContent='⚠️ '+m; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+    try{ console.error('[CHAT]',e); }catch(x){}
+  }
+  function U(){ return (window.APPAUTH && window.APPAUTH.usuarioAtual) || null; }
+  function eu(){ var u=U(); if(!u) return ''; return u.role==='admin' ? 'Ana' : (u.nome||''); }
+  function ehAdmin(){ var u=U(); return !!u && u.role==='admin'; }
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function dmId(a,b){ return 'dm_'+[a,b].sort().join('_').toLowerCase().replace(/[^a-z0-9_]/g,''); }
+  function canalDe(id){ return id.indexOf('dm_')===0; }
+  function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
+  function pode(id){ var c=CANAIS.filter(function(x){return x.id===id;})[0]; return !(c&&c.soAdmin&&!ehAdmin()); }
+  function podeLer(id){ if(!canalDe(id)) return true; return id.indexOf(dmId(eu(),'__')) === 0 || id.split('_').length>=2; }
+
+  function colMsgs(id){ return window.fb.collection(window.fb.db,'chat_canais',id,'msgs'); }
+  function ouvir(id){
+    if(unsubs[id] || !window.fb) return;
+    var q = window.fb.query ? window.fb.query(colMsgs(id), window.fb.orderBy('ts','desc'), window.fb.limit(150)) : colMsgs(id);
+    unsubs[id] = window.fb.onSnapshot(q, function(snap){
+      var arr=[]; snap.forEach(function(d){ var m=d.data(); m.id=d.id; arr.push(m); });
+      arr.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+      msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
+      if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
+      desenharLado(); badges();
+    }, function(e){ if(id===ativo) erro(e); });
+  }
+  function ouvirTudo(){
+    CANAIS.forEach(function(c){ ouvir(c.id); });
+    var me=eu();
+    MEMBROS.forEach(function(m){ if(m!==me) ouvir(dmId(me,m)); });
+  }
+  function iniciarPresenca(){
+    if(presUnsub || !window.fb) return;
+    presUnsub = window.fb.onSnapshot(window.fb.collection(window.fb.db,'chat_presenca'), function(snap){
+      presenca={}; snap.forEach(function(d){ presenca[d.id]=(d.data()||{}).ts||0; }); desenharLado();
+    });
+    function hb(){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'chat_presenca',eu()),{ts:Date.now()}); }catch(e){} }
+    hb(); hbTimer=setInterval(hb,60000);
+  }
+  function online(n){ return Date.now()-(presenca[n]||0) < 120000; }
+
+  function nLidas(id){
+    var lr = +ls('chat_lido_'+eu()+'_'+id) || 0, me=eu();
+    return (msgs[id]||[]).filter(function(m){ return m.ts>lr && m.de!==me; }).length;
+  }
+  function marcarLido(){ var a=msgs[ativo]||[]; var t=a.length?a[a.length-1].ts:Date.now(); ls('chat_lido_'+eu()+'_'+ativo, String(Math.max(t,Date.now()-0))); badges(); desenharLado(); }
+  function badges(){
+    var total=0, ids=Object.keys(msgs);
+    ids.forEach(function(id){ if(!(visivel&&id===ativo)) total+=nLidas(id); });
+    ['chatBadgeDrawer','chatBadgeHome'].forEach(function(i){ var e=document.getElementById(i); if(!e) return; e.hidden=!total; e.textContent=total>99?'99+':total; });
+  }
+
+  function desenharLado(){
+    var el=document.getElementById('chatSide'); if(!el||!U()) return;
+    var me=eu(), h='<h4>Canais</h4>';
+    CANAIS.forEach(function(c){
+      var n=(visivel&&c.id===ativo)?0:nLidas(c.id);
+      h+='<button class="chat-item'+(c.id===ativo?' active':'')+'" data-id="'+c.id+'"><span class="nm"># '+esc(c.nome)+'</span>'+(n?'<span class="chat-badge">'+n+'</span>':'')+'</button>';
+    });
+    h+='<h4>Conversas diretas</h4>';
+    MEMBROS.filter(function(m){return m!==me;}).forEach(function(m){
+      var id=dmId(me,m), n=(visivel&&id===ativo)?0:nLidas(id);
+      h+='<button class="chat-item'+(id===ativo?' active':'')+'" data-id="'+id+'"><span class="chat-dot'+(online(m)?' on':'')+'"></span><span class="nm">'+esc(m)+'</span>'+(n?'<span class="chat-badge">'+n+'</span>':'')+'</button>';
+    });
+    el.innerHTML=h;
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-item'),function(b){ b.onclick=function(){ abrir(b.getAttribute('data-id')); }; });
+  }
+  function tituloAtivo(){
+    if(canalDe(ativo)){ var me=eu(); var o=MEMBROS.filter(function(m){return m!==me && dmId(me,m)===ativo;})[0]||''; return {t:'💬 '+o, s:online(o)?'online agora':'offline'}; }
+    var c=CANAIS.filter(function(x){return x.id===ativo;})[0]; return {t:'# '+c.nome, s:c.desc};
+  }
+  function linkar(t){
+    var h=esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+    var me=eu().toLowerCase();
+    return h.replace(/@([A-Za-zÀ-ú]+)/g,function(x,n){ var ok=MEMBROS.some(function(m){return m.toLowerCase()===n.toLowerCase();}); return ok?'<span class="men">@'+n+'</span>':x; });
+  }
+  function hora(ts){ var d=new Date(ts); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function dia(ts){ var d=new Date(ts),h=new Date(); if(d.toDateString()===h.toDateString()) return 'Hoje'; var o=new Date(h.getTime()-864e5); if(d.toDateString()===o.toDateString()) return 'Ontem'; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2); }
+
+  function desenharMsgs(){
+    var el=document.getElementById('chatMsgs'); if(!el) return;
+    var perto = el.scrollHeight-el.scrollTop-el.clientHeight < 80 || !el.childElementCount;
+    var a=msgs[ativo]||[], me=eu(), h='', ult='';
+    if(!a.length) h='<div class="chat-vazio">Nenhuma mensagem ainda. Comece a conversa 👋</div>';
+    a.forEach(function(m){
+      var d=dia(m.ts); if(d!==ult){ h+='<div class="chat-day">'+d+'</div>'; ult=d; }
+      var meu=m.de===me, paraMim = !meu && new RegExp('@'+me+'\\b','i').test(m.txt||'');
+      var rp = m.resp ? '<div class="chat-resp"><b>'+esc(m.resp.de)+'</b>: '+esc(prev(m.resp))+'</div>' : '';
+      var acts='<div class="chat-acts"><button data-a="r" title="Responder">↩️</button>'+(meu?'<button data-a="e" title="Editar">✏️</button>':'')+((meu||ehAdmin())?'<button data-a="x" title="Apagar">🗑️</button>':'')+(ehAdmin()&&!canalDe(ativo)?'<button data-a="p" title="'+(m.fixada?'Desafixar':'Fixar')+'">📌</button>':'')+'</div>';
+      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+(m.img?'<img class="chat-img" src="'+m.img+'" alt="foto">':'')+(m.aud?'<audio class="chat-aud" controls preload="metadata" src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
+    });
+    el.innerHTML=h;
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-acts button'),function(b){
+      b.onclick=function(){ var id=b.closest('.chat-msg').getAttribute('data-id'); acao(b.getAttribute('data-a'),id); };
+    });
+    if(perto) el.scrollTop=el.scrollHeight;
+  }
+  function desenharPin(){
+    var el=document.getElementById('chatPin'), p=pinados[ativo];
+    if(!el) return; el.hidden=!p; if(p) el.innerHTML='📌 <b>'+esc(p.de)+'</b>'+esc(prev(p));
+  }
+  function desenharTopo(){
+    var t=tituloAtivo(); document.getElementById('chatHead').innerHTML=esc(t.t)+' <small>'+esc(t.s)+'</small>';
+    var bc=document.createElement('button'); bc.className='chat-cen'; bc.textContent='🎬 Cenário'; bc.onclick=function(){ var n=((+document.documentElement.getAttribute('data-cenario')||1))%3+1; setCenario(n); }; document.getElementById('chatHead').appendChild(bc);
+    var soLeitura = !pode(ativo);
+    var comp=document.getElementById('chatComp');
+    comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
+    if(!soLeitura) ligarComp();
+  }
+  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
+  function ligarComp(){
+    var ta=document.getElementById('chatInput'), env=document.getElementById('chatEnv');
+    env.onclick=enviar;
+    ligarMidia();
+    ta.onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); enviar(); } };
+    ta.oninput=function(){ ta.style.height='42px'; ta.style.height=Math.min(120,ta.scrollHeight)+'px'; sugerir(); };
+    barra();
+  }
+  function sugerir(){
+    var ta=document.getElementById('chatInput'), s=document.getElementById('chatSug'); if(!ta||!s) return;
+    var m=/@([A-Za-zÀ-ú]*)$/.exec(ta.value.slice(0,ta.selectionStart));
+    if(!m){ s.hidden=true; return; }
+    var l=MEMBROS.filter(function(n){ return n!==eu() && n.toLowerCase().indexOf(m[1].toLowerCase())===0; });
+    if(!l.length){ s.hidden=true; return; }
+    s.innerHTML=l.map(function(n){return '<button data-n="'+n+'">@'+n+'</button>';}).join(''); s.hidden=false;
+    Array.prototype.forEach.call(s.querySelectorAll('button'),function(b){ b.onmousedown=function(e){ e.preventDefault();
+      var pos=ta.selectionStart, ate=ta.value.slice(0,pos).replace(/@([A-Za-zÀ-ú]*)$/,'@'+b.getAttribute('data-n')+' ');
+      ta.value=ate+ta.value.slice(pos); s.hidden=true; ta.focus(); ta.setSelectionRange(ate.length,ate.length); }; });
+  }
+  function barra(){
+    var r=document.getElementById('chatRbar'); if(!r) return;
+    if(respondendo){ r.hidden=false; r.innerHTML='<span>↩️ Respondendo a <b>'+esc(respondendo.de)+'</b>: '+esc((respondendo.txt||'').slice(0,60))+'</span><button style="background:none;border:0;color:#fff;cursor:pointer" id="chatRx">✕</button>'; document.getElementById('chatRx').onclick=function(){respondendo=null;barra();}; }
+    else if(editando){ r.hidden=false; r.innerHTML='<span>✏️ Editando mensagem</span><button style="background:none;border:0;color:#fff;cursor:pointer" id="chatRx">✕</button>'; document.getElementById('chatRx').onclick=function(){editando=null;document.getElementById('chatInput').value='';barra();}; }
+    else r.hidden=true;
+  }
+
+  function prev(m){ return m.txt || (m.img?'📷 Foto':(m.aud?'🎤 Áudio':'')); }
+  function zoom(src){
+    var d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    d.innerHTML='<img src="'+src+'" style="max-width:94vw;max-height:94vh;border-radius:8px">'; d.onclick=function(){ d.remove(); }; document.body.appendChild(d);
+  }
+  function enviarMidia(extra){
+    if(!pode(ativo)) return;
+    var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
+    if(respondendo){ o.resp=respondendo; respondendo=null; barra(); }
+    var tam=(o.img||o.aud||'').length;
+    if(tam>900000){ alert('Arquivo grande demais para enviar. Tente uma foto menor ou um áudio mais curto.'); return; }
+    window.fb.addDoc(colMsgs(ativo),o).catch(erro);
+  }
+  function reduzir(file,cb){
+    var r=new FileReader();
+    r.onload=function(){ var im=new Image(); im.onload=function(){
+      var max=1000, w=im.width, h=im.height, k=Math.min(1,max/Math.max(w,h));
+      var c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      var q=.78, d=c.toDataURL('image/jpeg',q);
+      while(d.length>700000 && q>.3){ q-=.12; d=c.toDataURL('image/jpeg',q); }
+      cb(d);
+    }; im.onerror=function(){ alert('Não consegui abrir essa imagem.'); }; im.src=r.result; };
+    r.readAsDataURL(file);
+  }
+  var EMOJIS=['😀','😂','😍','🥰','😎','🤩','😅','😉','🙏','👏','👍','👌','💪','🔥','🎉','✅','❗','❓','☀️','⚡','💰','🏆','🎯','🚀','❤️','😴','🤔','😬','🙌','🎃','🎄','🎆'];
+  var gravando=null;
+  function ligarMidia(){
+    var f=document.getElementById('chatFile'), bi=document.getElementById('chatBtnImg'), be=document.getElementById('chatBtnEmo'), bm=document.getElementById('chatBtnMic'), em=document.getElementById('chatEmo'), ta=document.getElementById('chatInput');
+    bi.onclick=function(){ f.click(); };
+    f.onchange=function(){ if(f.files[0]) reduzir(f.files[0],function(d){ enviarMidia({img:d}); }); f.value=''; };
+    em.innerHTML=EMOJIS.map(function(e){return '<button>'+e+'</button>';}).join('');
+    be.onclick=function(){ em.hidden=!em.hidden; };
+    Array.prototype.forEach.call(em.querySelectorAll('button'),function(b){ b.onclick=function(){ ta.value+=b.textContent; ta.focus(); }; });
+    ta.onpaste=function(e){ var it=(e.clipboardData&&e.clipboardData.items)||[]; for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')===0){ e.preventDefault(); reduzir(it[i].getAsFile(),function(d){ enviarMidia({img:d}); }); return; } } };
+    bm.onclick=function(){ gravando ? parar(true) : gravar(bm); };
+  }
+  function gravar(bm){
+    if(!navigator.mediaDevices||!window.MediaRecorder){ alert('Este navegador não permite gravar áudio.'); return; }
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+      var tipo=['audio/webm;codecs=opus','audio/webm','audio/mp4'].filter(function(t){return MediaRecorder.isTypeSupported(t);})[0]||'';
+      var rec=new MediaRecorder(st,tipo?{mimeType:tipo,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}), parts=[], ini=Date.now();
+      rec.ondataavailable=function(e){ if(e.data.size) parts.push(e.data); };
+      gravando={rec:rec,st:st,envia:true,bm:bm};
+      rec.onstop=function(){
+        st.getTracks().forEach(function(t){t.stop();}); clearInterval(gravando&&gravando.tm);
+        var envia=gravando&&gravando.envia; gravando=null; var b2=document.getElementById('chatBtnMic'); if(b2){ b2.textContent='🎤'; b2.classList.remove('rec'); }
+        if(!envia||!parts.length) return;
+        var rd=new FileReader(); rd.onload=function(){ enviarMidia({aud:rd.result,dur:Math.round((Date.now()-ini)/1000)}); }; rd.readAsDataURL(new Blob(parts,{type:rec.mimeType}));
+      };
+      rec.start(); bm.classList.add('rec');
+      gravando.tm=setInterval(function(){ var s2=Math.round((Date.now()-ini)/1000); bm.textContent='⏹ '+s2+'s'; if(s2>=60) parar(true); },500);
+    }).catch(function(){ alert('Não consegui acessar o microfone. Permita o uso do microfone no navegador.'); });
+  }
+  function parar(envia){ if(gravando){ gravando.envia=envia; try{ gravando.rec.stop(); }catch(e){} } }
+  function acao(a,id){
+    var m=(msgs[ativo]||[]).filter(function(x){return x.id===id;})[0]; if(!m) return;
+    var ref=window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',id);
+    if(a==='r'){ respondendo={de:m.de,txt:prev(m)}; editando=null; barra(); var t=document.getElementById('chatInput'); if(t) t.focus(); }
+    if(a==='e'){ editando=m; respondendo=null; barra(); var t2=document.getElementById('chatInput'); if(t2){ t2.value=m.txt||''; t2.focus(); } }
+    if(a==='x'){ if(confirm('Apagar esta mensagem?')) window.fb.deleteDoc(ref); }
+    if(a==='p'){
+      var tudo=(msgs[ativo]||[]).filter(function(x){return x.fixada&&x.id!==id;});
+      tudo.forEach(function(x){ window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',x.id),{fixada:false}); });
+      window.fb.updateDoc(ref,{fixada:!m.fixada});
+    }
+  }
+  function enviar(){
+    var ta=document.getElementById('chatInput'); if(!ta) return;
+    var txt=ta.value.trim(); if(!txt||!pode(ativo)) return;
+    if(editando){
+      window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',editando.id),{txt:txt,editada:true}).catch(erro);
+      editando=null;
+    } else {
+      var o={de:eu(),txt:txt.slice(0,2000),ts:Date.now()};
+      if(respondendo) o.resp=respondendo;
+      window.fb.addDoc(colMsgs(ativo),o).catch(erro);
+      respondendo=null;
+    }
+    ta.value=''; ta.style.height='42px'; barra();
+  }
+  function abrir(id){
+    ativo=id; respondendo=null; editando=null; desenharTopo(); desenharPin(); desenharMsgs(); marcarLido();
+    var el=document.getElementById('chatMsgs'); if(el) el.scrollTop=el.scrollHeight;
+  }
+  function setCenario(n){ document.documentElement.setAttribute('data-cenario',String(n)); try{ localStorage.setItem('ello_cenario',String(n)); }catch(e){} }
+  (function(){ var c='1'; try{ c=localStorage.getItem('ello_cenario')||'1'; }catch(e){} document.documentElement.setAttribute('data-cenario',c); })();
+  function iniciar(){
+    if(!U()||!window.fb||unsubs.__ok) return; unsubs.__ok=true;
+    ouvirTudo(); iniciarPresenca(); desenharLado();
+  }
+  window.CHAT = {
+    visivel:function(v){ visivel=v; if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
+    iniciar:iniciar
+  };
+  function seAberto(){ var v=document.getElementById('view_chat'); if(v && v.classList.contains('active')) window.CHAT.visivel(true); }
+  window.addEventListener('userAuthed', function(){ unsubs.__ok=false; iniciar(); seAberto(); });
+  if(U()) iniciar();
+  window.addEventListener('fbReady', function(){ iniciar(); seAberto(); });
+  seAberto();
+})();
+
+</script>
+<style id="temas-sazonais">
+/* ===== TEMAS SAZONAIS (html[data-tema]) ===== */
+html[data-tema="halloween"]{--amber:#ff7a18;--laranja:#ff7a18;--lima:#ff7a18;--azul-claro:#c49bff;--el-cyan:#c49bff;--el-warn:#ff7a18;--el-line:rgba(255,160,70,.22);--el-line-strong:rgba(255,160,70,.42);--border:rgba(255,160,70,.18);--border2:rgba(255,160,70,.3);--amber-dim:rgba(255,122,24,.18);--amber-mid:rgba(255,122,24,.32);--laranja-dim:rgba(255,122,24,.18);--lima-dim:rgba(255,122,24,.2)}
+html[data-tema="halloween"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(255,122,24,.38) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(122,60,255,.42) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,122,24,.10) 0%,transparent 66%),linear-gradient(160deg,#150a22 0%,#0b0610 60%,#14091a 100%) !important;background-attachment:fixed !important}
+html[data-tema="halloween"]{background:#0b0610}
+html[data-tema="natal"]{--amber:#ffd24a;--laranja:#ffd24a;--lima:#ffd24a;--azul-claro:#7df2a8;--el-cyan:#7df2a8;--el-warn:#ffd24a;--el-line:rgba(255,200,200,.22);--el-line-strong:rgba(255,200,200,.4);--border:rgba(255,200,200,.18);--border2:rgba(255,200,200,.3);--amber-dim:rgba(255,210,74,.18);--amber-mid:rgba(255,210,74,.32);--laranja-dim:rgba(255,210,74,.18);--lima-dim:rgba(255,210,74,.2)}
+html[data-tema="natal"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(214,40,57,.45) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(31,157,85,.45) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,210,74,.10) 0%,transparent 66%),linear-gradient(160deg,#1a0a0e 0%,#08140d 60%,#10080b 100%) !important;background-attachment:fixed !important}
+html[data-tema="natal"]{background:#08140d}
+html[data-tema="anonovo"]{--amber:#f5c542;--laranja:#f5c542;--lima:#f5c542;--azul-claro:#f5e6a8;--el-cyan:#f5e6a8;--el-warn:#f5c542;--el-line:rgba(245,197,66,.22);--el-line-strong:rgba(245,197,66,.42);--border:rgba(245,197,66,.18);--border2:rgba(245,197,66,.3);--amber-dim:rgba(245,197,66,.18);--amber-mid:rgba(245,197,66,.32);--laranja-dim:rgba(245,197,66,.18);--lima-dim:rgba(245,197,66,.2)}
+html[data-tema="anonovo"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(245,197,66,.34) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(190,190,205,.22) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(245,197,66,.10) 0%,transparent 66%),linear-gradient(160deg,#0d0d12 0%,#050507 60%,#0f0e08 100%) !important;background-attachment:fixed !important}
+html[data-tema="anonovo"]{background:#050507}
+html[data-tema="carnaval"]{--amber:#ffd400;--laranja:#ffd400;--lima:#ffd400;--azul-claro:#ff5fd2;--el-cyan:#ff5fd2;--el-warn:#ffd400;--el-line:rgba(255,95,210,.25);--el-line-strong:rgba(255,95,210,.45);--border:rgba(255,95,210,.2);--border2:rgba(255,95,210,.32);--amber-dim:rgba(255,212,0,.18);--amber-mid:rgba(255,212,0,.32);--laranja-dim:rgba(255,212,0,.18);--lima-dim:rgba(255,212,0,.2)}
+html[data-tema="carnaval"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(255,95,210,.40) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(0,200,120,.38) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,212,0,.14) 0%,transparent 66%),linear-gradient(160deg,#150a1c 0%,#08050d 60%,#0a1410 100%) !important;background-attachment:fixed !important}
+html[data-tema="carnaval"]{background:#08050d}
+html[data-tema="halloween"]:not([data-cenario="2"]):not([data-cenario="3"]) .chat-main{background:linear-gradient(rgba(0,0,0,.22),rgba(0,0,0,.30)),url("temas/halloween-chat.jpg") center/cover no-repeat !important}
+html[data-tema="halloween"][data-cenario="3"] .chat-main{background:linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.1)),url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 700%22 preserveAspectRatio=%22xMidYMid slice%22%3E%3Cdefs%3E%0A%3ClinearGradient id=%22wl%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%23050807%22/%3E%3Cstop offset=%221%22 stop-color=%22%231b2a26%22/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%22wr%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%23050807%22/%3E%3Cstop offset=%221%22 stop-color=%22%231b2a26%22/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%22fl%22 x1=%220%22 y1=%221%22 x2=%220%22 y2=%220%22%3E%3Cstop offset=%220%22 stop-color=%22%23030504%22/%3E%3Cstop offset=%221%22 stop-color=%22%2316201d%22/%3E%3C/linearGradient%3E%0A%3ClinearGradient id=%22ce%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23020303%22/%3E%3Cstop offset=%221%22 stop-color=%22%23121a18%22/%3E%3C/linearGradient%3E%0A%3CradialGradient id=%22end%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23e8f4ee%22/%3E%3Cstop offset=%22.35%22 stop-color=%22%238fb8a8%22/%3E%3Cstop offset=%221%22 stop-color=%22%238fb8a8%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%0A%3CradialGradient id=%22vig%22 cx=%2250%25%22 cy=%2250%25%22 r=%2272%25%22%3E%3Cstop offset=%22.3%22 stop-color=%22%23000%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23000%22 stop-opacity=%22.95%22/%3E%3C/radialGradient%3E%0A%3CradialGradient id=%22lg%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23dff5e8%22/%3E%3Cstop offset=%22.4%22 stop-color=%22%239fd0b8%22 stop-opacity=%22.6%22/%3E%3Cstop offset=%221%22 stop-color=%22%239fd0b8%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%0A%3Cfilter id=%22b2%22%3E%3CfeGaussianBlur stdDeviation=%222%22/%3E%3C/filter%3E%3Cfilter id=%22b6%22%3E%3CfeGaussianBlur stdDeviation=%226%22/%3E%3C/filter%3E%0A%3Cfilter id=%22grain%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 seed=%225%22/%3E%3CfeColorMatrix values=%220 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.35%22/%3E%3C/filter%3E%0A%3C/defs%3E%3Crect width=%221200%22 height=%22700%22 fill=%22%23000%22/%3E%3Cpolygon points=%220,0 540,300 540,380 0,700%22 fill=%22url%28%23wl%29%22/%3E%3Cpolygon points=%221200,0 660,300 660,380 1200,700%22 fill=%22url%28%23wr%29%22/%3E%3Cpolygon points=%220,700 540,380 660,380 1200,700%22 fill=%22url%28%23fl%29%22/%3E%3Cpolygon points=%220,0 540,300 660,300 1200,0%22 fill=%22url%28%23ce%29%22/%3E%3Crect x=%22540%22 y=%22300%22 width=%22120%22 height=%2280%22 fill=%22%230a0f0d%22/%3E%3Cellipse cx=%22600%22 cy=%22345%22 rx=%22150%22 ry=%2295%22 fill=%22url%28%23end%29%22 filter=%22url%28%23b6%29%22%3E%3Canimate attributeName=%22opacity%22 values=%22.9%3B.9%3B.3%3B.9%3B.5%3B.9%22 dur=%224.7s%22 repeatCount=%22indefinite%22/%3E%3C/ellipse%3E%3Crect x=%22574%22 y=%22318%22 width=%2252%22 height=%2262%22 fill=%22%23f2fff8%22 opacity=%22.92%22%3E%3Canimate attributeName=%22opacity%22 values=%22.95%3B.95%3B.35%3B.95%3B.6%3B.95%22 dur=%224.7s%22 repeatCount=%22indefinite%22/%3E%3C/rect%3E%3Cpolygon points=%2243.2,206.1 118.8,223.8 118.8,629.6 43.2,674.4%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%221156.8,206.1 1081.2,223.8 1081.2,629.6 1156.8,674.4%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22172.8,236.4 226.8,249.1 226.8,565.6 172.8,597.6%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%221027.2,236.4 973.2,249.1 973.2,565.6 1027.2,597.6%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22280.8,261.7 318.6,270.6 318.6,511.2 280.8,533.6%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22919.2,261.7 881.4,270.6 881.4,511.2 919.2,533.6%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22367.2,282.0 394.2,288.3 394.2,466.4 367.2,482.4%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22832.8,282.0 805.8,288.3 805.8,466.4 832.8,482.4%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22432.0,297.1 453.6,302.2 453.6,431.2 432.0,444.0%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cpolygon points=%22768.0,297.1 746.4,302.2 746.4,431.2 768.0,444.0%22 fill=%22%23070b0a%22 stroke=%22%232c3b36%22 stroke-width=%222%22/%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%2241.3%22 rx=%22125.3%22 ry=%2234.8%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22565.2%22 y=%2239.3%22 width=%2269.6%22 height=%225.3%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%221%3B.1%3B1%3B.8%3B0%3B1%22 dur=%226.8s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%2294.2%22 rx=%22102.6%22 ry=%2228.5%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22571.5%22 y=%2292.2%22 width=%2257.0%22 height=%224.2%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%221%3B1%3B.2%3B1%3B.05%3B1%22 dur=%223.4s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%22141.2%22 rx=%2282.4%22 ry=%2222.9%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22577.1%22 y=%22139.2%22 width=%2245.8%22 height=%223.2%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%22.9%3B0%3B.9%3B.9%3B.3%3B1%22 dur=%226.3s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%22182.4%22 rx=%2264.8%22 ry=%2218.0%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22582.0%22 y=%22180.4%22 width=%2236.0%22 height=%223.0%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%221%3B1%3B.2%3B1%3B.05%3B1%22 dur=%226.2s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%22217.7%22 rx=%2249.7%22 ry=%2213.8%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22586.2%22 y=%22215.7%22 width=%2227.6%22 height=%223.0%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%221%3B.1%3B1%3B.8%3B0%3B1%22 dur=%224.0s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Cellipse cx=%22600%22 cy=%22247.1%22 rx=%2237.1%22 ry=%2210.3%22 fill=%22url%28%23lg%29%22/%3E%3Crect x=%22589.7%22 y=%22245.1%22 width=%2220.6%22 height=%223.0%22 fill=%22%23eafff3%22/%3E%3Canimate attributeName=%22opacity%22 values=%22.9%3B0%3B.9%3B.9%3B.3%3B1%22 dur=%225.4s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg fill=%22%236b0a0a%22 opacity=%22.9%22 filter=%22url%28%23b2%29%22%3E%3Cpath d=%22M110 330q10-30 18-4l4 22q10-26 20-2l-2 20q12-14 18 6l-8 40q-8 30-26 26-22-6-24-30z%22 transform=%22rotate%2814 130 360%29%22/%3E%3Cpath d=%22M230 300q8-22 14-3l3 16q8-20 15-1l-1 15q9-10 13 4l-6 28q-6 22-19 19-16-4-18-22z%22 transform=%22rotate%2810 245 330%29%22/%3E%3C/g%3E%0A%3Cg stroke=%22%235a0808%22 stroke-width=%227%22 stroke-linecap=%22round%22 fill=%22none%22 opacity=%22.85%22 filter=%22url%28%23b2%29%22%3E%3Cpath d=%22M330 470q40 30 60 70q30 30 40 70%22/%3E%3Cpath d=%22M1010 300q-30 60-40 140%22/%3E%3C/g%3E%3Cg fill=%22%23000%22%3E%3Cg opacity=%220%22%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B0%3B1%3B1%3B0%3B0%3B0%3B0%3B0%3B1%3B0%3B0%3B0%22 dur=%2213s%22 repeatCount=%22indefinite%22/%3E%3Cellipse cx=%22600%22 cy=%22332%22 rx=%224%22 ry=%225%22/%3E%3Cpath d=%22M596 336h8l2 40h-12z%22/%3E%3Cpath d=%22M592 340q-6 20-4 36M608 340q6 20 4 36%22 stroke=%22%23000%22 stroke-width=%221.6%22 fill=%22none%22/%3E%3C/g%3E%3Cg opacity=%220%22 filter=%22url%28%23b2%29%22%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B0%3B0%3B0%3B0%3B0%3B0%3B0%3B0%3B0%3B0%3B1%3B0%22 dur=%2213s%22 repeatCount=%22indefinite%22/%3E%3Cellipse cx=%22640%22 cy=%22260%22 rx=%2226%22 ry=%2230%22/%3E%3Cpath d=%22M610 285h60l14 190h-24l-4-90-10 90h-20l-4-90-10 90h-24z%22/%3E%3Cpath d=%22M606 300q-34 80-28 180M674 300q34 80 28 180%22 stroke=%22%23000%22 stroke-width=%2210%22 fill=%22none%22/%3E%3C/g%3E%3C/g%3E%3Cg fill=%22%233d0000%22%3E%3Cpath d=%22M0 0H1200V6Q1160 10 1150 6V70q-5 14-10 0V6Q1000 12 960 6V36q-4 10-9 0V6Q820 10 780 6V130q-6 18-12 0V6Q600 12 560 6V50q-4 10-9 0V6Q380 12 340 6V100q-5 14-10 0V6Q150 10 110 6V40q-4 10-9 0V6Q40 10 0 6Z%22/%3E%3C/g%3E%3Crect width=%221200%22 height=%22700%22 fill=%22%23ff0000%22 opacity=%220%22%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B.0%3B.12%3B0%3B0%3B.08%3B0%3B0%3B0%22 dur=%223.2s%22 repeatCount=%22indefinite%22/%3E%3C/rect%3E%3Crect width=%221200%22 height=%22700%22 fill=%22url%28%23vig%29%22/%3E%3Crect width=%221200%22 height=%22700%22 filter=%22url%28%23grain%29%22 opacity=%22.2%22/%3E%3C/svg%3E") center/cover no-repeat !important}
+.chat-cen{display:none;margin-left:auto;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+html[data-tema="halloween"] .chat-cen{display:inline-block}
+html[data-tema="halloween"][data-cenario="2"] .chat-main{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.12)),url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 700%22 preserveAspectRatio=%22xMidYMid slice%22%3E%3Cdefs%3E%3ClinearGradient id=%22sky%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23020104%22/%3E%3Cstop offset=%22.35%22 stop-color=%22%2314050a%22/%3E%3Cstop offset=%22.72%22 stop-color=%22%234a0b0e%22/%3E%3Cstop offset=%221%22 stop-color=%22%231a0406%22/%3E%3C/linearGradient%3E%3CradialGradient id=%22glow%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%22 stop-color=%22%238a0f0f%22 stop-opacity=%22.55%22/%3E%3Cstop offset=%221%22 stop-color=%22%238a0f0f%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22vig%22 cx=%2250%25%22 cy=%2250%25%22 r=%2275%25%22%3E%3Cstop offset=%22.35%22 stop-color=%22%23000%22 stop-opacity=%220%22/%3E%3Cstop offset=%221%22 stop-color=%22%23000%22 stop-opacity=%22.92%22/%3E%3C/radialGradient%3E%3CradialGradient id=%22eye%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%22 stop-color=%22%23ffd0c0%22/%3E%3Cstop offset=%22.25%22 stop-color=%22%23e01010%22/%3E%3Cstop offset=%221%22 stop-color=%22%23e01010%22 stop-opacity=%220%22/%3E%3C/radialGradient%3E%3ClinearGradient id=%22fg%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23000%22/%3E%3Cstop offset=%22.45%22 stop-color=%22%23000%22/%3E%3Cstop offset=%22.72%22 stop-color=%22%23fff%22/%3E%3Cstop offset=%221%22 stop-color=%22%23fff%22/%3E%3C/linearGradient%3E%3Cfilter id=%22b2%22%3E%3CfeGaussianBlur stdDeviation=%222%22/%3E%3C/filter%3E%3Cfilter id=%22b5%22%3E%3CfeGaussianBlur stdDeviation=%225%22/%3E%3C/filter%3E%3Cfilter id=%22b9%22%3E%3CfeGaussianBlur stdDeviation=%2210%22/%3E%3C/filter%3E%3Cfilter id=%22fogf%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.006 .018%22 numOctaves=%224%22 seed=%227%22/%3E%3CfeColorMatrix values=%220 0 0 0 .62  0 0 0 0 .56  0 0 0 0 .66  0 0 0 1.5 -.55%22/%3E%3C/filter%3E%3Cfilter id=%22grain%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.9%22 numOctaves=%222%22 seed=%223%22/%3E%3CfeColorMatrix values=%220 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.35%22/%3E%3C/filter%3E%3C/defs%3E%3Crect width=%221200%22 height=%22700%22 fill=%22url%28%23sky%29%22/%3E%3Cellipse cx=%22620%22 cy=%22480%22 rx=%22640%22 ry=%22260%22 fill=%22url%28%23glow%29%22/%3E%3Cellipse cx=%22620%22 cy=%22470%22 rx=%22380%22 ry=%22130%22 fill=%22%23a31616%22 opacity=%22.28%22 filter=%22url%28%23b9%29%22/%3E%3C%21-- lua min%C3%BAscula encoberta --%3E%3Ccircle cx=%22900%22 cy=%22110%22 r=%2246%22 fill=%22%237a1111%22 opacity=%22.75%22 filter=%22url%28%23b2%29%22/%3E%3Ccircle cx=%22900%22 cy=%22110%22 r=%22120%22 fill=%22%235a0808%22 opacity=%22.18%22 filter=%22url%28%23b9%29%22/%3E%3C%21-- floresta distante em n%C3%A9voa --%3E%3Cg fill=%22%23030102%22 filter=%22url%28%23b2%29%22 opacity=%22.95%22%3E%3Crect x=%22210%22 y=%22120%22 width=%2214%22 height=%22480%22/%3E%3Crect x=%22330%22 y=%2260%22 width=%2218%22 height=%22540%22/%3E%3Crect x=%22470%22 y=%22150%22 width=%2212%22 height=%22450%22/%3E%3Crect x=%22560%22 y=%2240%22 width=%2216%22 height=%22560%22/%3E%3Crect x=%22700%22 y=%22130%22 width=%2214%22 height=%22470%22/%3E%3Crect x=%22820%22 y=%2270%22 width=%2218%22 height=%22530%22/%3E%3Crect x=%22980%22 y=%22140%22 width=%2212%22 height=%22460%22/%3E%3Crect x=%221060%22 y=%2290%22 width=%2216%22 height=%22510%22/%3E%3C/g%3E%3Cg stroke=%22%23050204%22 stroke-width=%225%22 stroke-linecap=%22round%22 fill=%22none%22 filter=%22url%28%23b2%29%22 opacity=%22.85%22%3E%3Cpath d=%22M330 150l-70-50M330 230l80-60M560 130l-90-60M560 220l100-70M820 170l-80-60M820 260l90-50M1060 190l-70-50M210 220l-60-40%22/%3E%3C/g%3E%3C%21-- figura p%C3%A1lida ao longe --%3E%3Cg id=%22fig%22 filter=%22url%28%23b2%29%22 transform=%22translate%2893 -236%29 scale%28.85 1.45%29%22%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B.9%3B.9%3B.9%3B0%3B0%3B0%3B.9%3B.9%3B0%3B0%3B0%3B0%3B0%3B0%22 dur=%2212s%22 repeatCount=%22indefinite%22/%3E%3Cpath d=%22M608 330q-12-8-10-30 4-18 22-18 18 0 22 18 2 22-10 30l8 40q6 60 4 170h-14l-4-90-2 90h-14l-2-90-4 90h-14q-2-110 4-170z%22 fill=%22%23c9c4c8%22/%3E%3Cpath d=%22M596 360q-14 80-10 150M644 360q14 80 10 150%22 stroke=%22%23c9c4c8%22 stroke-width=%225%22 fill=%22none%22/%3E%3Cpath d=%22M598 300q-16 30-12 100M642 300q16 30 12 100%22 stroke=%22%230a0508%22 stroke-width=%229%22 fill=%22none%22/%3E%3Cellipse cx=%22620%22 cy=%22306%22 rx=%2216%22 ry=%2220%22 fill=%22%230a0508%22 opacity=%22.0%22/%3E%3Ccircle cx=%22614%22 cy=%22304%22 r=%222.6%22 fill=%22%23000%22/%3E%3Ccircle cx=%22626%22 cy=%22304%22 r=%222.6%22 fill=%22%23000%22/%3E%3C/g%3E%3C%21-- ch%C3%A3o --%3E%3Cpath d=%22M0 600Q200 575 420 600T820 592T1200 598V700H0Z%22 fill=%22%23020102%22/%3E%3C%21-- %C3%A1rvores pr%C3%B3ximas --%3E%3Cg fill=%22%23000%22%3E%3Cpath d=%22M70 700V250q0-60-14-110l16-6q16 50 18 110l8 430z%22/%3E%3Cpath d=%22M1120 700V220q0-70 16-120l16 8q-12 50-6 112l-10 480z%22/%3E%3C/g%3E%3Cg stroke=%22%23000%22 stroke-linecap=%22round%22 fill=%22none%22%3E%3Cpath d=%22M80 300q-50-30-90-20M80 360q60-30 110-60M84 200q50-40 70-100M76 170q-40-30-50-80%22 stroke-width=%2212%22/%3E%3Cpath d=%22M1130 260q50-30 80-20M1126 330q-60-30-110-70M1134 160q-50-30-80-100M1140 120q30-40 50-70%22 stroke-width=%2212%22/%3E%3Cpath d=%22M190 300l30-40M154 100l30-30M1016 260l-30-30M1054 60l-24-26%22 stroke-width=%226%22/%3E%3C/g%3E%3C%21-- olhos no escuro --%3E%3Cg%3E%3Cg%3E%3Ccircle cx=%22290%22 cy=%22560%22 r=%224.5%22 fill=%22url%28%23eye%29%22/%3E%3Ccircle cx=%22304%22 cy=%22560%22 r=%224.5%22 fill=%22url%28%23eye%29%22/%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B1%3B1%3B0%3B0%3B0%3B1%3B0%22 dur=%227s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Ccircle cx=%22940%22 cy=%22545%22 r=%225%22 fill=%22url%28%23eye%29%22/%3E%3Ccircle cx=%22956%22 cy=%22545%22 r=%225%22 fill=%22url%28%23eye%29%22/%3E%3Canimate attributeName=%22opacity%22 values=%221%3B1%3B0%3B0%3B0%3B1%3B1%3B1%3B0%22 dur=%229s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Ccircle cx=%22470%22 cy=%22470%22 r=%223.5%22 fill=%22url%28%23eye%29%22/%3E%3Ccircle cx=%22481%22 cy=%22470%22 r=%223.5%22 fill=%22url%28%23eye%29%22/%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B0%3B1%3B1%3B0%3B0%3B0%3B0%22 dur=%2211s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3Cg%3E%3Ccircle cx=%22150%22 cy=%22420%22 r=%224%22 fill=%22url%28%23eye%29%22/%3E%3Ccircle cx=%22162%22 cy=%22420%22 r=%224%22 fill=%22url%28%23eye%29%22/%3E%3Canimate attributeName=%22opacity%22 values=%220%3B1%3B1%3B0%3B0%3B0%3B1%3B0%3B0%22 dur=%228s%22 repeatCount=%22indefinite%22/%3E%3C/g%3E%3C/g%3E%3C%21-- n%C3%A9voa rastejando --%3E%3Cmask id=%22fm%22%3E%3Crect width=%221200%22 height=%22700%22 fill=%22url%28%23fg%29%22/%3E%3C/mask%3E%3Cg opacity=%22.6%22 mask=%22url%28%23fm%29%22%3E%3Crect x=%22-300%22 y=%22300%22 width=%221800%22 height=%22400%22 filter=%22url%28%23fogf%29%22%3E%3CanimateTransform attributeName=%22transform%22 type=%22translate%22 values=%220 0%3B-180 0%3B0 0%22 dur=%2240s%22 repeatCount=%22indefinite%22/%3E%3C/rect%3E%3C/g%3E%3C%21-- arranh%C3%B5es de garra, sangue seco --%3E%3Cg stroke=%22%236b0000%22 stroke-linecap=%22round%22 fill=%22none%22 opacity=%22.85%22%3E%3Cpath d=%22M980 380q40 60 60 150M1000 372q40 62 62 154M1020 364q38 64 60 158%22 stroke-width=%225%22/%3E%3Cpath d=%22M980 380q40 60 60 150M1000 372q40 62 62 154M1020 364q38 64 60 158%22 stroke=%22%23c01010%22 stroke-width=%221.5%22/%3E%3C/g%3E%3C%21-- sangue escorrendo escuro --%3E%3Cg fill=%22%234a0000%22%3E%3Cpath d=%22M0 0H1200V6Q1180 10 1170 6V60q-4 14-9 0V6Q1090 12 1060 6V120q-5 16-11 0V6Q930 10 900 6V40q-4 10-9 0V6Q780 12 740 6V190q-6 20-13 0V6Q620 12 590 6V70q-5 12-10 0V6Q470 10 430 6V150q-5 18-11 0V6Q300 12 260 6V50q-4 10-9 0V6Q160 12 120 6V100q-5 16-11 0V6Q40 10 0 6Z%22/%3E%3C/g%3E%3C%21-- rel%C3%A2mpago --%3E%3Crect width=%221200%22 height=%22700%22 fill=%22%23cfd8ff%22 opacity=%220%22%3E%3Canimate attributeName=%22opacity%22 values=%220%3B0%3B0%3B0%3B0%3B0%3B.0%3B.35%3B0%3B.2%3B0%3B0%3B0%3B0%3B0%3B0%22 dur=%2212s%22 repeatCount=%22indefinite%22/%3E%3C/rect%3E%3Crect width=%221200%22 height=%22700%22 fill=%22url%28%23vig%29%22/%3E%3Crect width=%221200%22 height=%22700%22 filter=%22url%28%23grain%29%22 opacity=%22.22%22/%3E%3C/svg%3E") center bottom/cover no-repeat !important}
+html[data-tema="halloween"] .chat-msg{background:rgba(12,3,5,.85);border:1px solid rgba(170,20,20,.5)}
+html[data-tema="halloween"] .chat-msg.eu{background:rgba(70,8,8,.88);border-color:rgba(200,30,30,.6)}
+html[data-tema="halloween"] .chat-head,html[data-tema="halloween"] .chat-comp{background:rgba(10,3,8,.72)}
+html[data-tema="halloween"] .chat-head{text-shadow:0 0 10px rgba(255,80,30,.8)}
+html[data-tema="halloween"] .chat-wrap{border-color:rgba(255,110,40,.45);box-shadow:0 0 40px rgba(255,70,20,.25)}
+#temaFx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+#temaFx span{position:absolute;top:-40px;font-size:20px;opacity:.75;animation:temaCai linear infinite;will-change:transform}
+@keyframes temaCai{to{transform:translateY(110vh) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#temaFx{display:none}}
+#temaBtn{position:fixed;top:12px;right:16px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;z-index:200}
+#temaMenu{position:fixed;top:52px;right:16px;z-index:9999;min-width:220px;background:rgba(8,8,8,.96);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#temaMenu[hidden]{display:none}
+#temaMenu button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;background:transparent;color:#fff;font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;cursor:pointer}
+#temaMenu button:hover{background:rgba(255,255,255,.12)}
+#temaMenu button.on{background:rgba(255,255,255,.2);font-weight:700}
+#temaMenu small{display:block;padding:6px 10px;opacity:.6;font-size:11px}
+</style>
+<script>
+/* ===== TEMAS SAZONAIS ===== */
+(function(){
+  var TEMAS=[
+    {id:'padrao',nome:'Padrão',ic:'🌊',fx:[]},
+    {id:'halloween',nome:'Halloween',ic:'🎃',fx:['🎃','🦇','👻','🕸️']},
+    {id:'natal',nome:'Natal',ic:'🎄',fx:['❄️','❄️','🎄','⭐']},
+    {id:'anonovo',nome:'Ano Novo',ic:'🎆',fx:['✨','🥂','🎆','⭐']},
+    {id:'carnaval',nome:'Carnaval',ic:'🎭',fx:['🎭','🎊','🎉','🥁']}
+  ];
+  function porId(i){ return TEMAS.filter(function(t){return t.id===i;})[0]||TEMAS[0]; }
+  function auto(){
+    var d=new Date(), m=d.getMonth()+1, dia=d.getDate();
+    if((m===10&&dia>=20)||(m===11&&dia===1)) return 'halloween';
+    if(m===12&&dia>=1&&dia<=26) return 'natal';
+    if((m===12&&dia>=27)||(m===1&&dia<=3)) return 'anonovo';
+    return 'padrao';
+  }
+  var modo='auto';
+  try{ modo=localStorage.getItem('ello_tema_modo')||'auto'; }catch(e){}
+  function efetivo(){ return modo==='auto'?auto():modo; }
+  function fx(t){
+    var el=document.getElementById('temaFx');
+    if(!t.fx.length){ if(el) el.remove(); return; }
+    if(!el){ el=document.createElement('div'); el.id='temaFx'; document.body.appendChild(el); }
+    var h=''; for(var i=0;i<16;i++){ h+='<span style="left:'+Math.round(Math.random()*96)+'%;animation-duration:'+(10+Math.random()*12).toFixed(1)+'s;animation-delay:-'+(Math.random()*18).toFixed(1)+'s;font-size:'+(14+Math.round(Math.random()*14))+'px">'+t.fx[i%t.fx.length]+'</span>'; }
+    el.innerHTML=h;
+  }
+  function aplicar(){
+    var t=porId(efetivo());
+    if(t.id==='padrao') document.documentElement.removeAttribute('data-tema'); else document.documentElement.setAttribute('data-tema',t.id);
+    fx(t);
+    var b=document.getElementById('temaBtn'); if(b) b.textContent='🎨 '+t.ic+' '+t.nome;
+    desenharMenu();
+  }
+  function ehAdmin(){ var u=window.APPAUTH&&window.APPAUTH.usuarioAtual; return !!u&&u.role==='admin'; }
+  function desenharMenu(){
+    var m=document.getElementById('temaMenu'); if(!m) return;
+    var h='<small>Tema da plataforma (vale para todo o time)</small><button data-m="auto" class="'+(modo==='auto'?'on':'')+'">🗓️ Automático por data</button>';
+    TEMAS.forEach(function(t){ h+='<button data-m="'+t.id+'" class="'+(modo===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
+    m.innerHTML=h;
+    Array.prototype.forEach.call(m.querySelectorAll('button'),function(b){ b.onclick=function(){ escolher(b.getAttribute('data-m')); m.hidden=true; }; });
+  }
+  function escolher(v){
+    modo=v; try{ localStorage.setItem('ello_tema_modo',v); }catch(e){}
+    aplicar();
+    try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),{modo:v,por:(window.APPAUTH.usuarioAtual||{}).email||'',ts:Date.now()}); }catch(e){}
+  }
+  function botao(){
+    if(!ehAdmin()){ var x=document.getElementById('temaBtn'); if(x) x.remove(); return; }
+    if(document.getElementById('temaBtn')) return;
+    var b=document.createElement('button'); b.id='temaBtn'; document.body.appendChild(b);
+    var m=document.createElement('div'); m.id='temaMenu'; m.hidden=true; document.body.appendChild(m);
+    b.onclick=function(e){ e.stopPropagation(); m.hidden=!m.hidden; };
+    document.addEventListener('click',function(e){ if(!m.contains(e.target)&&e.target!==b) m.hidden=true; });
+    aplicar();
+  }
+  var ouvindo=false;
+  function ouvir(){
+    if(ouvindo||!window.fb) return; ouvindo=true;
+    window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),function(d){
+      var v=d.exists&&d.exists()?(d.data()||{}).modo:null;
+      if(v&&v!==modo){ modo=v; try{ localStorage.setItem('ello_tema_modo',v); }catch(e){} aplicar(); }
+    },function(){});
+  }
+  function iniciar(){ botao(); ouvir(); }
+  aplicar();
+  window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar);
+  if(window.APPAUTH&&window.APPAUTH.usuarioAtual) iniciar();
+})();
+</script>
 </body>
 </html>
