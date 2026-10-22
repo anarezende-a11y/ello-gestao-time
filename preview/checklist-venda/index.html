@@ -2684,7 +2684,7 @@ window.APPAUTH = window.APPAUTH || {};
     <button class="btn btn-amber" id="pdl_addBtn" style="display:none;">+ Nova etapa</button>
   </div>
   <div class="wrap" style="max-width:1000px;">
-    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Felipe e Kuka · visível só pra você.</div>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Foco no Kuka · visível só pra você.</div>
     <div id="pdl_resumo"></div>
     <div class="pdl-tabs" id="pdl_tabs"></div>
     <div id="pdl_body"></div>
@@ -2713,9 +2713,8 @@ window.APPAUTH = window.APPAUTH || {};
       </div>
       <div class="tr-field"><label>O que fazer</label><textarea class="tr-text-input" id="pdl_e_desc" rows="3"></textarea></div>
       <div class="tr-field"><label>O que observar / como analisar</label><textarea class="tr-text-input" id="pdl_e_como" rows="5"></textarea></div>
-      <div class="tr-field"><label>Anotações por candidato</label>
+      <div class="tr-field"><label>Anotações sobre o Kuka</label>
         <div style="display:flex; flex-direction:column; gap:10px;">
-          <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Felipe</div><textarea class="tr-text-input" id="pdl_e_n_Felipe" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
           <div><div style="font-size:12px; font-weight:700; color:var(--laranja); margin-bottom:4px;">Kuka</div><textarea class="tr-text-input" id="pdl_e_n_Kuka" rows="3" placeholder="O que ele respondeu, exemplos, nota, impressão..."></textarea></div>
         </div></div>
       <div class="tr-field"><label>Anotações gerais da etapa</label><textarea class="tr-text-input" id="pdl_e_notas" rows="3" placeholder="Ex: ordem sorteada, imprevistos, observações"></textarea></div>
@@ -8884,13 +8883,14 @@ window.CARGOS.excluirPlano = excluirPlano;
 .pdl-cor-pts.baixo { color:#F0B429; }
 .pdl-grupo-bar { height:6px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden; margin-top:5px; }
 .pdl-grupo-bar > div { height:100%; background:var(--laranja); }
+.pdl-foco-row{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:12px}.pdl-foco-n{width:230px;flex-shrink:0;color:var(--text)}.pdl-foco-v{width:30px;text-align:right;font-weight:800;color:var(--muted)}
 </style>
 
 <!-- ===== JS: Escolha de Líder / PDL (admin-only, escopo isolado) ===== -->
 <script>
 window.PDL = window.PDL || {};
 (function(){
-const CAND = ['Felipe','Kuka']; // Thiago saiu do processo (dados dele continuam guardados no banco)
+const CAND = ['Kuka']; // Foco no Kuka. Thiago e Felipe saíram do processo (os dados deles continuam guardados no banco)
 const COMPS = ['Gestão de pessoas','Comunicação','Tomada de decisão','Resolução de conflitos','Organização e priorização','Proatividade','Ética e integridade','Foco em resultados'];
 const FASES = {
   instrumentos: { nome:'Instrumento', cor:'#4F8BFF' },
@@ -8993,6 +8993,7 @@ function getData() { return cachedData || defaultData(); }
 function escapeHTML(s) {
   return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+function foco(t) { return String(t||'').replace(/Três entrevistas de ~45 min, mesmas perguntas na mesma ordem, mesmo local\. Sorteie a ordem dos candidatos e anote logo depois de cada uma, antes de entrevistar o próximo\./,'Entrevista de ~45 min com as 8 perguntas na ordem do roteiro. Anote logo depois, antes de esquecer os detalhes.').replace(/Mesmas condições pros três/g,'Mesmas condições do roteiro').replace(/pros três/g,'pro Kuka').replace(/Cada candidato/g,'O Kuka').replace(/cada candidato/g,'o Kuka').replace(/Cenário: dois liderados/,'Cenário: dois liderados').replace(/\(ordem sorteada\)/g,'').replace(/Enviar o formulário anônimo para Amanda, Adriele e Sharon \(5 notas \+ 2 perguntas abertas por candidato\)/,'Enviar o formulário anônimo para Amanda, Adriele e Sharon (5 notas + 2 perguntas abertas sobre o Kuka)').replace(/Três entrevistas/g,'Entrevista'); }
 function fmtBR(d) { return d ? d.split('-').reverse().join('/') : ''; }
 function fmtCurto(d) { return d ? d.split('-').slice(1).reverse().join('/') : ''; }
 function hojeISO() { const n = new Date(); return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-' + String(n.getDate()).padStart(2,'0'); }
@@ -9128,8 +9129,8 @@ function htmlCronograma() {
           ${andamento ? '<span class="pdl-tag now">em andamento</span>' : ''}
           ${atrasada ? '<span class="pdl-tag late">atrasada</span>' : ''}
         </div>
-        <div class="pdl-etapa-titulo">${escapeHTML(e.titulo)}</div>
-        <div class="pdl-etapa-desc">${escapeHTML(e.desc)}</div>
+        <div class="pdl-etapa-titulo">${escapeHTML(foco(e.titulo))}</div>
+        <div class="pdl-etapa-desc">${escapeHTML(foco(e.desc))}</div>
       </div>
     </div>`;
   });
@@ -9148,8 +9149,8 @@ function preencherModalEtapa(e) {
   document.getElementById('pdl_e_inicio').value = e.inicio || '';
   document.getElementById('pdl_e_fim').value = e.fim || '';
   document.getElementById('pdl_e_fase').value = e.fase || 'instrumentos';
-  document.getElementById('pdl_e_desc').value = e.desc || '';
-  document.getElementById('pdl_e_como').value = e.como || '';
+  document.getElementById('pdl_e_desc').value = foco(e.desc) || '';
+  document.getElementById('pdl_e_como').value = foco(e.como) || '';
   document.getElementById('pdl_e_notas').value = e.notas || '';
   CAND.forEach(c => { document.getElementById('pdl_e_n_' + c).value = (e.notasPor && e.notasPor[c]) || ''; });
   document.getElementById('pdl_e_done').checked = !!e.done;
@@ -9206,6 +9207,27 @@ function excluirEtapa() {
   cachedData = d;
   salvar(); fecharEtapa(false); render();
 }
+
+/* ---------- Foco no Kuka ---------- */
+function htmlFoco() {
+  const c = CAND[0], d = getData();
+  const lin = INSTR.map(i => { const v = instrValor(c, i.k); return { i, v, n: v == null ? null : normalizar(i.k, v) }; });
+  const ok = lin.filter(x => x.n != null).sort((a,b) => b.n - a.n);
+  const forte = ok.slice(0,2), dev = ok.slice(2).slice(-2).reverse();
+  const barras = lin.map(x => `<div class="pdl-foco-row"><span class="pdl-foco-n">${escapeHTML(x.i.nome)}</span><div class="pdl-grupo-bar" style="flex:1;margin:0"><div style="width:${x.n == null ? 0 : Math.round(x.n)}%"></div></div><span class="pdl-foco-v">${x.n == null ? '—' : Math.round(x.n)}</span></div>`).join('');
+  const lista = (arr, vazio) => arr.length ? arr.map(x => `<li>${escapeHTML(x.i.nome)} <b>(${Math.round(x.n)}/100)</b></li>`).join('') : `<li style="opacity:.7">${vazio}</li>`;
+  return `<div class="pdl-bloco"><div class="pdl-bloco-titulo">🎯 Foco no ${c}</div>
+    <div class="pdl-bloco-sub">Sem comparação com outros candidatos: aqui o que importa é onde ele já está forte e onde precisa evoluir.</div>
+    <div style="margin-top:10px">${barras}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">
+      <div><b>💪 Pontos fortes</b><ul style="margin:6px 0 0 18px;padding:0;font-size:13px">${lista(forte,'Lance as notas para aparecer aqui.')}</ul></div>
+      <div><b>🌱 A desenvolver</b><ul style="margin:6px 0 0 18px;padding:0;font-size:13px">${lista(dev,'Precisa de ao menos 3 instrumentos lançados.')}</ul></div>
+    </div>
+    <div class="tr-field" style="margin-top:14px"><label>Plano de desenvolvimento do ${c}</label>
+      <textarea class="tr-text-input" rows="4" placeholder="Ex: 1) acompanhar a Ana na daily por 2 semanas; 2) conduzir um feedback com supervisão; 3) ..." onchange="window.PDL.setPlanoDev(this.value)">${escapeHTML(d.planoDev || '')}</textarea></div>
+  </div>`;
+}
+function setPlanoDev(v) { const d = getData(); d.planoDev = v; cachedData = d; salvar(); }
 
 /* ---------- Aba Placar ---------- */
 function htmlPlacar() {
@@ -9274,7 +9296,7 @@ function htmlPlacar() {
 
   const opts = ['<option value="">— ainda não decidi —</option>'].concat(CAND.map(c => `<option value="${c}"${d.decisao.escolhido===c?' selected':''}>${c}</option>`)).join('');
 
-  return `${cards}
+  return `${htmlFoco()}${cards}
     ${alertas.length ? `<div class="pdl-alertas">${alertas.map(a => `<div class="pdl-alerta">${a}</div>`).join('')}</div>` : ''}
 
     <div class="pdl-bloco">
@@ -9579,6 +9601,7 @@ window.PDL.setNota = setNota;
 window.PDL.setPeso = setPeso;
 window.PDL.setPerfil = setPerfil;
 window.PDL.setMotivoPesos = setMotivoPesos;
+window.PDL.setPlanoDev = setPlanoDev;
 window.PDL.setDecisao = setDecisao;
 window.PDL.filtrarObs = filtrarObs;
 window.PDL.abrirObs = abrirObs;
