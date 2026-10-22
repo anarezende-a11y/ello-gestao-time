@@ -1968,6 +1968,12 @@ window.APPAUTH = window.APPAUTH || {};
         <label>Próximos passos / combinados</label>
         <textarea class="q-input" id="rp_proximos_passos" rows="2" placeholder="O que fica combinado pra próxima..."></textarea>
       </div>
+      <div class="tr-field" id="rp_coment_wrap">
+        <label>💬 O que cada um achou</label>
+        <div id="rp_coment_lista"></div>
+        <textarea class="q-input" id="rp_coment_txt" rows="2" placeholder="Escreva o que você achou da sessão: o que foi bem, o que aprendeu, o que faria diferente..."></textarea>
+        <button class="btn btn-amber" style="margin-top:6px" onclick="window.RP.comentar()">💬 Comentar</button>
+      </div>
     </div>
     <div class="tr-modal-foot">
       <button class="tr-btn-delete" id="rp_delete_btn" onclick="window.RP.excluirSessao()">🗑️ Excluir sessão</button>
@@ -5061,6 +5067,7 @@ function iniciarListener_p() {
     if (!data.sessoes) data.sessoes = [];
     cachedData = data;
     render();
+    if (modalId && document.getElementById('rpModalOverlay').classList.contains('open')) renderComentarios();
   }, err => console.error('RP snapshot error', err));
 }
 window.addEventListener('userAuthed', iniciarListener_p);
@@ -5073,6 +5080,39 @@ function formatDate(iso) {
   if (!iso) return 'Sem data';
   const [y,m,d] = iso.split('-');
   return `${d}/${m}/${y}`;
+}
+
+function meuNome() {
+  const u = window.APPAUTH && window.APPAUTH.usuarioAtual; if (!u) return 'Alguém';
+  if (u.role === 'admin') return 'Ana';
+  const n = String(u.nome || String(u.email||'').split('@')[0]).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const ach = MEMBROS.find(m => n.indexOf(m.toLowerCase()) === 0);
+  return ach || (n.charAt(0).toUpperCase() + n.slice(1));
+}
+function renderComentarios() {
+  const wrap = document.getElementById('rp_coment_wrap'), lista = document.getElementById('rp_coment_lista');
+  if (!wrap || !lista) return;
+  const s = modalId ? (getData().sessoes || []).find(x => x.id === modalId) : null;
+  document.getElementById('rp_coment_txt').style.display = s ? '' : 'none';
+  wrap.querySelector('button').style.display = s ? '' : 'none';
+  if (!s) { lista.innerHTML = '<div style="font-size:12px;opacity:.7;margin:4px 0">Salve a sessão primeiro; depois cada um pode comentar aqui.</div>'; return; }
+  const me = meuNome(), adm = window.APPAUTH.usuarioAtual && window.APPAUTH.usuarioAtual.role === 'admin';
+  const cs = (s.comentarios || []).slice().sort((a,b) => (a.ts||0) - (b.ts||0));
+  lista.innerHTML = cs.length ? cs.map(c => `<div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:6px 0"><div style="font-size:11px;opacity:.75;display:flex;gap:8px"><b style="opacity:1">${escapeHTML(c.autor)}</b><span>${new Date(c.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>${(adm || c.autor === me) ? `<a href="#" style="margin-left:auto;color:inherit" onclick="event.preventDefault();window.RP.apagarComentario('${c.id}')">🗑️</a>` : ''}</div><div style="font-size:13px;margin-top:3px;white-space:pre-wrap">${escapeHTML(c.txt)}</div></div>`).join('') : '<div style="font-size:12px;opacity:.7;margin:4px 0">Ninguém comentou ainda.</div>';
+}
+function comentar() {
+  const t = document.getElementById('rp_coment_txt'), txt = t.value.trim();
+  if (!txt || !modalId) return;
+  const data = getData(), s = data.sessoes.find(x => x.id === modalId); if (!s) return;
+  if (!s.comentarios) s.comentarios = [];
+  s.comentarios.push({ id: 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), autor: meuNome(), txt: txt.slice(0, 2000), ts: Date.now() });
+  setData(data); t.value = ''; renderComentarios(); render();
+}
+function apagarComentario(id) {
+  if (!confirm('Apagar este comentário?')) return;
+  const data = getData(), s = data.sessoes.find(x => x.id === modalId); if (!s) return;
+  s.comentarios = (s.comentarios || []).filter(c => c.id !== id);
+  setData(data); renderComentarios(); render();
 }
 
 function render() {
@@ -5101,6 +5141,7 @@ function render() {
       <div class="tr-card-desc">${escapeHTML(s.pontosFortes||'')}</div>
       <div class="tr-card-meta">
         ${s.nota ? `<span class="rp-card-nota">⭐ Nota ${s.nota}/5</span>` : ''}
+        ${(s.comentarios||[]).length ? `<span>💬 ${(s.comentarios||[]).length}</span>` : ''}
         ${s.video ? `<span>🎥 ${assistiuN}/${totalP||0} assistiram</span>` : ''}
       </div>
     </button>`;
@@ -5121,6 +5162,7 @@ function novaSessao() {
   renderNota(0);
   document.getElementById('rp_delete_btn').style.display = 'none';
   document.getElementById('rpModalOverlay').classList.add('open');
+  renderComentarios();
 }
 
 function abrirSessao(id) {
@@ -5140,6 +5182,7 @@ function abrirSessao(id) {
   renderNota(s.nota || 0);
   document.getElementById('rp_delete_btn').style.display = 'inline-block';
   document.getElementById('rpModalOverlay').classList.add('open');
+  renderComentarios();
 }
 
 function renderParticipantes(selecionados) {
@@ -5265,7 +5308,8 @@ function salvarSessao() {
     nota: nota,
     pontosFortes: document.getElementById('rp_pontos_fortes').value.trim(),
     pontosMelhorar: document.getElementById('rp_pontos_melhorar').value.trim(),
-    proximosPassos: document.getElementById('rp_proximos_passos').value.trim()
+    proximosPassos: document.getElementById('rp_proximos_passos').value.trim(),
+    comentarios: (((getData().sessoes || []).find(x => x.id === modalId)) || {}).comentarios || []
   };
 
   const data = getData();
@@ -5310,6 +5354,8 @@ render();
   window.RP.atualizarPreviewVideo = atualizarPreviewVideo;
   window.RP.onParticipantesChange = onParticipantesChange;
   window.RP.selNota = selNota;
+  window.RP.comentar = comentar;
+  window.RP.apagarComentario = apagarComentario;
 })();
 </script>
 
