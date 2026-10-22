@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 19h40</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 20h00</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13292,18 +13292,33 @@ body{
   var GD='<svg class="gd" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="222" rx="60" ry="6" fill="#0006"/><g class="f"><ellipse cx="72" cy="206" rx="20" ry="9" fill="#222"/><ellipse cx="128" cy="206" rx="20" ry="9" fill="#222"/><rect x="62" y="168" width="24" height="38" rx="10" fill="#f2c59b"/><rect x="114" y="168" width="24" height="38" rx="10" fill="#f2c59b"/><ellipse cx="100" cy="140" rx="52" ry="58" fill="#3a7bd5"/><ellipse cx="100" cy="160" rx="40" ry="30" fill="#4a8be5"/><path d="M58 160h84v20q-42 14-84 0z" fill="#6b4a2f"/><ellipse cx="54" cy="130" rx="11" ry="26" fill="#3a7bd5" transform="rotate(14 54 130)"/><g class="acena"><ellipse cx="148" cy="110" rx="11" ry="28" fill="#3a7bd5" transform="rotate(-24 148 110)"/><circle cx="158" cy="84" r="11" fill="#f2c59b"/></g><circle cx="100" cy="64" r="34" fill="#f2c59b"/><path d="M68 56q8-30 32-28t32 28q-18-14-32-12t-32 12z" fill="#3a2a1a"/><circle cx="88" cy="66" r="4" fill="#222"/><circle cx="112" cy="66" r="4" fill="#222"/><path d="M86 80q14 14 28 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="80" cy="76" r="6" fill="#ff9a9a" opacity=".6"/><circle cx="120" cy="76" r="6" fill="#ff9a9a" opacity=".6"/></g><g class="b"><ellipse cx="62" cy="212" rx="20" ry="9" fill="#222"/><ellipse cx="138" cy="212" rx="20" ry="9" fill="#222"/><rect x="58" y="172" width="22" height="40" rx="10" fill="#f2c59b"/><rect x="120" y="172" width="22" height="40" rx="10" fill="#f2c59b"/><ellipse cx="100" cy="124" rx="52" ry="52" fill="#3a7bd5"/><ellipse cx="50" cy="124" rx="11" ry="28" fill="#3a7bd5"/><ellipse cx="150" cy="124" rx="11" ry="28" fill="#3a7bd5"/><circle cx="100" cy="62" r="34" fill="#f2c59b"/><path d="M66 62q4-36 34-36t34 36q-14 14-34 14t-34-14z" fill="#3a2a1a"/><g class="bum"><ellipse cx="82" cy="168" rx="26" ry="24" fill="#f7b79a"/><ellipse cx="118" cy="168" rx="26" ry="24" fill="#f7b79a"/><path d="M100 150v36" stroke="#e0937a" stroke-width="2"/><g class="cens"><rect x="46" y="158" width="108" height="22" rx="3" fill="#111" transform="rotate(-4 100 169)"/><text x="100" y="173" font-size="12" font-weight="900" fill="#ffd23b" text-anchor="middle" font-family="Arial" transform="rotate(-4 100 169)">CENSURADO</text></g></g><ellipse cx="68" cy="196" rx="22" ry="10" fill="#6b4a2f"/><ellipse cx="132" cy="196" rx="22" ry="10" fill="#6b4a2f"/></g><g class="ri"><rect x="116" y="2" width="82" height="34" rx="12" fill="#fff"/><path d="M130 36l-8 12 22-12z" fill="#fff"/><text x="157" y="25" font-size="15" font-weight="900" fill="#d9570a" text-anchor="middle" font-family="Arial">HA HA HA!</text></g></svg>';
   function figHTML(m){ return m.fig==='gordinho'?'<div class="chat-fig">'+GD+'</div>':''; }
   var ultAt=0, bootAt=Date.now(), vistoAt={}, actx=null;
-  function somAt(){ try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); for(var i=0;i<9;i++){ (function(i){ var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.06; o.type='sawtooth'; o.frequency.setValueAtTime(i%2?180:240,t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.18,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.07); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.08); })(i); } }catch(e){} }
+  function peido(c,m,t0,v){
+    var T=c.currentTime+t0, d=[.28,.18,.5];
+    var o=c.createOscillator(),g=c.createGain(),lf=c.createOscillator(),lg=c.createGain(),f=c.createBiquadFilter();
+    o.type='sawtooth'; o.frequency.setValueAtTime(130,T); o.frequency.exponentialRampToValueAtTime(52,T+1.0);
+    lf.type='square'; lf.frequency.setValueAtTime(34,T); lf.frequency.linearRampToValueAtTime(15,T+1.0); lg.gain.value=26; lf.connect(lg); lg.connect(o.frequency);
+    f.type='lowpass'; f.frequency.value=520; f.Q.value=3;
+    g.gain.setValueAtTime(0,T); g.gain.linearRampToValueAtTime(1.0*v,T+.04); g.gain.setValueAtTime(.9*v,T+.7); g.gain.exponentialRampToValueAtTime(.0001,T+1.05);
+    o.connect(f); f.connect(g); g.connect(m); o.start(T); lf.start(T); o.stop(T+1.1); lf.stop(T+1.1);
+    var n=c.createBufferSource(),b=c.createBuffer(1,c.sampleRate,c.sampleRate),ch=b.getChannelData(0); for(var i=0;i<ch.length;i++) ch[i]=Math.random()*2-1; n.buffer=b;
+    var nf=c.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=260; nf.Q.value=.8; var ng=c.createGain(); ng.gain.setValueAtTime(.5*v,T); ng.gain.exponentialRampToValueAtTime(.0001,T+1.0);
+    n.connect(nf); nf.connect(ng); ng.connect(m); n.start(T); n.stop(T+1.05);
+  }
+  function somAt(){ try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); if(c.state==='suspended') c.resume(); var m=c.createGain(); m.gain.value=1; var k=c.createDynamicsCompressor(); m.connect(k); k.connect(c.destination); for(var i=0;i<24;i++){ (function(i){ var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.065; o.type='square'; o.frequency.setValueAtTime(i%2?160:260,t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.9,t+.008); g.gain.exponentialRampToValueAtTime(.0001,t+.075); o.connect(g); g.connect(m); o.start(t); o.stop(t+.09); })(i); }
+    peido(c,m,1.45,1);
+    }catch(e){ console.warn('somAt',e); } try{ navigator.vibrate&&navigator.vibrate([200,80,200,80,300]); }catch(e){} }
+  function peidoSolo(){ try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); if(c.state==='suspended') c.resume(); var m=c.createGain(); m.gain.value=1; m.connect(c.destination); peido(c,m,1.45,.8); }catch(e){ console.warn('peido',e); } }
   function gordinhoNaTela(){ var o=document.getElementById('gdOver'); if(o) o.remove(); o=document.createElement('div'); o.id='gdOver'; o.innerHTML=GD; document.body.appendChild(o); setTimeout(function(){ if(o.parentNode) o.remove(); },4300); }
   function chamouAtencao(de,recebi){
     gordinhoNaTela();
     if(recebi){
-      somAt(); var b=document.body; b.classList.remove('nudge-t'); void b.offsetWidth; b.classList.add('nudge-t'); setTimeout(function(){ b.classList.remove('nudge-t'); },700);
+      somAt(); var b=document.body; b.classList.remove('nudge-t'); void b.offsetWidth; b.classList.add('nudge-t'); setTimeout(function(){ b.classList.remove('nudge-t'); },2200);
       var t=document.getElementById('nudgeToast'); if(t) t.remove(); t=document.createElement('div'); t.id='nudgeToast'; t.textContent='🔔 '+de+' está chamando sua atenção!'; document.body.appendChild(t); setTimeout(function(){ t.remove(); },4300);
     }
   }
   function chamar(id,post){
     if(Date.now()-ultAt<1200) return;
-    ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!'}); chamouAtencao(eu(),false);
+    ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!'}); chamouAtencao(eu(),false); peidoSolo();
   }
   function checaAt(id,arr){
     var novo=arr.filter(function(m){ return m.at && (m.ts||0)>bootAt && (m.ts||0)>(vistoAt[id]||0); });
@@ -13518,7 +13533,7 @@ body{
 .gd .bum{transform-origin:50% 0;animation:wg .45s infinite alternate}@keyframes wg{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
 .gd .ri{opacity:0;animation:ri 4.2s infinite}@keyframes ri{0%,44%{opacity:0;transform:scale(.6)}50%,88%{opacity:1;transform:scale(1)}94%,100%{opacity:0}}
 .gd .cens{animation:pisca .6s steps(2) infinite}@keyframes pisca{50%{opacity:.85}}
-.nudge-t{animation:tremerN .6s cubic-bezier(.36,.07,.19,.97) both}@keyframes tremerN{10%,90%{transform:translate(-3px,1px)}20%,80%{transform:translate(6px,-3px)}30%,50%,70%{transform:translate(-10px,4px)}40%,60%{transform:translate(10px,-4px)}}
+.nudge-t{animation:tremerN .5s linear 4 both}@keyframes tremerN{0%,100%{transform:translate(0,0) rotate(0)}12%{transform:translate(-26px,8px) rotate(-1.2deg)}25%{transform:translate(24px,-10px) rotate(1.2deg)}37%{transform:translate(-30px,12px) rotate(-1.5deg)}50%{transform:translate(28px,-8px) rotate(1.5deg)}62%{transform:translate(-22px,10px) rotate(-1deg)}75%{transform:translate(26px,-12px) rotate(1.2deg)}88%{transform:translate(-16px,6px) rotate(-.6deg)}}
 #gdOver{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:100003}#gdOver .gd{width:340px;height:392px;filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));animation:entraG .5s cubic-bezier(.2,1.3,.3,1)}@keyframes entraG{from{transform:translateY(120px) scale(.4);opacity:0}to{transform:none;opacity:1}}
 #nudgeToast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:100004;background:rgba(14,16,20,.95);color:#fff;border:1px solid #ff9a2e;border-radius:99px;padding:9px 18px;font:600 14px system-ui;box-shadow:0 8px 30px #000a}
 .chat-fig{padding:4px 0}.chat-fig .gd{width:120px;height:138px}
