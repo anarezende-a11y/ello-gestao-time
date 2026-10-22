@@ -13162,13 +13162,30 @@ body{
   function podeLer(id){ if(!canalDe(id)) return true; return id.indexOf(dmId(eu(),'__')) === 0 || id.split('_').length>=2; }
 
   function colMsgs(id){ return window.fb.collection(window.fb.db,'chat_canais',id,'msgs'); }
+  var bloqueados=[], bruto={}, blqUnsub=null;
+  function blq(n){ return bloqueados.indexOf(norm(n))>=0; }
+  function peerDe(id){ if(!canalDe(id)) return null; var me=norm(eu()), p=id.slice(3).split('_').filter(function(x){return x!==me;})[0]; return canon(p); }
+  function filtra(arr){ if(!bloqueados.length||ehAdmin()) return arr; return arr.filter(function(m){ return !blq(m.de); }); }
+  function refiltra(){ Object.keys(bruto).forEach(function(id){ msgs[id]=filtra(bruto[id]); }); if(visivel){ desenharMsgs(); } dockAtualiza(); desenharLado(); badges(); try{ cabeca(); }catch(e){} if(dockThread&&!dockMin) dockDesenha(); }
+  function ouvirBloqueios(){
+    if(blqUnsub||!window.fb) return;
+    blqUnsub=window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','chat_bloqueios'),function(d){ bloqueados=(d.exists&&d.exists()?(d.data()||{}).lista:[])||[]; refiltra(); },function(){});
+  }
+  function alternaBloqueio(nome){
+    if(!ehAdmin()||!nome) return; var k=norm(nome), ja=blq(nome);
+    if(!ja&&!confirm('Bloquear '+nome+'? Ele(a) não conseguirá enviar mensagens nem chamar a atenção de ninguém.')) return;
+    var nova=ja?bloqueados.filter(function(x){return x!==k;}):bloqueados.concat([k]);
+    window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','chat_bloqueios'),{lista:nova,ts:Date.now()}).catch(erro);
+  }
+  function souBloqueado(){ if(ehAdmin()||!blq(eu())) return false; alert('🚫 Você está bloqueado(a) de enviar mensagens no chat.'); return true; }
+  function cabeca(){ var h=document.getElementById('chatHead'); if(!h||!ehAdmin()) return; var o=document.getElementById('chatBlq'); if(o) o.remove(); var n=peerDe(ativo); if(!n) return; var b=document.createElement('button'); b.id='chatBlq'; b.className='chat-cen'; b.textContent=blq(n)?'✅ Desbloquear '+n:'🚫 Bloquear '+n; b.onclick=function(){ alternaBloqueio(n); }; h.appendChild(b); }
   function ouvir(id){
     if(unsubs[id] || !window.fb) return;
     var q = window.fb.query ? window.fb.query(colMsgs(id), window.fb.orderBy('ts','desc'), window.fb.limit(150)) : colMsgs(id);
     unsubs[id] = window.fb.onSnapshot(q, function(snap){
       var arr=[]; snap.forEach(function(d){ var m=d.data(); m.id=d.id; arr.push(m); });
       arr.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
-      checaAt(id,arr);
+      bruto[id]=arr; arr=filtra(arr); checaAt(id,arr);
       msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
       if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
       if(dockLendo(id)) marcarLidoId(id);
@@ -13177,6 +13194,7 @@ body{
     }, function(e){ if(id===ativo) erro(e); });
   }
   function ouvirTudo(){
+    ouvirBloqueios();
     CANAIS.forEach(function(c){ ouvir(c.id); });
     var me=eu();
     MEMBROS.forEach(function(m){ if(m!==me) ouvir(dmId(me,m)); });
@@ -13255,7 +13273,7 @@ body{
   }
   function desenharTopo(){
     var t=tituloAtivo(); document.getElementById('chatHead').innerHTML=esc(t.t)+' <small>'+esc(t.s)+'</small>';
-    var bc=document.createElement('button'); bc.className='chat-cen'; bc.textContent='🎬 Cenário '+(document.documentElement.getAttribute('data-cenario')||'1')+'/3'; bc.onclick=function(){ var n=((+document.documentElement.getAttribute('data-cenario')||1))%3+1; setCenario(n); bc.textContent='🎬 Cenário '+n+'/3'; }; document.getElementById('chatHead').appendChild(bc);
+    var bc=document.createElement('button'); bc.className='chat-cen'; bc.textContent='🎬 Cenário '+(document.documentElement.getAttribute('data-cenario')||'1')+'/3'; bc.onclick=function(){ var n=((+document.documentElement.getAttribute('data-cenario')||1))%3+1; setCenario(n); bc.textContent='🎬 Cenário '+n+'/3'; }; document.getElementById('chatHead').appendChild(bc); cabeca();
     var soLeitura = !pode(ativo);
     var comp=document.getElementById('chatComp');
     comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
@@ -13338,7 +13356,7 @@ body{
     setTimeout(function(){ document.addEventListener('click',function fe(e){ if(!o.contains(e.target)){ o.remove(); document.removeEventListener('click',fe); } }); },0);
   }
   function enviarMidia(extra){
-    if(!pode(ativo)) return;
+    if(!pode(ativo)||souBloqueado()) return;
     var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
     if(respondendo){ o.resp=respondendo; respondendo=null; barra(); }
     var tam=(o.img||o.aud||'').length;
@@ -13401,6 +13419,7 @@ body{
     }
   }
   function enviar(){
+    if(souBloqueado()) return;
     var ta=document.getElementById('chatInput'); if(!ta) return;
     var txt=ta.value.trim(); if(!txt||!pode(ativo)) return;
     if(editando){
@@ -13487,6 +13506,7 @@ body{
     if(!document.getElementById('dkMsgs')){
       body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><button class="ico" id="dkAt" title="Chamar atenção">🔔</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
       document.getElementById('dkBack').onclick=function(){ dockThread=null; body.innerHTML=''; dockDesenha(); };
+      if(ehAdmin()&&peerDe(id)){ var bb=document.createElement('button'); bb.id='dkBlq'; bb.style.cssText='float:right'; bb.onclick=function(){ alternaBloqueio(peerDe(dockThread)); }; document.querySelector('.dk-back').appendChild(bb); }
       document.getElementById('dkEnv').onclick=dockEnviar;
       document.getElementById('dkIn').onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); dockEnviar(); } };
       document.getElementById('dkAt').onclick=function(){ var t_=dockThread; chamar(t_,function(x){ dockPost(t_,x); }); };
@@ -13501,16 +13521,18 @@ body{
       var pode_=pode(id); if(!pode_){ document.querySelector('.dk-comp').innerHTML='<div class="chat-so">📢 Só a Ana publica aqui.</div>'; }
     }
     var el=document.getElementById('dkMsgs'), perto=el.scrollHeight-el.scrollTop-el.clientHeight<80||!el.childElementCount;
+    var bq=document.getElementById('dkBlq'); if(bq&&peerDe(id)) bq.textContent=blq(peerDe(id))?'✅ Desbloquear':'🚫 Bloquear';
     el.innerHTML=a.slice(-60).map(function(m){ var meu=m.de===me; return '<div class="chat-msg'+(meu?' eu':'')+'">'+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+figHTML(m)+(m.img?'<img class="chat-img" src="'+m.img+'">':'')+(m.aud?'<audio class="chat-aud" controls src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+hora(m.ts)+'</span></div></div>'; }).join('')||'<div class="chat-vazio">Nenhuma mensagem ainda 👋</div>';
     Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
     if(perto) el.scrollTop=el.scrollHeight;
   }
   function dockPost(id,extra){
+    if(souBloqueado()) return;
     var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
     if(((o.img||'')+(o.aud||'')).length>900000){ alert('Arquivo grande demais para enviar.'); return; }
     window.fb.addDoc(colMsgs(id),o).catch(erro);
   }
-  function dockEnviar(){ var t=document.getElementById('dkIn'); var v=t.value.trim(); if(!v||!pode(dockThread)) return; dockPost(dockThread,{txt:v.slice(0,2000)}); t.value=''; }
+  function dockEnviar(){ if(souBloqueado()) return; var t=document.getElementById('dkIn'); var v=t.value.trim(); if(!v||!pode(dockThread)) return; dockPost(dockThread,{txt:v.slice(0,2000)}); t.value=''; }
 
   window.CHAT = {
     visivel:function(v){ visivel=v; dockAtualiza(); if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
