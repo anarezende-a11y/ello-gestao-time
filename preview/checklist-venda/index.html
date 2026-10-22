@@ -1476,6 +1476,14 @@ body {
 .chat-sug button:hover{background:rgba(255,255,255,.15)}
 .chat-so{padding:12px;text-align:center;opacity:.7;font-size:13px}
 .chat-vazio{margin:auto;opacity:.6;font-size:14px}
+.chat-row button.ico{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;align-self:center}
+.chat-row button.ico.rec{background:#e5484d;border-radius:10px;font-size:13px;padding:6px 10px;font-weight:700}
+.chat-emo{position:absolute;bottom:48px;left:0;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:rgba(10,10,10,.96);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:6px;z-index:6}
+.chat-emo[hidden]{display:none}
+.chat-emo button{border:0;background:transparent;font-size:20px;cursor:pointer;padding:3px 5px;border-radius:6px}
+.chat-emo button:hover{background:rgba(255,255,255,.18)}
+.chat-img{display:block;max-width:260px;max-height:260px;border-radius:8px;margin-top:4px;cursor:zoom-in}
+.chat-aud{display:block;height:36px;max-width:250px;margin-top:4px}
 @media(max-width:760px){.chat-wrap{grid-template-columns:1fr;height:calc(100vh - 120px)}.chat-side{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid rgba(255,255,255,.18);padding:6px;gap:4px}.chat-side h4{display:none}.chat-item{width:auto;white-space:nowrap}.chat-msg{max-width:92%}}
 </style>
 </head>
@@ -13172,11 +13180,12 @@ body{
     a.forEach(function(m){
       var d=dia(m.ts); if(d!==ult){ h+='<div class="chat-day">'+d+'</div>'; ult=d; }
       var meu=m.de===me, paraMim = !meu && new RegExp('@'+me+'\\b','i').test(m.txt||'');
-      var rp = m.resp ? '<div class="chat-resp"><b>'+esc(m.resp.de)+'</b>: '+esc((m.resp.txt||'').slice(0,90))+'</div>' : '';
+      var rp = m.resp ? '<div class="chat-resp"><b>'+esc(m.resp.de)+'</b>: '+esc(prev(m.resp))+'</div>' : '';
       var acts='<div class="chat-acts"><button data-a="r" title="Responder">↩️</button>'+(meu?'<button data-a="e" title="Editar">✏️</button>':'')+((meu||ehAdmin())?'<button data-a="x" title="Apagar">🗑️</button>':'')+(ehAdmin()&&!canalDe(ativo)?'<button data-a="p" title="'+(m.fixada?'Desafixar':'Fixar')+'">📌</button>':'')+'</div>';
-      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div><div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
+      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+(m.img?'<img class="chat-img" src="'+m.img+'" alt="foto">':'')+(m.aud?'<audio class="chat-aud" controls preload="metadata" src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
     });
     el.innerHTML=h;
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
     Array.prototype.forEach.call(el.querySelectorAll('.chat-acts button'),function(b){
       b.onclick=function(){ var id=b.closest('.chat-msg').getAttribute('data-id'); acao(b.getAttribute('data-a'),id); };
     });
@@ -13184,7 +13193,7 @@ body{
   }
   function desenharPin(){
     var el=document.getElementById('chatPin'), p=pinados[ativo];
-    if(!el) return; el.hidden=!p; if(p) el.innerHTML='📌 <b>'+esc(p.de)+'</b>'+esc((p.txt||'').slice(0,160));
+    if(!el) return; el.hidden=!p; if(p) el.innerHTML='📌 <b>'+esc(p.de)+'</b>'+esc(prev(p));
   }
   function desenharTopo(){
     var t=tituloAtivo(); document.getElementById('chatHead').innerHTML=esc(t.t)+' <small>'+esc(t.s)+'</small>';
@@ -13193,10 +13202,11 @@ body{
     comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
     if(!soLeitura) ligarComp();
   }
-  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
+  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
   function ligarComp(){
     var ta=document.getElementById('chatInput'), env=document.getElementById('chatEnv');
     env.onclick=enviar;
+    ligarMidia();
     ta.onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); enviar(); } };
     ta.oninput=function(){ ta.style.height='42px'; ta.style.height=Math.min(120,ta.scrollHeight)+'px'; sugerir(); };
     barra();
@@ -13218,11 +13228,67 @@ body{
     else if(editando){ r.hidden=false; r.innerHTML='<span>✏️ Editando mensagem</span><button style="background:none;border:0;color:#fff;cursor:pointer" id="chatRx">✕</button>'; document.getElementById('chatRx').onclick=function(){editando=null;document.getElementById('chatInput').value='';barra();}; }
     else r.hidden=true;
   }
+
+  function prev(m){ return m.txt || (m.img?'📷 Foto':(m.aud?'🎤 Áudio':'')); }
+  function zoom(src){
+    var d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    d.innerHTML='<img src="'+src+'" style="max-width:94vw;max-height:94vh;border-radius:8px">'; d.onclick=function(){ d.remove(); }; document.body.appendChild(d);
+  }
+  function enviarMidia(extra){
+    if(!pode(ativo)) return;
+    var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
+    if(respondendo){ o.resp=respondendo; respondendo=null; barra(); }
+    var tam=(o.img||o.aud||'').length;
+    if(tam>900000){ alert('Arquivo grande demais para enviar. Tente uma foto menor ou um áudio mais curto.'); return; }
+    window.fb.addDoc(colMsgs(ativo),o);
+  }
+  function reduzir(file,cb){
+    var r=new FileReader();
+    r.onload=function(){ var im=new Image(); im.onload=function(){
+      var max=1000, w=im.width, h=im.height, k=Math.min(1,max/Math.max(w,h));
+      var c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      var q=.78, d=c.toDataURL('image/jpeg',q);
+      while(d.length>700000 && q>.3){ q-=.12; d=c.toDataURL('image/jpeg',q); }
+      cb(d);
+    }; im.onerror=function(){ alert('Não consegui abrir essa imagem.'); }; im.src=r.result; };
+    r.readAsDataURL(file);
+  }
+  var EMOJIS=['😀','😂','😍','🥰','😎','🤩','😅','😉','🙏','👏','👍','👌','💪','🔥','🎉','✅','❗','❓','☀️','⚡','💰','🏆','🎯','🚀','❤️','😴','🤔','😬','🙌','🎃','🎄','🎆'];
+  var gravando=null;
+  function ligarMidia(){
+    var f=document.getElementById('chatFile'), bi=document.getElementById('chatBtnImg'), be=document.getElementById('chatBtnEmo'), bm=document.getElementById('chatBtnMic'), em=document.getElementById('chatEmo'), ta=document.getElementById('chatInput');
+    bi.onclick=function(){ f.click(); };
+    f.onchange=function(){ if(f.files[0]) reduzir(f.files[0],function(d){ enviarMidia({img:d}); }); f.value=''; };
+    em.innerHTML=EMOJIS.map(function(e){return '<button>'+e+'</button>';}).join('');
+    be.onclick=function(){ em.hidden=!em.hidden; };
+    Array.prototype.forEach.call(em.querySelectorAll('button'),function(b){ b.onclick=function(){ ta.value+=b.textContent; ta.focus(); }; });
+    ta.onpaste=function(e){ var it=(e.clipboardData&&e.clipboardData.items)||[]; for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')===0){ e.preventDefault(); reduzir(it[i].getAsFile(),function(d){ enviarMidia({img:d}); }); return; } } };
+    bm.onclick=function(){ gravando ? parar(true) : gravar(bm); };
+  }
+  function gravar(bm){
+    if(!navigator.mediaDevices||!window.MediaRecorder){ alert('Este navegador não permite gravar áudio.'); return; }
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+      var tipo=['audio/webm;codecs=opus','audio/webm','audio/mp4'].filter(function(t){return MediaRecorder.isTypeSupported(t);})[0]||'';
+      var rec=new MediaRecorder(st,tipo?{mimeType:tipo,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}), parts=[], ini=Date.now();
+      rec.ondataavailable=function(e){ if(e.data.size) parts.push(e.data); };
+      gravando={rec:rec,st:st,envia:true,bm:bm};
+      rec.onstop=function(){
+        st.getTracks().forEach(function(t){t.stop();}); clearInterval(gravando&&gravando.tm);
+        var envia=gravando&&gravando.envia; gravando=null; var b2=document.getElementById('chatBtnMic'); if(b2){ b2.textContent='🎤'; b2.classList.remove('rec'); }
+        if(!envia||!parts.length) return;
+        var rd=new FileReader(); rd.onload=function(){ enviarMidia({aud:rd.result,dur:Math.round((Date.now()-ini)/1000)}); }; rd.readAsDataURL(new Blob(parts,{type:rec.mimeType}));
+      };
+      rec.start(); bm.classList.add('rec');
+      gravando.tm=setInterval(function(){ var s2=Math.round((Date.now()-ini)/1000); bm.textContent='⏹ '+s2+'s'; if(s2>=60) parar(true); },500);
+    }).catch(function(){ alert('Não consegui acessar o microfone. Permita o uso do microfone no navegador.'); });
+  }
+  function parar(envia){ if(gravando){ gravando.envia=envia; try{ gravando.rec.stop(); }catch(e){} } }
   function acao(a,id){
     var m=(msgs[ativo]||[]).filter(function(x){return x.id===id;})[0]; if(!m) return;
     var ref=window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',id);
-    if(a==='r'){ respondendo={de:m.de,txt:m.txt}; editando=null; barra(); var t=document.getElementById('chatInput'); if(t) t.focus(); }
-    if(a==='e'){ editando=m; respondendo=null; barra(); var t2=document.getElementById('chatInput'); if(t2){ t2.value=m.txt; t2.focus(); } }
+    if(a==='r'){ respondendo={de:m.de,txt:prev(m)}; editando=null; barra(); var t=document.getElementById('chatInput'); if(t) t.focus(); }
+    if(a==='e'){ editando=m; respondendo=null; barra(); var t2=document.getElementById('chatInput'); if(t2){ t2.value=m.txt||''; t2.focus(); } }
     if(a==='x'){ if(confirm('Apagar esta mensagem?')) window.fb.deleteDoc(ref); }
     if(a==='p'){
       var tudo=(msgs[ativo]||[]).filter(function(x){return x.fixada&&x.id!==id;});
