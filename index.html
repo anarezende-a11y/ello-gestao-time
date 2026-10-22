@@ -13337,5 +13337,102 @@ body{
 })();
 
 </script>
+<style id="temas-sazonais">
+/* ===== TEMAS SAZONAIS (html[data-tema]) ===== */
+html[data-tema="halloween"]{--amber:#ff7a18;--laranja:#ff7a18;--lima:#ff7a18;--azul-claro:#c49bff;--el-cyan:#c49bff;--el-warn:#ff7a18;--el-line:rgba(255,160,70,.22);--el-line-strong:rgba(255,160,70,.42);--border:rgba(255,160,70,.18);--border2:rgba(255,160,70,.3);--amber-dim:rgba(255,122,24,.18);--amber-mid:rgba(255,122,24,.32);--laranja-dim:rgba(255,122,24,.18);--lima-dim:rgba(255,122,24,.2)}
+html[data-tema="halloween"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(255,122,24,.38) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(122,60,255,.42) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,122,24,.10) 0%,transparent 66%),linear-gradient(160deg,#150a22 0%,#0b0610 60%,#14091a 100%) !important;background-attachment:fixed !important}
+html[data-tema="halloween"]{background:#0b0610}
+html[data-tema="natal"]{--amber:#ffd24a;--laranja:#ffd24a;--lima:#ffd24a;--azul-claro:#7df2a8;--el-cyan:#7df2a8;--el-warn:#ffd24a;--el-line:rgba(255,200,200,.22);--el-line-strong:rgba(255,200,200,.4);--border:rgba(255,200,200,.18);--border2:rgba(255,200,200,.3);--amber-dim:rgba(255,210,74,.18);--amber-mid:rgba(255,210,74,.32);--laranja-dim:rgba(255,210,74,.18);--lima-dim:rgba(255,210,74,.2)}
+html[data-tema="natal"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(214,40,57,.45) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(31,157,85,.45) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,210,74,.10) 0%,transparent 66%),linear-gradient(160deg,#1a0a0e 0%,#08140d 60%,#10080b 100%) !important;background-attachment:fixed !important}
+html[data-tema="natal"]{background:#08140d}
+html[data-tema="anonovo"]{--amber:#f5c542;--laranja:#f5c542;--lima:#f5c542;--azul-claro:#f5e6a8;--el-cyan:#f5e6a8;--el-warn:#f5c542;--el-line:rgba(245,197,66,.22);--el-line-strong:rgba(245,197,66,.42);--border:rgba(245,197,66,.18);--border2:rgba(245,197,66,.3);--amber-dim:rgba(245,197,66,.18);--amber-mid:rgba(245,197,66,.32);--laranja-dim:rgba(245,197,66,.18);--lima-dim:rgba(245,197,66,.2)}
+html[data-tema="anonovo"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(245,197,66,.34) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(190,190,205,.22) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(245,197,66,.10) 0%,transparent 66%),linear-gradient(160deg,#0d0d12 0%,#050507 60%,#0f0e08 100%) !important;background-attachment:fixed !important}
+html[data-tema="anonovo"]{background:#050507}
+html[data-tema="carnaval"]{--amber:#ffd400;--laranja:#ffd400;--lima:#ffd400;--azul-claro:#ff5fd2;--el-cyan:#ff5fd2;--el-warn:#ffd400;--el-line:rgba(255,95,210,.25);--el-line-strong:rgba(255,95,210,.45);--border:rgba(255,95,210,.2);--border2:rgba(255,95,210,.32);--amber-dim:rgba(255,212,0,.18);--amber-mid:rgba(255,212,0,.32);--laranja-dim:rgba(255,212,0,.18);--lima-dim:rgba(255,212,0,.2)}
+html[data-tema="carnaval"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(255,95,210,.40) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(0,200,120,.38) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,212,0,.14) 0%,transparent 66%),linear-gradient(160deg,#150a1c 0%,#08050d 60%,#0a1410 100%) !important;background-attachment:fixed !important}
+html[data-tema="carnaval"]{background:#08050d}
+#temaFx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
+#temaFx span{position:absolute;top:-40px;font-size:20px;opacity:.75;animation:temaCai linear infinite;will-change:transform}
+@keyframes temaCai{to{transform:translateY(110vh) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#temaFx{display:none}}
+#temaBtn{position:fixed;top:12px;right:16px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;z-index:200}
+#temaMenu{position:fixed;top:52px;right:16px;z-index:9999;min-width:220px;background:rgba(8,8,8,.96);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#temaMenu[hidden]{display:none}
+#temaMenu button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;background:transparent;color:#fff;font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;cursor:pointer}
+#temaMenu button:hover{background:rgba(255,255,255,.12)}
+#temaMenu button.on{background:rgba(255,255,255,.2);font-weight:700}
+#temaMenu small{display:block;padding:6px 10px;opacity:.6;font-size:11px}
+</style>
+<script>
+/* ===== TEMAS SAZONAIS ===== */
+(function(){
+  var TEMAS=[
+    {id:'padrao',nome:'Padrão',ic:'🌊',fx:[]},
+    {id:'halloween',nome:'Halloween',ic:'🎃',fx:['🎃','🦇','👻','🕸️']},
+    {id:'natal',nome:'Natal',ic:'🎄',fx:['❄️','❄️','🎄','⭐']},
+    {id:'anonovo',nome:'Ano Novo',ic:'🎆',fx:['✨','🥂','🎆','⭐']},
+    {id:'carnaval',nome:'Carnaval',ic:'🎭',fx:['🎭','🎊','🎉','🥁']}
+  ];
+  function porId(i){ return TEMAS.filter(function(t){return t.id===i;})[0]||TEMAS[0]; }
+  function auto(){
+    var d=new Date(), m=d.getMonth()+1, dia=d.getDate();
+    if((m===10&&dia>=20)||(m===11&&dia===1)) return 'halloween';
+    if(m===12&&dia>=1&&dia<=26) return 'natal';
+    if((m===12&&dia>=27)||(m===1&&dia<=3)) return 'anonovo';
+    return 'padrao';
+  }
+  var modo='auto';
+  try{ modo=localStorage.getItem('ello_tema_modo')||'auto'; }catch(e){}
+  function efetivo(){ return modo==='auto'?auto():modo; }
+  function fx(t){
+    var el=document.getElementById('temaFx');
+    if(!t.fx.length){ if(el) el.remove(); return; }
+    if(!el){ el=document.createElement('div'); el.id='temaFx'; document.body.appendChild(el); }
+    var h=''; for(var i=0;i<16;i++){ h+='<span style="left:'+Math.round(Math.random()*96)+'%;animation-duration:'+(10+Math.random()*12).toFixed(1)+'s;animation-delay:-'+(Math.random()*18).toFixed(1)+'s;font-size:'+(14+Math.round(Math.random()*14))+'px">'+t.fx[i%t.fx.length]+'</span>'; }
+    el.innerHTML=h;
+  }
+  function aplicar(){
+    var t=porId(efetivo());
+    if(t.id==='padrao') document.documentElement.removeAttribute('data-tema'); else document.documentElement.setAttribute('data-tema',t.id);
+    fx(t);
+    var b=document.getElementById('temaBtn'); if(b) b.textContent='🎨 '+t.ic+' '+t.nome;
+    desenharMenu();
+  }
+  function ehAdmin(){ var u=window.APPAUTH&&window.APPAUTH.usuarioAtual; return !!u&&u.role==='admin'; }
+  function desenharMenu(){
+    var m=document.getElementById('temaMenu'); if(!m) return;
+    var h='<small>Tema da plataforma (vale para todo o time)</small><button data-m="auto" class="'+(modo==='auto'?'on':'')+'">🗓️ Automático por data</button>';
+    TEMAS.forEach(function(t){ h+='<button data-m="'+t.id+'" class="'+(modo===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
+    m.innerHTML=h;
+    Array.prototype.forEach.call(m.querySelectorAll('button'),function(b){ b.onclick=function(){ escolher(b.getAttribute('data-m')); m.hidden=true; }; });
+  }
+  function escolher(v){
+    modo=v; try{ localStorage.setItem('ello_tema_modo',v); }catch(e){}
+    aplicar();
+    try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),{modo:v,por:(window.APPAUTH.usuarioAtual||{}).email||'',ts:Date.now()}); }catch(e){}
+  }
+  function botao(){
+    if(!ehAdmin()){ var x=document.getElementById('temaBtn'); if(x) x.remove(); return; }
+    if(document.getElementById('temaBtn')) return;
+    var b=document.createElement('button'); b.id='temaBtn'; document.body.appendChild(b);
+    var m=document.createElement('div'); m.id='temaMenu'; m.hidden=true; document.body.appendChild(m);
+    b.onclick=function(e){ e.stopPropagation(); m.hidden=!m.hidden; };
+    document.addEventListener('click',function(e){ if(!m.contains(e.target)&&e.target!==b) m.hidden=true; });
+    aplicar();
+  }
+  var ouvindo=false;
+  function ouvir(){
+    if(ouvindo||!window.fb) return; ouvindo=true;
+    window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),function(d){
+      var v=d.exists&&d.exists()?(d.data()||{}).modo:null;
+      if(v&&v!==modo){ modo=v; try{ localStorage.setItem('ello_tema_modo',v); }catch(e){} aplicar(); }
+    },function(){});
+  }
+  function iniciar(){ botao(); ouvir(); }
+  aplicar();
+  window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar);
+  if(window.APPAUTH&&window.APPAUTH.usuarioAtual) iniciar();
+})();
+</script>
 </body>
 </html>
