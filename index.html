@@ -1004,6 +1004,7 @@ body {
 #view_checklist[data-tema="kuka"]    { --chk-fill:rgba(239,68,68,.26);  --chk-soft:rgba(239,68,68,.10);  --chk-line:rgba(248,113,113,.68); --chk-strong:#fca5a5; --chk-text:#fff; }
 #view_checklist[data-tema="thiago"]  { --chk-fill:rgba(6,6,6,.58);      --chk-soft:rgba(0,0,0,.30);       --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
 #view_checklist[data-tema="adriele"] { --chk-fill:rgba(59,130,246,.26); --chk-soft:rgba(59,130,246,.10); --chk-line:rgba(96,165,250,.68);  --chk-strong:#bfdbfe; --chk-text:#fff; }
+#view_checklist[data-tema="felipe"]  { --chk-fill:rgba(34,197,94,.26);  --chk-soft:rgba(34,197,94,.10);  --chk-line:rgba(74,222,128,.68);  --chk-strong:#bbf7d0; --chk-text:#fff; }
 #view_checklist[data-tema="sharon"]  { --chk-fill:rgba(255,255,255,.15); --chk-soft:rgba(255,255,255,.07); --chk-line:rgba(255,255,255,.58); --chk-strong:#fff;    --chk-text:#fff; }
 #view_checklist[data-tema] .check-time-chip,
 #view_checklist[data-tema] .check-time-chip.meeting,
@@ -7039,7 +7040,7 @@ function vendaPara(pessoa, b) {
   return null;
 }
 const vendaAberta = {}; // estado aberto/fechado de cada painel (só na tela)
-const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true }; // cores no CSS (data-tema); Felipe mantém a cor padrão
+const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true, felipe:true }; // cores definidas no CSS (data-tema)
 
 // ---------- Anotações ----------
 let notaTimer = null;
