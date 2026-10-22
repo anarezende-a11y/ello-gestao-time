@@ -1475,6 +1475,27 @@ body {
 .chat-sug button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#fff;padding:7px 14px;cursor:pointer;font:inherit;font-size:14px}
 .chat-sug button:hover{background:rgba(255,255,255,.15)}
 .chat-so{padding:12px;text-align:center;opacity:.7;font-size:13px}
+#chatDock{position:fixed;bottom:0;right:24px;width:360px;max-width:calc(100vw - 16px);height:480px;max-height:70vh;z-index:9000;display:flex;flex-direction:column;background:rgba(8,16,20,.97);color:#fff;border:1px solid rgba(255,255,255,.25);border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -6px 40px rgba(0,0,0,.5);overflow:hidden}
+#chatDock[hidden]{display:none}
+#chatDock.min{height:46px}
+.dk-head{display:flex;justify-content:space-between;align-items:center;padding:0 12px;height:46px;flex:none;cursor:pointer;background:linear-gradient(180deg,rgba(6,56,68,.95),rgba(4,40,50,.95));border-bottom:1px solid rgba(255,255,255,.15)}
+.dk-ti{display:flex;align-items:center;gap:8px;font-size:14px}.dk-bt button{border:0;background:transparent;color:#fff;font-size:17px;cursor:pointer;padding:4px 7px}
+.dk-body{flex:1;min-height:0;display:flex;flex-direction:column}
+.dk-busca{padding:10px}.dk-busca input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;padding:8px 12px;font:inherit;font-size:13px}
+.dk-list{flex:1;overflow-y:auto}
+.dk-it{display:flex;width:100%;align-items:center;gap:10px;padding:10px 12px;border:0;border-bottom:1px solid rgba(255,255,255,.08);background:transparent;color:#fff;font:inherit;cursor:pointer;text-align:left}
+.dk-it:hover{background:rgba(255,255,255,.08)}
+.dk-av{position:relative;flex:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.dk-av i.on{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#3ddc84;border:2px solid #081014}
+.dk-tx{flex:1;min-width:0;display:flex;flex-direction:column}.dk-tx b{font-size:14px}.dk-tx small{font-size:12px;opacity:.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk-mt{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.dk-mt em{font-size:11px;opacity:.6;font-style:normal}
+.dk-back{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.12)}.dk-back button{border:0;background:transparent;color:#fff;cursor:pointer;font:inherit;font-size:13px}
+.dk-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:2px}
+.dk-comp{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(255,255,255,.15);align-items:center}
+.dk-comp textarea{flex:1;resize:none;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;padding:7px 10px;font:inherit;font-size:13px}
+.dk-comp .ico{border:0;background:transparent;font-size:18px;cursor:pointer}.dk-comp .env{border-radius:10px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;padding:7px 12px;font-weight:700;cursor:pointer}
+#chatDock .chat-msg{max-width:88%}
+@media(max-width:600px){#chatDock{right:8px;width:calc(100vw - 16px)}}
 .chat-erro{align-self:center;margin:10px;padding:8px 12px;border-radius:10px;background:rgba(229,72,77,.25);border:1px solid #e5484d;font-size:13px;text-align:center}
 .chat-vazio{margin:auto;opacity:.6;font-size:14px}
 .chat-row button.ico{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;align-self:center}
@@ -1698,7 +1719,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 21/10 · 11h50</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h10</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13123,6 +13144,8 @@ body{
       arr.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
       msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
       if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
+      if(dockLendo(id)) marcarLidoId(id);
+      dockAtualiza();
       desenharLado(); badges();
     }, function(e){ if(id===ativo) erro(e); });
   }
@@ -13134,7 +13157,7 @@ body{
   function iniciarPresenca(){
     if(presUnsub || !window.fb) return;
     presUnsub = window.fb.onSnapshot(window.fb.collection(window.fb.db,'chat_presenca'), function(snap){
-      presenca={}; snap.forEach(function(d){ presenca[d.id]=(d.data()||{}).ts||0; }); desenharLado();
+      presenca={}; snap.forEach(function(d){ presenca[d.id]=(d.data()||{}).ts||0; }); desenharLado(); dockAtualiza();
     });
     function hb(){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'chat_presenca',eu()),{ts:Date.now()}); }catch(e){} }
     hb(); hbTimer=setInterval(hb,60000);
@@ -13145,10 +13168,11 @@ body{
     var lr = +ls('chat_lido_'+eu()+'_'+id) || 0, me=eu();
     return (msgs[id]||[]).filter(function(m){ return m.ts>lr && m.de!==me; }).length;
   }
+  function marcarLidoId(id){ var a=msgs[id]||[]; var t=a.length?a[a.length-1].ts:Date.now(); ls('chat_lido_'+eu()+'_'+id, String(Math.max(t,Date.now()))); badges(); desenharLado(); }
   function marcarLido(){ var a=msgs[ativo]||[]; var t=a.length?a[a.length-1].ts:Date.now(); ls('chat_lido_'+eu()+'_'+ativo, String(Math.max(t,Date.now()-0))); badges(); desenharLado(); }
   function badges(){
     var total=0, ids=Object.keys(msgs);
-    ids.forEach(function(id){ if(!(visivel&&id===ativo)) total+=nLidas(id); });
+    ids.forEach(function(id){ if(!(visivel&&id===ativo) && !dockLendo(id)) total+=nLidas(id); });
     ['chatBadgeDrawer','chatBadgeHome'].forEach(function(i){ var e=document.getElementById(i); if(!e) return; e.hidden=!total; e.textContent=total>99?'99+':total; });
   }
 
@@ -13161,7 +13185,7 @@ body{
     });
     h+='<h4>Conversas diretas</h4>';
     MEMBROS.filter(function(m){return m!==me;}).forEach(function(m){
-      var id=dmId(me,m), n=(visivel&&id===ativo)?0:nLidas(id);
+      var id=dmId(me,m), n=((visivel&&id===ativo)||dockLendo(id))?0:nLidas(id);
       h+='<button class="chat-item'+(id===ativo?' active':'')+'" data-id="'+id+'"><span class="chat-dot'+(online(m)?' on':'')+'"></span><span class="nm">'+esc(m)+'</span>'+(n?'<span class="chat-badge">'+n+'</span>':'')+'</button>';
     });
     el.innerHTML=h;
@@ -13328,10 +13352,92 @@ body{
     if(!U()||!window.fb||unsubs.__ok) return; unsubs.__ok=true;
     ouvirTudo(); iniciarPresenca(); desenharLado();
   }
+  /* ----- Dock "Conversas" no canto da tela ----- */
+  var dockMin = (ls('chat_dock_min')!=='0'), dockThread=null, dockQ='';
+  function dockLendo(id){ return !!dockThread && dockThread===id && !dockMin && !visivel; }
+  function nomeConv(id){
+    if(!canalDe(id)){ var c=CANAIS.filter(function(x){return x.id===id;})[0]; return '# '+c.nome; }
+    var me=eu(); return MEMBROS.filter(function(m){return m!==me && dmId(me,m)===id;})[0]||id;
+  }
+  function cor(n){ var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%360; return 'hsl('+h+',45%,38%)'; }
+  function todasConv(){
+    var me=eu(), l=CANAIS.map(function(c){return c.id;});
+    MEMBROS.forEach(function(m){ if(m!==me) l.push(dmId(me,m)); });
+    return l;
+  }
+  function dockEl(){
+    var d=document.getElementById('chatDock'); if(d) return d;
+    d=document.createElement('div'); d.id='chatDock';
+    d.innerHTML='<div class="dk-head" id="dkHead"><span class="dk-ti">💬 <b id="dkTitulo">Conversas</b> <span class="chat-badge" id="dkBadge" hidden></span></span><span class="dk-bt"><button id="dkFull" title="Abrir chat completo">⤢</button><button id="dkMin" title="Minimizar">⌄</button></span></div><div class="dk-body" id="dkBody"></div>';
+    document.body.appendChild(d);
+    document.getElementById('dkHead').onclick=function(e){ if(e.target.id==='dkFull'||e.target.id==='dkMin') return; setMin(!dockMin); };
+    document.getElementById('dkMin').onclick=function(e){ e.stopPropagation(); setMin(!dockMin); };
+    document.getElementById('dkFull').onclick=function(e){ e.stopPropagation(); if(dockThread) ativo=dockThread; if(window.mostrarTool) window.mostrarTool('chat'); };
+    return d;
+  }
+  function setMin(v){ dockMin=v; ls('chat_dock_min',v?'1':'0'); if(!v&&dockThread) marcarLidoId(dockThread); dockDesenha(); badges(); }
+  function dockAtualiza(){
+    var d=document.getElementById('chatDock');
+    if(!U()){ if(d) d.hidden=true; return; }
+    dockEl().hidden=!!visivel;
+    if(visivel) return;
+    dockDesenha(true);
+  }
+  function resumo(id){ var a=msgs[id]||[]; var m=a[a.length-1]; if(!m) return {t:'Sem mensagens ainda',ts:0}; return {t:(m.de===eu()?'Você: ':(canalDe(id)?'':m.de+': '))+prev(m),ts:m.ts}; }
+  function dockDesenha(leve){
+    var d=dockEl(), body=document.getElementById('dkBody'); d.classList.toggle('min',dockMin);
+    var tot=0; todasConv().forEach(function(i){ if(!dockLendo(i)) tot+=nLidas(i); });
+    var b=document.getElementById('dkBadge'); b.hidden=!tot; b.textContent=tot>99?'99+':tot;
+    document.getElementById('dkMin').textContent=dockMin?'⌃':'⌄';
+    document.getElementById('dkTitulo').textContent=dockThread?nomeConv(dockThread):'Conversas';
+    if(dockMin) return;
+    if(dockThread) return dockThread_(body,leve);
+    var q=dockQ.toLowerCase();
+    var ids=todasConv().filter(function(i){ return !q || nomeConv(i).toLowerCase().indexOf(q)>-1; }).sort(function(a,b){ return resumo(b).ts-resumo(a).ts; });
+    var lista=document.getElementById('dkList');
+    var h=ids.map(function(i){
+      var r=resumo(i), n=nLidas(i), nm=nomeConv(i), dm=canalDe(i);
+      var av=dm?'<span class="dk-av" style="background:'+cor(nm)+'">'+esc(nm.slice(0,2).toUpperCase())+(online(nm)?'<i class="on"></i>':'')+'</span>':'<span class="dk-av" style="background:#334">#</span>';
+      return '<button class="dk-it" data-id="'+i+'">'+av+'<span class="dk-tx"><b>'+esc(nm)+'</b><small>'+esc(r.t)+'</small></span><span class="dk-mt">'+(r.ts?'<em>'+(dia(r.ts)==='Hoje'?hora(r.ts):dia(r.ts))+'</em>':'')+(n?'<span class="chat-badge">'+n+'</span>':'')+'</span></button>';
+    }).join('');
+    if(!lista || !document.getElementById('dkQ')){
+      body.innerHTML='<div class="dk-busca"><input id="dkQ" placeholder="🔍 Pesquisar conversas" value="'+esc(dockQ)+'"></div><div class="dk-list" id="dkList"></div>';
+      document.getElementById('dkQ').oninput=function(){ dockQ=this.value; dockDesenha(true); };
+      lista=document.getElementById('dkList');
+    }
+    lista.innerHTML=h;
+    Array.prototype.forEach.call(lista.querySelectorAll('.dk-it'),function(x){ x.onclick=function(){ dockThread=x.getAttribute('data-id'); marcarLidoId(dockThread); body.innerHTML=''; dockDesenha(); }; });
+  }
+  function dockThread_(body,leve){
+    var id=dockThread, a=msgs[id]||[], me=eu();
+    if(!document.getElementById('dkMsgs')){
+      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><button class="ico" id="dkImg" title="Foto">🖼️</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
+      document.getElementById('dkBack').onclick=function(){ dockThread=null; body.innerHTML=''; dockDesenha(); };
+      document.getElementById('dkEnv').onclick=dockEnviar;
+      document.getElementById('dkIn').onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); dockEnviar(); } };
+      document.getElementById('dkImg').onclick=function(){ document.getElementById('dkFile').click(); };
+      document.getElementById('dkFile').onchange=function(){ var f=this.files[0], i=dockThread; if(f) reduzir(f,function(u){ dockPost(i,{img:u}); }); this.value=''; };
+      var pode_=pode(id); if(!pode_){ document.querySelector('.dk-comp').innerHTML='<div class="chat-so">📢 Só a Ana publica aqui.</div>'; }
+    }
+    var el=document.getElementById('dkMsgs'), perto=el.scrollHeight-el.scrollTop-el.clientHeight<80||!el.childElementCount;
+    el.innerHTML=a.slice(-60).map(function(m){ var meu=m.de===me; return '<div class="chat-msg'+(meu?' eu':'')+'">'+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+(m.img?'<img class="chat-img" src="'+m.img+'">':'')+(m.aud?'<audio class="chat-aud" controls src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+hora(m.ts)+'</span></div></div>'; }).join('')||'<div class="chat-vazio">Nenhuma mensagem ainda 👋</div>';
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
+    if(perto) el.scrollTop=el.scrollHeight;
+  }
+  function dockPost(id,extra){
+    var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
+    if((o.img||'').length>900000){ alert('Imagem grande demais.'); return; }
+    window.fb.addDoc(colMsgs(id),o).catch(erro);
+  }
+  function dockEnviar(){ var t=document.getElementById('dkIn'); var v=t.value.trim(); if(!v||!pode(dockThread)) return; dockPost(dockThread,{txt:v.slice(0,2000)}); t.value=''; }
+
   window.CHAT = {
-    visivel:function(v){ visivel=v; if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
+    visivel:function(v){ visivel=v; dockAtualiza(); if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
     iniciar:iniciar
   };
+  function dockIni(){ if(U()&&window.fb){ dockAtualiza(); } }
+  window.addEventListener('userAuthed',function(){ setTimeout(dockIni,600); });
+  setTimeout(dockIni,1200);
   function seAberto(){ var v=document.getElementById('view_chat'); if(v && v.classList.contains('active')) window.CHAT.visivel(true); }
   window.addEventListener('userAuthed', function(){ unsubs.__ok=false; iniciar(); seAberto(); });
   if(U()) iniciar();
