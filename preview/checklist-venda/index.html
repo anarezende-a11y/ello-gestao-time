@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h40</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h55</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13131,10 +13131,26 @@ body{
     try{ console.error('[CHAT]',e); }catch(x){}
   }
   function U(){ return (window.APPAUTH && window.APPAUTH.usuarioAtual) || null; }
-  function eu(){ var u=U(); if(!u) return ''; return u.role==='admin' ? 'Ana' : (u.nome||''); }
+  function norm(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function canon(n){ var l=norm(n); if(!l) return null; for(var i=0;i<MEMBROS.length;i++){ var k=norm(MEMBROS[i]); if(l===k||l.indexOf(k)===0) return MEMBROS[i]; } return null; }
+  function eu(){
+    var u=U(); if(!u) return ''; if(u.role==='admin') return 'Ana';
+    var c=canon(u.nome)||canon(String(u.email||'').split('@')[0]); if(c) return c;
+    var sv=ls('chat_eu_'+u.uid); if(sv) return sv;
+    return u.nome||'';
+  }
+  function precisaEscolher(){ var u=U(); return !!u && u.role!=='admin' && !canon(u.nome) && !canon(String(u.email||'').split('@')[0]) && !ls('chat_eu_'+u.uid); }
+  function pedirQuem(){
+    if(document.getElementById('chatQuem')) return;
+    var d=document.createElement('div'); d.id='chatQuem'; d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99998;display:flex;align-items:center;justify-content:center';
+    d.innerHTML='<div style="background:#0b1417;border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:22px;max-width:340px;color:#fff;text-align:center"><b style="font-size:16px">Quem é você no chat?</b><p style="font-size:13px;opacity:.75">Escolha seu nome uma única vez para as mensagens chegarem certo.</p><div id="chatQuemL" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div></div>';
+    document.body.appendChild(d);
+    var L=d.querySelector('#chatQuemL');
+    MEMBROS.filter(function(m){return m!=='Ana';}).forEach(function(m){ var b=document.createElement('button'); b.textContent=m; b.style.cssText='padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.35);background:rgba(6,6,6,.7);color:#fff;font-weight:700;cursor:pointer'; b.onclick=function(){ ls('chat_eu_'+U().uid,m); location.reload(); }; L.appendChild(b); });
+  }
   function ehAdmin(){ var u=U(); return !!u && u.role==='admin'; }
   function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-  function dmId(a,b){ return 'dm_'+[a,b].sort().join('_').toLowerCase().replace(/[^a-z0-9_]/g,''); }
+  function dmId(a,b){ return 'dm_'+[norm(a),norm(b)].sort().join('_'); }
   function canalDe(id){ return id.indexOf('dm_')===0; }
   function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
   function pode(id){ var c=CANAIS.filter(function(x){return x.id===id;})[0]; return !(c&&c.soAdmin&&!ehAdmin()); }
@@ -13233,7 +13249,7 @@ body{
   }
   function desenharTopo(){
     var t=tituloAtivo(); document.getElementById('chatHead').innerHTML=esc(t.t)+' <small>'+esc(t.s)+'</small>';
-    var bc=document.createElement('button'); bc.className='chat-cen'; bc.textContent='🎬 Cenário'; bc.onclick=function(){ var n=((+document.documentElement.getAttribute('data-cenario')||1))%3+1; setCenario(n); }; document.getElementById('chatHead').appendChild(bc);
+    var bc=document.createElement('button'); bc.className='chat-cen'; bc.textContent='🎬 Cenário '+(document.documentElement.getAttribute('data-cenario')||'1')+'/3'; bc.onclick=function(){ var n=((+document.documentElement.getAttribute('data-cenario')||1))%3+1; setCenario(n); bc.textContent='🎬 Cenário '+n+'/3'; }; document.getElementById('chatHead').appendChild(bc);
     var soLeitura = !pode(ativo);
     var comp=document.getElementById('chatComp');
     comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
@@ -13351,10 +13367,12 @@ body{
     ativo=id; respondendo=null; editando=null; desenharTopo(); desenharPin(); desenharMsgs(); marcarLido();
     var el=document.getElementById('chatMsgs'); if(el) el.scrollTop=el.scrollHeight;
   }
-  function setCenario(n){ document.documentElement.setAttribute('data-cenario',String(n)); try{ localStorage.setItem('ello_cenario',String(n)); }catch(e){} }
-  (function(){ var c='1'; try{ c=localStorage.getItem('ello_cenario')||'1'; }catch(e){} document.documentElement.setAttribute('data-cenario',c); })();
+  function setCenario(n){ document.documentElement.setAttribute('data-cenario',String(n)); try{ localStorage.setItem('ello_cenario2',String(n)); }catch(e){} }
+  (function(){ var c='1'; try{ c=localStorage.getItem('ello_cenario2')||'1'; }catch(e){} document.documentElement.setAttribute('data-cenario',c); })();
   function iniciar(){
-    if(!U()||!window.fb||unsubs.__ok) return; unsubs.__ok=true;
+    if(!U()||!window.fb||unsubs.__ok) return;
+    if(precisaEscolher()){ pedirQuem(); return; }
+    unsubs.__ok=true;
     ouvirTudo(); iniciarPresenca(); desenharLado();
   }
   /* ----- Dock "Conversas" no canto da tela ----- */
