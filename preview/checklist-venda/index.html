@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h55</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 18h20</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13517,7 +13517,8 @@ html[data-tema="n-arvore"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0
 html[data-tema="n-treno"] body{background:linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.35)),url("temas/natal-treno.svg") center/cover fixed no-repeat !important}
 html[data-tema="a-fogos"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/anonovo-fogos.svg") center/cover fixed no-repeat !important}
 html[data-tema^="n-"],html[data-tema="a-fogos"]{background:#05060f}
-html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12,.66)),var(--foto-url) center/cover fixed no-repeat !important}
+html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12,.66)),var(--foto-url) var(--foto-pos,50% 50%)/cover fixed no-repeat !important}
+#temaAj{position:fixed;right:14px;top:60px;z-index:99999;width:250px;background:rgba(14,16,20,.96);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:12px;color:#fff;font:13px system-ui;box-shadow:0 12px 40px #000a}#temaAj[hidden]{display:none}#temaAj b{display:block;margin-bottom:8px}#temaAj .pv{height:110px;border-radius:8px;margin-bottom:10px;background:#222 center/cover}#temaAj label{display:block;font-size:11px;opacity:.8;margin-top:6px}#temaAj input[type=range]{width:100%}#temaAj .bt{display:flex;gap:6px;margin-top:10px}#temaAj .bt button{flex:1;padding:7px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}#temaAj .bt .ok{background:#fff;color:#111;font-weight:700}
 #temaFx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 #temaFx span{position:absolute;top:-40px;font-size:20px;opacity:.75;animation:temaCai linear infinite;will-change:transform}
 @keyframes temaCai{to{transform:translateY(110vh) rotate(360deg)}}
@@ -13553,7 +13554,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   ];
   var custom=[], imgs={};
   function porId(i){ return TEMAS.filter(function(t){return t.id===i;})[0]||TEMAS[0]; }
-  function fotoAtiva(){ if(foto) return foto; if(String(meu).indexOf('c:')===0){ var id=meu.slice(2); if(imgs[id]) return imgs[id]; carregaImg(id); } return ''; }
+  function fotoAtiva(){ var X=E(); if(X.foto) return X.foto; if(String(X.meu).indexOf('c:')===0){ var id=X.meu.slice(2); if(imgs[id]) return imgs[id]; carregaImg(id); } return ''; }
   function carregaImg(id){ if(imgs['_'+id]||!window.fb||!window.fb.getDoc) return; imgs['_'+id]=1; window.fb.getDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+id)).then(function(d){ if(d.exists&&d.exists()){ imgs[id]=(d.data()||{}).img||''; aplicar(); } }).catch(function(){}); }
   function auto(){
     var d=new Date(), m=d.getMonth()+1, dia=d.getDate();
@@ -13566,9 +13567,13 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   var modo=ls('ello_tema_modo')||'auto';   // tema do time
   var meu=ls('ello_tema_meu')||'seguir';   // tema pessoal
   var foto=ls('ello_tema_foto')||'';        // foto pessoal (dataURL)
+  var pos=ls('ello_tema_pos')||'50% 50%';   // posicao da imagem
+  var colegas={}, indice={}, ouvindoCol={};
   function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
   function ehAdmin(){ var u=U(); return !!u&&u.role==='admin'; }
-  function efetivo(){ var e=meu!=='seguir'?meu:(modo==='auto'?auto():modo); return String(e).indexOf('c:')===0?'padrao':e; }
+  function E(){ if(String(meu).indexOf('u:')===0){ var k=meu.slice(2),c=colegas[k]; ouvirColega(k); if(c) return {meu:c.meu||'seguir',foto:c.foto||'',pos:c.pos||'50% 50%'}; return {meu:'seguir',foto:'',pos:'50% 50%'}; } return {meu:meu,foto:foto,pos:pos}; }
+  function ouvirColega(k){ if(ouvindoCol[k]||!window.fb||!window.fb.onSnapshot) return; ouvindoCol[k]=1; window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','tema_u_'+k),function(d){ if(d.exists&&d.exists()){ colegas[k]=d.data()||{}; aplicar(); } },function(){}); }
+  function efetivo(){ var em=E().meu; var e=em!=='seguir'?em:(modo==='auto'?auto():modo); return String(e).indexOf('c:')===0?'padrao':e; }
   function fx(t){
     var el=document.getElementById('temaFx');
     if(!t.fx.length){ if(el) el.remove(); return; }
@@ -13580,15 +13585,16 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     var t=porId(efetivo()), h=document.documentElement;
     if(t.id==='padrao') h.removeAttribute('data-tema'); else h.setAttribute('data-tema',t.id);
     var fa=fotoAtiva();
-    if(fa){ h.setAttribute('data-foto','1'); h.style.setProperty('--foto-url','url("'+fa+'")'); } else { h.removeAttribute('data-foto'); h.style.removeProperty('--foto-url'); }
+    if(fa){ h.setAttribute('data-foto','1'); h.style.setProperty('--foto-url','url("'+fa+'")'); h.style.setProperty('--foto-pos',E().pos); } else { h.removeAttribute('data-foto'); h.style.removeProperty('--foto-url'); }
     fx(t);
     var b=document.getElementById('temaBtn'); if(b) b.textContent='🎨 '+(foto?'📷 Minha foto':(String(meu).indexOf('c:')===0?'🖼️ '+((custom.filter(function(c){return 'c:'+c.id===meu;})[0]||{}).nome||'Tema'):t.ic+' '+t.nome));
     desenharMenu();
   }
   function chaveDoc(){ var u=U(); return 'tema_u_'+String((u&&(u.email||u.uid))||'x').toLowerCase().replace(/[^a-z0-9]/g,'_'); }
   function salvarMeu(){
-    ls('ello_tema_meu',meu); ls('ello_tema_foto',foto||null);
-    try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data',chaveDoc()),{meu:meu,foto:foto||'',ts:Date.now()}); }catch(e){}
+    ls('ello_tema_meu',meu); ls('ello_tema_foto',foto||null); ls('ello_tema_pos',pos);
+    try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data',chaveDoc()),{meu:meu,foto:foto||'',pos:pos,ts:Date.now()}); }catch(e){}
+    try{ var u=U(),k=chaveDoc().slice(7),nome=(u&&(u.nome||String(u.email||'').split('@')[0]))||k; var o={}; o['u_'+k]={nome:nome,k:k,ts:Date.now()}; window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','temas_colegas'),o,{merge:true}); }catch(e){}
   }
   function desenharMenu(){
     var m=document.getElementById('temaMenu'); if(!m) return;
@@ -13598,6 +13604,9 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
       TEMAS.filter(function(t){return t.grupo===g[0];}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
     });
     if(true){ h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">🖼️ Temas do time (com imagem)</small>'; custom.forEach(function(c){ h+='<button data-k="m:c:'+c.id+'" class="'+(meu==='c:'+c.id?'on':'')+'">🖼️ '+c.nome.replace(/</g,'&lt;')+'</button>'; }); h+='<button data-k="novo">➕ Criar tema com imagem (para o time)</button>'; }
+    var ax=E(); if(foto||String(ax.meu).indexOf('c:')===0) h+='<button data-k="ajustar">📐 Ajustar posição da imagem</button>';
+    var meuK=chaveDoc().slice(7), cl=Object.keys(indice).filter(function(k){return k!==meuK;});
+    if(cl.length){ h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">👥 Usar o tema de um colega</small>'; cl.forEach(function(k){ h+='<button data-k="m:u:'+k+'" class="'+(meu==='u:'+k?'on':'')+'">👤 '+String(indice[k].nome||k).replace(/</g,'&lt;')+'</button>'; }); }
     h+='<button data-k="foto">📷 '+(foto?'Trocar minha foto de fundo':'Usar minha foto de fundo')+'</button>';
     if(foto) h+='<button data-k="semfoto">🗑️ Remover minha foto</button>';
     custom.filter(function(c){ return ehAdmin()||(c.por&&c.por===((U()||{}).email||'')); }).forEach(function(c){ h+='<button data-k="del:'+c.id+'">🗑️ Excluir tema "'+c.nome.replace(/</g,'&lt;')+'"</button>'; });
@@ -13611,11 +13620,12 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   function acao(k){
     var m=document.getElementById('temaMenu');
     if(k==='foto'){ document.getElementById('temaFile').click(); return; }
+    if(k==='ajustar'){ m.hidden=true; abrirAjuste(); return; }
     if(k==='semfoto'){ foto=''; salvarMeu(); aplicar(); m.hidden=true; return; }
     if(k==='novo'){ document.getElementById('temaFileN').click(); return; }
     var q=k.split(':');
     if(q[0]==='del'){ if(confirm('Excluir este tema para todos?')){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+q[1]),{img:''}); }catch(e){} custom=custom.filter(function(c){return c.id!==q[1];}); salvarLista(); if(meu==='c:'+q[1]){ meu='seguir'; salvarMeu(); } aplicar(); } m.hidden=true; return; }
-    if(q[0]==='m'){ meu=k.slice(2); foto=''; salvarMeu(); }
+    if(q[0]==='m'){ meu=k.slice(2); foto=''; pos='50% 50%'; salvarMeu(); }
     if(q[0]==='g'){ modo=q[1]; ls('ello_tema_modo',modo); try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),{modo:modo,por:(U()||{}).email||'',ts:Date.now()}); }catch(e){} }
     aplicar(); m.hidden=true;
   }
@@ -13625,7 +13635,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     reduzirImg(file,function(d){
       var id='c'+Date.now(); imgs[id]=d; custom.push({id:id,nome:nome,por:((U()||{}).email||'')});
       try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+id),{img:d}); }catch(e){}
-      salvarLista(); meu='c:'+id; foto=''; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true;
+      salvarLista(); meu='c:'+id; foto=''; pos='50% 50%'; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true; abrirAjuste();
     });
   }
   function reduzirImg(file,cb){
@@ -13644,9 +13654,19 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
       var max=1400,k=Math.min(1,max/Math.max(im.width,im.height)), c=document.createElement('canvas');
       c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height);
       var q=.72,d=c.toDataURL('image/jpeg',q); while(d.length>650000&&q>.3){ q-=.1; d=c.toDataURL('image/jpeg',q); }
-      foto=d; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true;
+      foto=d; pos='50% 50%'; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true; abrirAjuste();
     }; im.onerror=function(){ alert('Não consegui abrir essa imagem.'); }; im.src=r.result; };
     r.readAsDataURL(file);
+  }
+  function abrirAjuste(){
+    var el=document.getElementById('temaAj'); if(!el){ el=document.createElement('div'); el.id='temaAj'; document.body.appendChild(el); }
+    var ini=pos, p=String(pos).split(' '), x=parseInt(p[0])||50, y=parseInt(p[1])||50, fa=fotoAtiva();
+    el.innerHTML='<b>📐 Ajustar imagem de fundo</b><div class="pv" style="background-image:url(&quot;'+fa+'&quot;);background-position:'+x+'% '+y+'%"></div><label>↕ Mais para cima / mais para baixo</label><input type="range" id="ajY" min="0" max="100" value="'+y+'"><label>↔ Mais para a esquerda / direita</label><input type="range" id="ajX" min="0" max="100" value="'+x+'"><div class="bt"><button id="ajC">Cancelar</button><button class="ok" id="ajS">Salvar</button></div>';
+    el.hidden=false;
+    function mover(){ var v=document.getElementById('ajX').value+'% '+document.getElementById('ajY').value+'%'; pos=v; document.documentElement.style.setProperty('--foto-pos',v); el.querySelector('.pv').style.backgroundPosition=v; }
+    document.getElementById('ajX').oninput=mover; document.getElementById('ajY').oninput=mover;
+    document.getElementById('ajC').onclick=function(){ pos=ini; aplicar(); el.hidden=true; };
+    document.getElementById('ajS').onclick=function(){ salvarMeu(); aplicar(); el.hidden=true; };
   }
   function botao(){
     if(!U()){ var x=document.getElementById('temaBtn'); if(x) x.remove(); return; }
@@ -13661,7 +13681,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     document.addEventListener('click',function(e){ if(!m.contains(e.target)&&e.target!==b) m.hidden=true; });
     aplicar();
   }
-  var ouvindo=false, ouvindoMeu='', ouvindoLista=false;
+  var ouvindo=false, ouvindoMeu='', ouvindoLista=false, ouvindoIdx=false;
   function ouvir(){
     if(!window.fb||!U()) return;
     if(!ouvindo){ ouvindo=true;
@@ -13675,12 +13695,13 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
         if(d.exists&&d.exists()){ custom=(d.data()||{}).lista||[]; aplicar(); }
       },function(){});
     }
+    if(!ouvindoIdx){ ouvindoIdx=true; window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','temas_colegas'),function(d){ if(d.exists&&d.exists()){ var o=d.data()||{}; indice={}; Object.keys(o).forEach(function(k){ if(o[k]&&o[k].k) indice[o[k].k]=o[k]; }); desenharMenu(); } },function(){}); }
     var ch=chaveDoc();
     if(ouvindoMeu!==ch){ ouvindoMeu=ch;
       window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data',ch),function(d){
         if(!(d.exists&&d.exists())) return; var x=d.data()||{};
-        var novoMeu=x.meu||'seguir', novaFoto=x.foto||'';
-        if(novoMeu!==meu||novaFoto!==foto){ meu=novoMeu; foto=novaFoto; ls('ello_tema_meu',meu); ls('ello_tema_foto',foto||null); aplicar(); }
+        var novoMeu=x.meu||'seguir', novaFoto=x.foto||'', novaPos=x.pos||'50% 50%';
+        if(novoMeu!==meu||novaFoto!==foto||novaPos!==pos){ var aj=document.getElementById('temaAj'); if(aj&&!aj.hidden) return; meu=novoMeu; foto=novaFoto; pos=novaPos; ls('ello_tema_meu',meu); ls('ello_tema_foto',foto||null); ls('ello_tema_pos',pos); aplicar(); }
       },function(){});
     }
   }
