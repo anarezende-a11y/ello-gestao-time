@@ -1000,6 +1000,28 @@ body {
 .check-notas textarea:focus { border-color:rgba(253,116,0,.5); }
 .check-notas textarea::placeholder { color:var(--muted2); }
 @media (max-width:760px) { .check-block-body.com-notas { grid-template-columns:1fr; } }
+/* ----- Cor do checklist por pessoa (translúcido, no lugar do amarelo) ----- */
+#view_checklist[data-tema="kuka"]    { --chk-fill:rgba(239,68,68,.26);  --chk-soft:rgba(239,68,68,.10);  --chk-line:rgba(248,113,113,.68); --chk-strong:#fca5a5; --chk-text:#fff; }
+#view_checklist[data-tema="thiago"]  { --chk-fill:rgba(6,6,6,.58);      --chk-soft:rgba(0,0,0,.30);       --chk-line:rgba(255,255,255,.32); --chk-strong:#e5e5e5; --chk-text:#fff; }
+#view_checklist[data-tema="adriele"] { --chk-fill:rgba(59,130,246,.26); --chk-soft:rgba(59,130,246,.10); --chk-line:rgba(96,165,250,.68);  --chk-strong:#bfdbfe; --chk-text:#fff; }
+#view_checklist[data-tema="sharon"]  { --chk-fill:rgba(255,255,255,.15); --chk-soft:rgba(255,255,255,.07); --chk-line:rgba(255,255,255,.58); --chk-strong:#fff;    --chk-text:#fff; }
+#view_checklist[data-tema] .check-time-chip,
+#view_checklist[data-tema] .check-time-chip.meeting,
+#view_checklist[data-tema] .check-atual-badge,
+#view_checklist[data-tema] .check-hint,
+#view_checklist[data-tema] .tool-subbar .btn-amber,
+#view_checklist[data-tema] .check-stepper-btn { background:var(--chk-fill) !important; color:var(--chk-text) !important; border:1px solid var(--chk-line) !important; box-shadow:none !important; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+#view_checklist[data-tema] .check-block-atual { border:2px solid var(--chk-line) !important; box-shadow:0 8px 24px rgba(0,0,0,.18) !important; }
+#view_checklist[data-tema] .check-pessoa-card.active,
+#view_checklist[data-tema] .check-data-card.active { background:var(--chk-fill) !important; border-color:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-data-card.hoje:not(.active) { border-color:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-data-hoje-tag { color:var(--chk-strong) !important; }
+#view_checklist[data-tema] .check-pessoa-card.active .check-pessoa-avatar { background:var(--chk-fill) !important; color:var(--chk-text) !important; border:1px solid var(--chk-line); }
+#view_checklist[data-tema] .check-mini-bar-fill { background:var(--chk-line) !important; }
+#view_checklist[data-tema] .check-venda { border-color:var(--chk-line); background:var(--chk-soft); }
+#view_checklist[data-tema] .check-venda summary { color:var(--chk-strong); }
+#view_checklist[data-tema] .check-venda[open] summary { border-bottom-color:var(--chk-line); }
+#view_checklist[data-tema] .check-notas textarea:focus { border-color:var(--chk-line); }
 @media print { .tool-checklist .check-stepper-btn, .tool-checklist .check-dateinput, .tool-checklist .check-seletor, .check-venda { display:none!important; } .check-block { break-inside:avoid; } }
 </style>
 <style id="pv-style">
@@ -7017,6 +7039,7 @@ function vendaPara(pessoa, b) {
   return null;
 }
 const vendaAberta = {}; // estado aberto/fechado de cada painel (só na tela)
+const TEMAS = { kuka:true, thiago:true, adriele:true, sharon:true }; // cores no CSS (data-tema); Felipe mantém a cor padrão
 
 // ---------- Anotações ----------
 let notaTimer = null;
@@ -7165,6 +7188,9 @@ function render() {
     conteudoWrap.style.display = '';
     pessoaAtual = p;
   }
+
+  const viewEl = document.getElementById('view_checklist');
+  if (viewEl) { if (TEMAS[pessoaAtual]) viewEl.setAttribute('data-tema', pessoaAtual); else viewEl.removeAttribute('data-tema'); }
 
   try { if (window.DAILY && window.DAILY.checkTarefas) window.DAILY.checkTarefas((DEFS[pessoaAtual] && DEFS[pessoaAtual].label) || pessoaAtual); } catch(e) {}
 
