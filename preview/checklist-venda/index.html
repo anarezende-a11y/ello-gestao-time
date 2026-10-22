@@ -1495,6 +1495,8 @@ body {
 .dk-comp textarea{flex:1;resize:none;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;padding:7px 10px;font:inherit;font-size:13px}
 .dk-comp .ico{border:0;background:transparent;font-size:18px;cursor:pointer}.dk-comp .env{border-radius:10px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;padding:7px 12px;font-weight:700;cursor:pointer}
 #chatDock .chat-msg{max-width:88%}
+.dk-comp{position:relative}.dk-comp .ico.rec{background:#e5484d;border-radius:10px;font-size:12px;padding:5px 8px;font-weight:700;color:#fff}
+.dk-comp .chat-emo{bottom:50px;left:6px;grid-template-columns:repeat(8,1fr)}
 html[data-tema="halloween"] #chatDock .dk-body{background:linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.28)),url("temas/halloween-chat.jpg") center/cover no-repeat}
 html[data-tema="halloween"] #chatDock{background:#0a0610;border-color:rgba(255,110,40,.5);box-shadow:0 -6px 40px rgba(255,70,20,.25)}
 html[data-tema="halloween"] #chatDock .dk-head{background:linear-gradient(180deg,rgba(60,14,6,.96),rgba(24,6,4,.96));border-bottom-color:rgba(255,110,40,.4)}
@@ -1725,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h15</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h25</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13304,18 +13306,18 @@ body{
     ta.onpaste=function(e){ var it=(e.clipboardData&&e.clipboardData.items)||[]; for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')===0){ e.preventDefault(); reduzir(it[i].getAsFile(),function(d){ enviarMidia({img:d}); }); return; } } };
     bm.onclick=function(){ gravando ? parar(true) : gravar(bm); };
   }
-  function gravar(bm){
+  function gravar(bm,alvo){
     if(!navigator.mediaDevices||!window.MediaRecorder){ alert('Este navegador não permite gravar áudio.'); return; }
     navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
       var tipo=['audio/webm;codecs=opus','audio/webm','audio/mp4'].filter(function(t){return MediaRecorder.isTypeSupported(t);})[0]||'';
       var rec=new MediaRecorder(st,tipo?{mimeType:tipo,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}), parts=[], ini=Date.now();
       rec.ondataavailable=function(e){ if(e.data.size) parts.push(e.data); };
-      gravando={rec:rec,st:st,envia:true,bm:bm};
+      gravando={rec:rec,st:st,envia:true,bm:bm,alvo:alvo};
       rec.onstop=function(){
         st.getTracks().forEach(function(t){t.stop();}); clearInterval(gravando&&gravando.tm);
-        var envia=gravando&&gravando.envia; gravando=null; var b2=document.getElementById('chatBtnMic'); if(b2){ b2.textContent='🎤'; b2.classList.remove('rec'); }
+        var envia=gravando&&gravando.envia, alvo_=gravando&&gravando.alvo, b2=gravando&&gravando.bm; gravando=null; if(b2){ b2.textContent='🎤'; b2.classList.remove('rec'); }
         if(!envia||!parts.length) return;
-        var rd=new FileReader(); rd.onload=function(){ enviarMidia({aud:rd.result,dur:Math.round((Date.now()-ini)/1000)}); }; rd.readAsDataURL(new Blob(parts,{type:rec.mimeType}));
+        var rd=new FileReader(); rd.onload=function(){ var o_={aud:rd.result,dur:Math.round((Date.now()-ini)/1000)}; if(alvo_) alvo_(o_); else enviarMidia(o_); }; rd.readAsDataURL(new Blob(parts,{type:rec.mimeType}));
       };
       rec.start(); bm.classList.add('rec');
       gravando.tm=setInterval(function(){ var s2=Math.round((Date.now()-ini)/1000); bm.textContent='⏹ '+s2+'s'; if(s2>=60) parar(true); },500);
@@ -13417,12 +13419,18 @@ body{
   function dockThread_(body,leve){
     var id=dockThread, a=msgs[id]||[], me=eu();
     if(!document.getElementById('dkMsgs')){
-      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><button class="ico" id="dkImg" title="Foto">🖼️</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
+      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
       document.getElementById('dkBack').onclick=function(){ dockThread=null; body.innerHTML=''; dockDesenha(); };
       document.getElementById('dkEnv').onclick=dockEnviar;
       document.getElementById('dkIn').onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); dockEnviar(); } };
       document.getElementById('dkImg').onclick=function(){ document.getElementById('dkFile').click(); };
       document.getElementById('dkFile').onchange=function(){ var f=this.files[0], i=dockThread; if(f) reduzir(f,function(u){ dockPost(i,{img:u}); }); this.value=''; };
+      var em=document.getElementById('dkEmo'), ta=document.getElementById('dkIn');
+      em.innerHTML=EMOJIS.map(function(e){return '<button>'+e+'</button>';}).join('');
+      document.getElementById('dkBtnEmo').onclick=function(){ em.hidden=!em.hidden; };
+      Array.prototype.forEach.call(em.querySelectorAll('button'),function(b){ b.onclick=function(){ ta.value+=b.textContent; ta.focus(); }; });
+      ta.onpaste=function(e){ var it=(e.clipboardData&&e.clipboardData.items)||[]; for(var i=0;i<it.length;i++){ if(it[i].type.indexOf('image')===0){ e.preventDefault(); var t_=dockThread; reduzir(it[i].getAsFile(),function(u){ dockPost(t_,{img:u}); }); return; } } };
+      document.getElementById('dkMic').onclick=function(){ var bm=this, t_=dockThread; if(gravando) parar(true); else gravar(bm,function(o){ dockPost(t_,o); }); };
       var pode_=pode(id); if(!pode_){ document.querySelector('.dk-comp').innerHTML='<div class="chat-so">📢 Só a Ana publica aqui.</div>'; }
     }
     var el=document.getElementById('dkMsgs'), perto=el.scrollHeight-el.scrollTop-el.clientHeight<80||!el.childElementCount;
@@ -13432,7 +13440,7 @@ body{
   }
   function dockPost(id,extra){
     var o={de:eu(),txt:'',ts:Date.now()}; for(var k in extra) o[k]=extra[k];
-    if((o.img||'').length>900000){ alert('Imagem grande demais.'); return; }
+    if(((o.img||'')+(o.aud||'')).length>900000){ alert('Arquivo grande demais para enviar.'); return; }
     window.fb.addDoc(colMsgs(id),o).catch(erro);
   }
   function dockEnviar(){ var t=document.getElementById('dkIn'); var v=t.value.trim(); if(!v||!pode(dockThread)) return; dockPost(dockThread,{txt:v.slice(0,2000)}); t.value=''; }
