@@ -1475,6 +1475,7 @@ body {
 .chat-sug button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#fff;padding:7px 14px;cursor:pointer;font:inherit;font-size:14px}
 .chat-sug button:hover{background:rgba(255,255,255,.15)}
 .chat-so{padding:12px;text-align:center;opacity:.7;font-size:13px}
+.chat-erro{align-self:center;margin:10px;padding:8px 12px;border-radius:10px;background:rgba(229,72,77,.25);border:1px solid #e5484d;font-size:13px;text-align:center}
 .chat-vazio{margin:auto;opacity:.6;font-size:14px}
 .chat-row button.ico{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer;padding:0 4px;align-self:center}
 .chat-row button.ico.rec{background:#e5484d;border-radius:10px;font-size:13px;padding:6px 10px;font-weight:700}
@@ -13097,6 +13098,11 @@ body{
   var ativo = 'geral', msgs = {}, unsubs = {}, lastRead = {}, presenca = {}, visivel = false;
   var respondendo = null, editando = null, pinados = {}, hbTimer = null, presUnsub = null;
 
+  function erro(e){
+    var m=(e&&e.code==='permission-denied')?'O Firebase bloqueou o chat (falta liberar as regras do Firestore para chat_canais e chat_presenca).':'Não foi possível enviar: '+((e&&e.message)||'erro');
+    var el=document.getElementById('chatMsgs'); if(el){ var d=document.createElement('div'); d.className='chat-erro'; d.textContent='⚠️ '+m; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+    try{ console.error('[CHAT]',e); }catch(x){}
+  }
   function U(){ return (window.APPAUTH && window.APPAUTH.usuarioAtual) || null; }
   function eu(){ var u=U(); if(!u) return ''; return u.role==='admin' ? 'Ana' : (u.nome||''); }
   function ehAdmin(){ var u=U(); return !!u && u.role==='admin'; }
@@ -13117,7 +13123,7 @@ body{
       msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
       if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
       desenharLado(); badges();
-    });
+    }, function(e){ if(id===ativo) erro(e); });
   }
   function ouvirTudo(){
     CANAIS.forEach(function(c){ ouvir(c.id); });
@@ -13240,7 +13246,7 @@ body{
     if(respondendo){ o.resp=respondendo; respondendo=null; barra(); }
     var tam=(o.img||o.aud||'').length;
     if(tam>900000){ alert('Arquivo grande demais para enviar. Tente uma foto menor ou um áudio mais curto.'); return; }
-    window.fb.addDoc(colMsgs(ativo),o);
+    window.fb.addDoc(colMsgs(ativo),o).catch(erro);
   }
   function reduzir(file,cb){
     var r=new FileReader();
@@ -13300,12 +13306,12 @@ body{
     var ta=document.getElementById('chatInput'); if(!ta) return;
     var txt=ta.value.trim(); if(!txt||!pode(ativo)) return;
     if(editando){
-      window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',editando.id),{txt:txt,editada:true});
+      window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',editando.id),{txt:txt,editada:true}).catch(erro);
       editando=null;
     } else {
       var o={de:eu(),txt:txt.slice(0,2000),ts:Date.now()};
       if(respondendo) o.resp=respondendo;
-      window.fb.addDoc(colMsgs(ativo),o);
+      window.fb.addDoc(colMsgs(ativo),o).catch(erro);
       respondendo=null;
     }
     ta.value=''; ta.style.height='42px'; barra();
