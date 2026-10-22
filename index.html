@@ -13317,7 +13317,6 @@ body{
     }
   }
   function chamar(id,post){
-    if(Date.now()-ultAt<1200) return;
     ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!'}); chamouAtencao(eu(),false); peidoSolo();
   }
   function checaAt(id,arr){
