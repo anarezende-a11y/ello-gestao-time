@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h55</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13481,13 +13481,26 @@ html[data-tema="halloween"] .chat-msg.eu{background:rgba(70,8,8,.88);border-colo
 html[data-tema="halloween"] .chat-head,html[data-tema="halloween"] .chat-comp{background:rgba(10,3,8,.72)}
 html[data-tema="halloween"] .chat-head{text-shadow:0 0 10px rgba(255,80,30,.8)}
 html[data-tema="halloween"] .chat-wrap{border-color:rgba(255,110,40,.45);box-shadow:0 0 40px rgba(255,70,20,.25)}
+/* ===== TEMAS DE TERROR (fundo animado) ===== */
+html[data-tema="t-vila"],html[data-tema="t-abobora"],html[data-tema="t-casarao"]{--amber:#ff8a1e;--laranja:#ff8a1e;--lima:#ff8a1e;--azul-claro:#ffb36b;--el-cyan:#ffb36b;--el-warn:#ff8a1e;--el-line:rgba(255,150,60,.28);--el-line-strong:rgba(255,150,60,.5);--border:rgba(255,150,60,.2);--border2:rgba(255,150,60,.34);--amber-dim:rgba(255,138,30,.18);--amber-mid:rgba(255,138,30,.32);--laranja-dim:rgba(255,138,30,.18);--lima-dim:rgba(255,138,30,.2)}
+html[data-tema="t-floresta"],html[data-tema="t-caveira"]{--amber:#e03030;--laranja:#e03030;--lima:#e03030;--azul-claro:#ff7a7a;--el-cyan:#ff7a7a;--el-warn:#e03030;--el-line:rgba(224,48,48,.3);--el-line-strong:rgba(224,48,48,.55);--border:rgba(224,48,48,.22);--border2:rgba(224,48,48,.36);--amber-dim:rgba(224,48,48,.18);--amber-mid:rgba(224,48,48,.32);--laranja-dim:rgba(224,48,48,.18);--lima-dim:rgba(224,48,48,.2)}
+html[data-tema="t-cemiterio"]{--amber:#7aa8ff;--laranja:#7aa8ff;--lima:#7aa8ff;--azul-claro:#a9c6ff;--el-cyan:#a9c6ff;--el-warn:#7aa8ff;--el-line:rgba(122,168,255,.26);--el-line-strong:rgba(122,168,255,.5);--border:rgba(122,168,255,.2);--border2:rgba(122,168,255,.34);--amber-dim:rgba(122,168,255,.18);--amber-mid:rgba(122,168,255,.32);--laranja-dim:rgba(122,168,255,.18);--lima-dim:rgba(122,168,255,.2)}
+html[data-tema="t-corredor"]{--amber:#9fd0b8;--laranja:#9fd0b8;--lima:#9fd0b8;--azul-claro:#c5e8d8;--el-cyan:#c5e8d8;--el-warn:#9fd0b8;--el-line:rgba(159,208,184,.26);--el-line-strong:rgba(159,208,184,.5);--border:rgba(159,208,184,.2);--border2:rgba(159,208,184,.34);--amber-dim:rgba(159,208,184,.18);--amber-mid:rgba(159,208,184,.32);--laranja-dim:rgba(159,208,184,.18);--lima-dim:rgba(159,208,184,.2)}
+html[data-tema="t-vila"] body{background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.5)),url("temas/halloween-chat.jpg") center/cover fixed no-repeat !important}
+html[data-tema="t-abobora"] body{background:linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.35)),url("temas/terror-abobora.svg") center/cover fixed no-repeat !important}
+html[data-tema="t-casarao"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/terror-casarao.svg") center/cover fixed no-repeat !important}
+html[data-tema="t-cemiterio"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/terror-cemiterio.svg") center/cover fixed no-repeat !important}
+html[data-tema="t-floresta"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/terror-floresta.svg") center/cover fixed no-repeat !important}
+html[data-tema="t-caveira"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/terror-caveira.svg") center/cover fixed no-repeat !important}
+html[data-tema="t-corredor"] body{background:linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.3)),url("temas/terror-corredor.svg") center/cover fixed no-repeat !important}
+html[data-tema^="t-"]{background:#05030a}
 html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12,.66)),var(--foto-url) center/cover fixed no-repeat !important}
 #temaFx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 #temaFx span{position:absolute;top:-40px;font-size:20px;opacity:.75;animation:temaCai linear infinite;will-change:transform}
 @keyframes temaCai{to{transform:translateY(110vh) rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){#temaFx{display:none}}
 #temaBtn{position:fixed;top:12px;right:16px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;border-radius:10px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;z-index:200}
-#temaMenu{position:fixed;top:52px;right:16px;z-index:9999;min-width:220px;background:rgba(8,8,8,.96);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#temaMenu{position:fixed;top:52px;right:16px;z-index:9999;min-width:230px;max-height:calc(100vh - 66px);overflow-y:auto;background:rgba(8,8,8,.96);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:6px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
 #temaMenu[hidden]{display:none}
 #temaMenu button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;border:0;background:transparent;color:#fff;font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;cursor:pointer}
 #temaMenu button:hover{background:rgba(255,255,255,.12)}
@@ -13502,7 +13515,14 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     {id:'halloween',nome:'Halloween',ic:'🎃',fx:['🎃','🦇','👻','🕸️']},
     {id:'natal',nome:'Natal',ic:'🎄',fx:['❄️','❄️','🎄','⭐']},
     {id:'anonovo',nome:'Ano Novo',ic:'🎆',fx:['✨','🥂','🎆','⭐']},
-    {id:'carnaval',nome:'Carnaval',ic:'🎭',fx:['🎭','🎊','🎉','🥁']}
+    {id:'carnaval',nome:'Carnaval',ic:'🎭',fx:['🎭','🎊','🎉','🥁']},
+    {id:'t-vila',nome:'Vila e abóbora',ic:'🏚️',fx:['🦇','🍂'],terror:1},
+    {id:'t-abobora',nome:'Abóbora maligna',ic:'🎃',fx:['🦇'],terror:1},
+    {id:'t-casarao',nome:'Casarão em chamas',ic:'🔥',fx:['🦇'],terror:1},
+    {id:'t-cemiterio',nome:'Cemitério à meia-noite',ic:'🪦',fx:['🦇','👻'],terror:1},
+    {id:'t-floresta',nome:'Floresta de sangue',ic:'🌲',fx:['🩸'],terror:1},
+    {id:'t-caveira',nome:'Caveira no céu',ic:'💀',fx:['💀','🦇'],terror:1},
+    {id:'t-corredor',nome:'Corredor de hospital',ic:'🏥',fx:[],terror:1}
   ];
   function porId(i){ return TEMAS.filter(function(t){return t.id===i;})[0]||TEMAS[0]; }
   function auto(){
@@ -13542,7 +13562,9 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   function desenharMenu(){
     var m=document.getElementById('temaMenu'); if(!m) return;
     var h='<small>Meu tema (só para mim)</small><button data-k="m:seguir" class="'+(meu==='seguir'?'on':'')+'">🌐 Seguir o tema do time</button>';
-    TEMAS.forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
+    TEMAS.filter(function(t){return !t.terror;}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
+    h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">💀 Temas de terror</small>';
+    TEMAS.filter(function(t){return t.terror;}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
     h+='<button data-k="foto">📷 '+(foto?'Trocar minha foto de fundo':'Usar minha foto de fundo')+'</button>';
     if(foto) h+='<button data-k="semfoto">🗑️ Remover minha foto</button>';
     if(ehAdmin()){
