@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 19h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 19h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13119,7 +13119,8 @@ body{
 /* ===== CHAT DO TIME ===== */
 (function(){
   var CANAIS = [
-    {id:'avisos',nome:'avisos da Ana',desc:'Somente a Ana publica aqui',soAdmin:true}
+    {id:'avisos',nome:'avisos da Ana',desc:'Somente a Ana publica aqui',soAdmin:true},
+    {id:'geral',nome:'todos do time',desc:'Conversa com todo mundo — o 🔔 aqui chama a atenção de todos'}
   ];
   var MEMBROS = ['Ana','Adriele','Sharon','Kuka','Thiago','Amanda','Felipe','Eduardo'];
   var ativo = 'avisos', msgs = {}, unsubs = {}, lastRead = {}, presenca = {}, visivel = false;
