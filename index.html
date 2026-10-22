@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 16h55</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h05</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13524,7 +13524,10 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     {id:'t-caveira',nome:'Caveira no céu',ic:'💀',fx:['💀','🦇'],terror:1},
     {id:'t-corredor',nome:'Corredor de hospital',ic:'🏥',fx:[],terror:1}
   ];
+  var custom=[], imgs={};
   function porId(i){ return TEMAS.filter(function(t){return t.id===i;})[0]||TEMAS[0]; }
+  function fotoAtiva(){ if(foto) return foto; if(String(meu).indexOf('c:')===0){ var id=meu.slice(2); if(imgs[id]) return imgs[id]; carregaImg(id); } return ''; }
+  function carregaImg(id){ if(imgs['_'+id]||!window.fb||!window.fb.getDoc) return; imgs['_'+id]=1; window.fb.getDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+id)).then(function(d){ if(d.exists&&d.exists()){ imgs[id]=(d.data()||{}).img||''; aplicar(); } }).catch(function(){}); }
   function auto(){
     var d=new Date(), m=d.getMonth()+1, dia=d.getDate();
     if((m===10&&dia>=20)||(m===11&&dia===1)) return 'halloween';
@@ -13538,7 +13541,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   var foto=ls('ello_tema_foto')||'';        // foto pessoal (dataURL)
   function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
   function ehAdmin(){ var u=U(); return !!u&&u.role==='admin'; }
-  function efetivo(){ return meu!=='seguir'?meu:(modo==='auto'?auto():modo); }
+  function efetivo(){ var e=meu!=='seguir'?meu:(modo==='auto'?auto():modo); return String(e).indexOf('c:')===0?'padrao':e; }
   function fx(t){
     var el=document.getElementById('temaFx');
     if(!t.fx.length){ if(el) el.remove(); return; }
@@ -13549,9 +13552,10 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   function aplicar(){
     var t=porId(efetivo()), h=document.documentElement;
     if(t.id==='padrao') h.removeAttribute('data-tema'); else h.setAttribute('data-tema',t.id);
-    if(foto){ h.setAttribute('data-foto','1'); h.style.setProperty('--foto-url','url("'+foto+'")'); } else { h.removeAttribute('data-foto'); h.style.removeProperty('--foto-url'); }
+    var fa=fotoAtiva();
+    if(fa){ h.setAttribute('data-foto','1'); h.style.setProperty('--foto-url','url("'+fa+'")'); } else { h.removeAttribute('data-foto'); h.style.removeProperty('--foto-url'); }
     fx(t);
-    var b=document.getElementById('temaBtn'); if(b) b.textContent='🎨 '+(foto?'📷 Minha foto':t.ic+' '+t.nome);
+    var b=document.getElementById('temaBtn'); if(b) b.textContent='🎨 '+(foto?'📷 Minha foto':(String(meu).indexOf('c:')===0?'🖼️ '+((custom.filter(function(c){return 'c:'+c.id===meu;})[0]||{}).nome||'Tema'):t.ic+' '+t.nome));
     desenharMenu();
   }
   function chaveDoc(){ var u=U(); return 'tema_u_'+String((u&&(u.email||u.uid))||'x').toLowerCase().replace(/[^a-z0-9]/g,'_'); }
@@ -13565,8 +13569,10 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     TEMAS.filter(function(t){return !t.terror;}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
     h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">💀 Temas de terror</small>';
     TEMAS.filter(function(t){return t.terror;}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
+    if(custom.length||ehAdmin()){ h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">🖼️ Temas do time (com imagem)</small>'; custom.forEach(function(c){ h+='<button data-k="m:c:'+c.id+'" class="'+(meu==='c:'+c.id?'on':'')+'">🖼️ '+c.nome.replace(/</g,'&lt;')+'</button>'; }); if(ehAdmin()) h+='<button data-k="novo">➕ Criar tema do time (imagem)</button>'; }
     h+='<button data-k="foto">📷 '+(foto?'Trocar minha foto de fundo':'Usar minha foto de fundo')+'</button>';
     if(foto) h+='<button data-k="semfoto">🗑️ Remover minha foto</button>';
+    if(ehAdmin()&&custom.length){ custom.forEach(function(c){ h+='<button data-k="del:'+c.id+'">🗑️ Excluir tema "'+c.nome.replace(/</g,'&lt;')+'"</button>'; }); }
     if(ehAdmin()){
       h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">Tema do time (vale para todos)</small><button data-k="g:auto" class="'+(modo==='auto'?'on':'')+'">🗓️ Automático por data</button>';
       TEMAS.forEach(function(t){ h+='<button data-k="g:'+t.id+'" class="'+(modo===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
@@ -13578,10 +13584,31 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     var m=document.getElementById('temaMenu');
     if(k==='foto'){ document.getElementById('temaFile').click(); return; }
     if(k==='semfoto'){ foto=''; salvarMeu(); aplicar(); m.hidden=true; return; }
+    if(k==='novo'){ document.getElementById('temaFileN').click(); return; }
     var q=k.split(':');
-    if(q[0]==='m'){ meu=q[1]; salvarMeu(); }
+    if(q[0]==='del'){ if(confirm('Excluir este tema para todos?')){ custom=custom.filter(function(c){return c.id!==q[1];}); salvarLista(); if(meu==='c:'+q[1]){ meu='seguir'; salvarMeu(); } aplicar(); } m.hidden=true; return; }
+    if(q[0]==='m'){ meu=k.slice(2); foto=''; salvarMeu(); }
     if(q[0]==='g'){ modo=q[1]; ls('ello_tema_modo',modo); try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),{modo:modo,por:(U()||{}).email||'',ts:Date.now()}); }catch(e){} }
     aplicar(); m.hidden=true;
+  }
+  function salvarLista(){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','temas_time'),{lista:custom,ts:Date.now()}); }catch(e){} }
+  function novoTema(file){
+    var nome=prompt('Nome do novo tema:'); if(!nome) return; nome=nome.trim().slice(0,30); if(!nome) return;
+    reduzirImg(file,function(d){
+      var id='c'+Date.now(); imgs[id]=d; custom.push({id:id,nome:nome});
+      try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+id),{img:d}); }catch(e){}
+      salvarLista(); meu='c:'+id; foto=''; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true;
+    });
+  }
+  function reduzirImg(file,cb){
+    var r=new FileReader();
+    r.onload=function(){ var im=new Image(); im.onload=function(){
+      var max=1400,k=Math.min(1,max/Math.max(im.width,im.height)), c=document.createElement('canvas');
+      c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      var q=.72,d=c.toDataURL('image/jpeg',q); while(d.length>650000&&q>.3){ q-=.1; d=c.toDataURL('image/jpeg',q); }
+      cb(d);
+    }; im.onerror=function(){ alert('Não consegui abrir essa imagem.'); }; im.src=r.result; };
+    r.readAsDataURL(file);
   }
   function processarFoto(file){
     var r=new FileReader();
@@ -13600,17 +13627,24 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     var m=document.createElement('div'); m.id='temaMenu'; m.hidden=true; document.body.appendChild(m);
     var f=document.createElement('input'); f.type='file'; f.accept='image/*'; f.id='temaFile'; f.hidden=true; document.body.appendChild(f);
     f.onchange=function(){ if(f.files[0]) processarFoto(f.files[0]); f.value=''; };
+    var fn=document.createElement('input'); fn.type='file'; fn.accept='image/*'; fn.id='temaFileN'; fn.hidden=true; document.body.appendChild(fn);
+    fn.onchange=function(){ if(fn.files[0]) novoTema(fn.files[0]); fn.value=''; };
     b.onclick=function(e){ e.stopPropagation(); m.hidden=!m.hidden; };
     document.addEventListener('click',function(e){ if(!m.contains(e.target)&&e.target!==b) m.hidden=true; });
     aplicar();
   }
-  var ouvindo=false, ouvindoMeu='';
+  var ouvindo=false, ouvindoMeu='', ouvindoLista=false;
   function ouvir(){
     if(!window.fb||!U()) return;
     if(!ouvindo){ ouvindo=true;
       window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),function(d){
         var v=d.exists&&d.exists()?(d.data()||{}).modo:null;
         if(v&&v!==modo){ modo=v; ls('ello_tema_modo',v); aplicar(); }
+      },function(){});
+    }
+    if(!ouvindoLista){ ouvindoLista=true;
+      window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','temas_time'),function(d){
+        if(d.exists&&d.exists()){ custom=(d.data()||{}).lista||[]; aplicar(); }
       },function(){});
     }
     var ch=chaveDoc();
