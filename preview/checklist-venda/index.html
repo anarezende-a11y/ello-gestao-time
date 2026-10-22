@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 18h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 19h20</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13163,6 +13163,7 @@ body{
     unsubs[id] = window.fb.onSnapshot(q, function(snap){
       var arr=[]; snap.forEach(function(d){ var m=d.data(); m.id=d.id; arr.push(m); });
       arr.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+      checaAt(id,arr);
       msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
       if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
       if(dockLendo(id)) marcarLidoId(id);
@@ -13234,7 +13235,7 @@ body{
       var meu=m.de===me, paraMim = !meu && new RegExp('@'+me+'\\b','i').test(m.txt||'');
       var rp = m.resp ? '<div class="chat-resp"><b>'+esc(m.resp.de)+'</b>: '+esc(prev(m.resp))+'</div>' : '';
       var acts='<div class="chat-acts"><button data-a="r" title="Responder">↩️</button>'+(meu?'<button data-a="e" title="Editar">✏️</button>':'')+((meu||ehAdmin())?'<button data-a="x" title="Apagar">🗑️</button>':'')+(ehAdmin()&&!canalDe(ativo)?'<button data-a="p" title="'+(m.fixada?'Desafixar':'Fixar')+'">📌</button>':'')+'</div>';
-      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+(m.img?'<img class="chat-img" src="'+m.img+'" alt="foto">':'')+(m.aud?'<audio class="chat-aud" controls preload="metadata" src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
+      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+figHTML(m)+(m.img?'<img class="chat-img" src="'+m.img+'" alt="foto">':'')+(m.aud?'<audio class="chat-aud" controls preload="metadata" src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
     });
     el.innerHTML=h;
     Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
@@ -13255,7 +13256,7 @@ body{
     comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
     if(!soLeitura) ligarComp();
   }
-  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
+  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><button class="ico" id="chatBtnAt" title="Chamar atenção">🔔</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
   function ligarComp(){
     var ta=document.getElementById('chatInput'), env=document.getElementById('chatEnv');
     env.onclick=enviar;
@@ -13282,10 +13283,40 @@ body{
     else r.hidden=true;
   }
 
-  function prev(m){ return m.txt || (m.img?'📷 Foto':(m.aud?'🎤 Áudio':'')); }
+  function prev(m){ return m.txt || (m.fig?'🍑 Figurinha':'') || (m.img?'📷 Foto':(m.aud?'🎤 Áudio':'')); }
   function zoom(src){
     var d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
     d.innerHTML='<img src="'+src+'" style="max-width:94vw;max-height:94vh;border-radius:8px">'; d.onclick=function(){ d.remove(); }; document.body.appendChild(d);
+  }
+  var GD='<svg class="gd" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="222" rx="60" ry="6" fill="#0006"/><g class="f"><ellipse cx="72" cy="206" rx="20" ry="9" fill="#222"/><ellipse cx="128" cy="206" rx="20" ry="9" fill="#222"/><rect x="62" y="168" width="24" height="38" rx="10" fill="#f2c59b"/><rect x="114" y="168" width="24" height="38" rx="10" fill="#f2c59b"/><ellipse cx="100" cy="140" rx="52" ry="58" fill="#3a7bd5"/><ellipse cx="100" cy="160" rx="40" ry="30" fill="#4a8be5"/><path d="M58 160h84v20q-42 14-84 0z" fill="#6b4a2f"/><ellipse cx="54" cy="130" rx="11" ry="26" fill="#3a7bd5" transform="rotate(14 54 130)"/><g class="acena"><ellipse cx="148" cy="110" rx="11" ry="28" fill="#3a7bd5" transform="rotate(-24 148 110)"/><circle cx="158" cy="84" r="11" fill="#f2c59b"/></g><circle cx="100" cy="64" r="34" fill="#f2c59b"/><path d="M68 56q8-30 32-28t32 28q-18-14-32-12t-32 12z" fill="#3a2a1a"/><circle cx="88" cy="66" r="4" fill="#222"/><circle cx="112" cy="66" r="4" fill="#222"/><path d="M86 80q14 14 28 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="80" cy="76" r="6" fill="#ff9a9a" opacity=".6"/><circle cx="120" cy="76" r="6" fill="#ff9a9a" opacity=".6"/></g><g class="b"><ellipse cx="62" cy="212" rx="20" ry="9" fill="#222"/><ellipse cx="138" cy="212" rx="20" ry="9" fill="#222"/><rect x="58" y="172" width="22" height="40" rx="10" fill="#f2c59b"/><rect x="120" y="172" width="22" height="40" rx="10" fill="#f2c59b"/><ellipse cx="100" cy="124" rx="52" ry="52" fill="#3a7bd5"/><ellipse cx="50" cy="124" rx="11" ry="28" fill="#3a7bd5"/><ellipse cx="150" cy="124" rx="11" ry="28" fill="#3a7bd5"/><circle cx="100" cy="62" r="34" fill="#f2c59b"/><path d="M66 62q4-36 34-36t34 36q-14 14-34 14t-34-14z" fill="#3a2a1a"/><g class="bum"><ellipse cx="82" cy="168" rx="26" ry="24" fill="#f7b79a"/><ellipse cx="118" cy="168" rx="26" ry="24" fill="#f7b79a"/><path d="M100 150v36" stroke="#e0937a" stroke-width="2"/><g class="cens"><rect x="46" y="158" width="108" height="22" rx="3" fill="#111" transform="rotate(-4 100 169)"/><text x="100" y="173" font-size="12" font-weight="900" fill="#ffd23b" text-anchor="middle" font-family="Arial" transform="rotate(-4 100 169)">CENSURADO</text></g></g><ellipse cx="68" cy="196" rx="22" ry="10" fill="#6b4a2f"/><ellipse cx="132" cy="196" rx="22" ry="10" fill="#6b4a2f"/></g><g class="ri"><rect x="116" y="2" width="82" height="34" rx="12" fill="#fff"/><path d="M130 36l-8 12 22-12z" fill="#fff"/><text x="157" y="25" font-size="15" font-weight="900" fill="#d9570a" text-anchor="middle" font-family="Arial">HA HA HA!</text></g></svg>';
+  function figHTML(m){ return m.fig==='gordinho'?'<div class="chat-fig">'+GD+'</div>':''; }
+  var ultAt=0, bootAt=Date.now(), vistoAt={}, actx=null;
+  function somAt(){ try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); for(var i=0;i<9;i++){ (function(i){ var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.06; o.type='sawtooth'; o.frequency.setValueAtTime(i%2?180:240,t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.18,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.07); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+.08); })(i); } }catch(e){} }
+  function gordinhoNaTela(){ var o=document.getElementById('gdOver'); if(o) o.remove(); o=document.createElement('div'); o.id='gdOver'; o.innerHTML=GD; document.body.appendChild(o); setTimeout(function(){ if(o.parentNode) o.remove(); },4300); }
+  function chamouAtencao(de,recebi){
+    gordinhoNaTela();
+    if(recebi){
+      somAt(); var b=document.body; b.classList.remove('nudge-t'); void b.offsetWidth; b.classList.add('nudge-t'); setTimeout(function(){ b.classList.remove('nudge-t'); },700);
+      var t=document.getElementById('nudgeToast'); if(t) t.remove(); t=document.createElement('div'); t.id='nudgeToast'; t.textContent='🔔 '+de+' está chamando sua atenção!'; document.body.appendChild(t); setTimeout(function(){ t.remove(); },4300);
+    }
+  }
+  function chamar(id,post){
+    if(Date.now()-ultAt<30000){ alert('Aguarde alguns segundos para chamar a atenção de novo 🙂'); return; }
+    ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!'}); chamouAtencao(eu(),false);
+  }
+  function checaAt(id,arr){
+    var novo=arr.filter(function(m){ return m.at && (m.ts||0)>bootAt && (m.ts||0)>(vistoAt[id]||0); });
+    if(!novo.length) return; var u=novo[novo.length-1]; vistoAt[id]=u.ts;
+    if(norm(u.de)!==norm(eu())) chamouAtencao(u.de,true);
+  }
+  function menuAnexo(btn,fFoto,fFig){
+    var o=document.getElementById('chatAnx'); if(o){ o.remove(); return; }
+    o=document.createElement('div'); o.id='chatAnx'; o.className='chat-anx';
+    o.innerHTML='<button data-a="f">📁 Foto do computador…</button><small>Figurinhas</small><div class="fg"><button data-a="g" title="Gordinho">'+GD+'</button></div>';
+    document.body.appendChild(o);
+    var r=btn.getBoundingClientRect(); o.style.left=Math.max(8,Math.min(r.left,window.innerWidth-206))+'px'; o.style.top=Math.max(8,r.top-o.offsetHeight-8)+'px';
+    o.onclick=function(e){ var b=e.target.closest('button'); if(!b) return; var a=b.getAttribute('data-a'); o.remove(); if(a==='f') fFoto(); else if(a==='g') fFig('gordinho'); };
+    setTimeout(function(){ document.addEventListener('click',function fe(e){ if(!o.contains(e.target)){ o.remove(); document.removeEventListener('click',fe); } }); },0);
   }
   function enviarMidia(extra){
     if(!pode(ativo)) return;
@@ -13311,7 +13342,8 @@ body{
   var gravando=null;
   function ligarMidia(){
     var f=document.getElementById('chatFile'), bi=document.getElementById('chatBtnImg'), be=document.getElementById('chatBtnEmo'), bm=document.getElementById('chatBtnMic'), em=document.getElementById('chatEmo'), ta=document.getElementById('chatInput');
-    bi.onclick=function(){ f.click(); };
+    document.getElementById('chatBtnAt').onclick=function(){ var a_=ativo; chamar(a_,function(x){ enviarMidia(x); }); };
+    bi.onclick=function(e){ e.stopPropagation(); menuAnexo(bi,function(){ f.click(); },function(g){ enviarMidia({fig:g}); }); };
     f.onchange=function(){ if(f.files[0]) reduzir(f.files[0],function(d){ enviarMidia({img:d}); }); f.value=''; };
     em.innerHTML=EMOJIS.map(function(e){return '<button>'+e+'</button>';}).join('');
     be.onclick=function(){ em.hidden=!em.hidden; };
@@ -13434,11 +13466,12 @@ body{
   function dockThread_(body,leve){
     var id=dockThread, a=msgs[id]||[], me=eu();
     if(!document.getElementById('dkMsgs')){
-      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
+      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><button class="ico" id="dkAt" title="Chamar atenção">🔔</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
       document.getElementById('dkBack').onclick=function(){ dockThread=null; body.innerHTML=''; dockDesenha(); };
       document.getElementById('dkEnv').onclick=dockEnviar;
       document.getElementById('dkIn').onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); dockEnviar(); } };
-      document.getElementById('dkImg').onclick=function(){ document.getElementById('dkFile').click(); };
+      document.getElementById('dkAt').onclick=function(){ var t_=dockThread; chamar(t_,function(x){ dockPost(t_,x); }); };
+      document.getElementById('dkImg').onclick=function(e){ e.stopPropagation(); var t_=dockThread; menuAnexo(this,function(){ document.getElementById('dkFile').click(); },function(g){ dockPost(t_,{fig:g}); }); };
       document.getElementById('dkFile').onchange=function(){ var f=this.files[0], i=dockThread; if(f) reduzir(f,function(u){ dockPost(i,{img:u}); }); this.value=''; };
       var em=document.getElementById('dkEmo'), ta=document.getElementById('dkIn');
       em.innerHTML=EMOJIS.map(function(e){return '<button>'+e+'</button>';}).join('');
@@ -13449,7 +13482,7 @@ body{
       var pode_=pode(id); if(!pode_){ document.querySelector('.dk-comp').innerHTML='<div class="chat-so">📢 Só a Ana publica aqui.</div>'; }
     }
     var el=document.getElementById('dkMsgs'), perto=el.scrollHeight-el.scrollTop-el.clientHeight<80||!el.childElementCount;
-    el.innerHTML=a.slice(-60).map(function(m){ var meu=m.de===me; return '<div class="chat-msg'+(meu?' eu':'')+'">'+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+(m.img?'<img class="chat-img" src="'+m.img+'">':'')+(m.aud?'<audio class="chat-aud" controls src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+hora(m.ts)+'</span></div></div>'; }).join('')||'<div class="chat-vazio">Nenhuma mensagem ainda 👋</div>';
+    el.innerHTML=a.slice(-60).map(function(m){ var meu=m.de===me; return '<div class="chat-msg'+(meu?' eu':'')+'">'+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div>'+figHTML(m)+(m.img?'<img class="chat-img" src="'+m.img+'">':'')+(m.aud?'<audio class="chat-aud" controls src="'+m.aud+'"></audio>':'')+'<div style="text-align:right"><span class="hr">'+hora(m.ts)+'</span></div></div>'; }).join('')||'<div class="chat-vazio">Nenhuma mensagem ainda 👋</div>';
     Array.prototype.forEach.call(el.querySelectorAll('.chat-img'),function(i){ i.onclick=function(){ zoom(i.src); }; });
     if(perto) el.scrollTop=el.scrollHeight;
   }
@@ -13476,6 +13509,19 @@ body{
 
 </script>
 <style id="temas-sazonais">
+.gd{width:130px;height:150px;display:block}.gd *{transform-box:fill-box}
+.gd .f{transform-origin:center;animation:fA 4.2s infinite}.gd .b{transform-origin:center;opacity:0;animation:bA 4.2s infinite}
+@keyframes fA{0%,26%{opacity:1;transform:scaleX(1)}32%{opacity:1;transform:scaleX(0)}33%,100%{opacity:0;transform:scaleX(0)}}
+@keyframes bA{0%,32%{opacity:0;transform:scaleX(0)}38%{opacity:1;transform:scaleX(1)}92%{opacity:1;transform:scaleX(1)}98%,100%{opacity:0;transform:scaleX(0)}}
+.gd .acena{transform-origin:20% 90%;animation:ac .5s infinite alternate}@keyframes ac{from{transform:rotate(-12deg)}to{transform:rotate(22deg)}}
+.gd .bum{transform-origin:50% 0;animation:wg .45s infinite alternate}@keyframes wg{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.gd .ri{opacity:0;animation:ri 4.2s infinite}@keyframes ri{0%,44%{opacity:0;transform:scale(.6)}50%,88%{opacity:1;transform:scale(1)}94%,100%{opacity:0}}
+.gd .cens{animation:pisca .6s steps(2) infinite}@keyframes pisca{50%{opacity:.85}}
+.nudge-t{animation:tremerN .6s cubic-bezier(.36,.07,.19,.97) both}@keyframes tremerN{10%,90%{transform:translate(-3px,1px)}20%,80%{transform:translate(6px,-3px)}30%,50%,70%{transform:translate(-10px,4px)}40%,60%{transform:translate(10px,-4px)}}
+#gdOver{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:100003}#gdOver .gd{width:340px;height:392px;filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));animation:entraG .5s cubic-bezier(.2,1.3,.3,1)}@keyframes entraG{from{transform:translateY(120px) scale(.4);opacity:0}to{transform:none;opacity:1}}
+#nudgeToast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:100004;background:rgba(14,16,20,.95);color:#fff;border:1px solid #ff9a2e;border-radius:99px;padding:9px 18px;font:600 14px system-ui;box-shadow:0 8px 30px #000a}
+.chat-fig{padding:4px 0}.chat-fig .gd{width:120px;height:138px}
+.chat-anx{position:fixed;z-index:100001;background:rgba(14,16,20,.97);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:8px;color:#fff;font:13px system-ui;box-shadow:0 10px 34px #000a;width:190px}.chat-anx button{display:block;width:100%;text-align:left;padding:8px;border-radius:8px;border:0;background:transparent;color:#fff;cursor:pointer;font-size:13px}.chat-anx button:hover{background:rgba(255,255,255,.1)}.chat-anx small{display:block;opacity:.65;margin:6px 4px 2px;font-size:11px}.chat-anx .fg{display:flex;gap:6px;flex-wrap:wrap}.chat-anx .fg button{width:auto;padding:4px;background:rgba(255,255,255,.07)}.chat-anx .fg .gd{width:64px;height:74px}
 /* ===== TEMAS SAZONAIS (html[data-tema]) ===== */
 html[data-tema="halloween"]{--amber:#ff7a18;--laranja:#ff7a18;--lima:#ff7a18;--azul-claro:#c49bff;--el-cyan:#c49bff;--el-warn:#ff7a18;--el-line:rgba(255,160,70,.22);--el-line-strong:rgba(255,160,70,.42);--border:rgba(255,160,70,.18);--border2:rgba(255,160,70,.3);--amber-dim:rgba(255,122,24,.18);--amber-mid:rgba(255,122,24,.32);--laranja-dim:rgba(255,122,24,.18);--lima-dim:rgba(255,122,24,.2)}
 html[data-tema="halloween"] body{background:radial-gradient(640px 520px at 86% 4%,rgba(255,122,24,.38) 0%,transparent 62%),radial-gradient(560px 480px at 6% 92%,rgba(122,60,255,.42) 0%,transparent 60%),radial-gradient(520px 380px at 58% 60%,rgba(255,122,24,.10) 0%,transparent 66%),linear-gradient(160deg,#150a22 0%,#0b0610 60%,#14091a 100%) !important;background-attachment:fixed !important}
