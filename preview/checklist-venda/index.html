@@ -1727,7 +1727,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 17h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13579,10 +13579,10 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
       if(g[0]!=='padrao') h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">'+g[1]+'</small>';
       TEMAS.filter(function(t){return t.grupo===g[0];}).forEach(function(t){ h+='<button data-k="m:'+t.id+'" class="'+(meu===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
     });
-    if(custom.length||ehAdmin()){ h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">🖼️ Temas do time (com imagem)</small>'; custom.forEach(function(c){ h+='<button data-k="m:c:'+c.id+'" class="'+(meu==='c:'+c.id?'on':'')+'">🖼️ '+c.nome.replace(/</g,'&lt;')+'</button>'; }); if(ehAdmin()) h+='<button data-k="novo">➕ Criar tema do time (imagem)</button>'; }
+    if(true){ h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">🖼️ Temas do time (com imagem)</small>'; custom.forEach(function(c){ h+='<button data-k="m:c:'+c.id+'" class="'+(meu==='c:'+c.id?'on':'')+'">🖼️ '+c.nome.replace(/</g,'&lt;')+'</button>'; }); h+='<button data-k="novo">➕ Criar tema com imagem (para o time)</button>'; }
     h+='<button data-k="foto">📷 '+(foto?'Trocar minha foto de fundo':'Usar minha foto de fundo')+'</button>';
     if(foto) h+='<button data-k="semfoto">🗑️ Remover minha foto</button>';
-    if(ehAdmin()&&custom.length){ custom.forEach(function(c){ h+='<button data-k="del:'+c.id+'">🗑️ Excluir tema "'+c.nome.replace(/</g,'&lt;')+'"</button>'; }); }
+    custom.filter(function(c){ return ehAdmin()||(c.por&&c.por===((U()||{}).email||'')); }).forEach(function(c){ h+='<button data-k="del:'+c.id+'">🗑️ Excluir tema "'+c.nome.replace(/</g,'&lt;')+'"</button>'; });
     if(ehAdmin()){
       h+='<small style="border-top:1px solid rgba(255,255,255,.2);margin-top:4px">Tema do time (vale para todos)</small><button data-k="g:auto" class="'+(modo==='auto'?'on':'')+'">🗓️ Automático por data</button>';
       TEMAS.filter(function(t){return !t.sub;}).forEach(function(t){ h+='<button data-k="g:'+t.id+'" class="'+(modo===t.id?'on':'')+'">'+t.ic+' '+t.nome+'</button>'; });
@@ -13596,7 +13596,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
     if(k==='semfoto'){ foto=''; salvarMeu(); aplicar(); m.hidden=true; return; }
     if(k==='novo'){ document.getElementById('temaFileN').click(); return; }
     var q=k.split(':');
-    if(q[0]==='del'){ if(confirm('Excluir este tema para todos?')){ custom=custom.filter(function(c){return c.id!==q[1];}); salvarLista(); if(meu==='c:'+q[1]){ meu='seguir'; salvarMeu(); } aplicar(); } m.hidden=true; return; }
+    if(q[0]==='del'){ if(confirm('Excluir este tema para todos?')){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+q[1]),{img:''}); }catch(e){} custom=custom.filter(function(c){return c.id!==q[1];}); salvarLista(); if(meu==='c:'+q[1]){ meu='seguir'; salvarMeu(); } aplicar(); } m.hidden=true; return; }
     if(q[0]==='m'){ meu=k.slice(2); foto=''; salvarMeu(); }
     if(q[0]==='g'){ modo=q[1]; ls('ello_tema_modo',modo); try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_plataforma'),{modo:modo,por:(U()||{}).email||'',ts:Date.now()}); }catch(e){} }
     aplicar(); m.hidden=true;
@@ -13605,7 +13605,7 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   function novoTema(file){
     var nome=prompt('Nome do novo tema:'); if(!nome) return; nome=nome.trim().slice(0,30); if(!nome) return;
     reduzirImg(file,function(d){
-      var id='c'+Date.now(); imgs[id]=d; custom.push({id:id,nome:nome});
+      var id='c'+Date.now(); imgs[id]=d; custom.push({id:id,nome:nome,por:((U()||{}).email||'')});
       try{ window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','tema_img_'+id),{img:d}); }catch(e){}
       salvarLista(); meu='c:'+id; foto=''; salvarMeu(); aplicar(); document.getElementById('temaMenu').hidden=true;
     });
