@@ -8,7 +8,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC7cNQNOQI4I68r2zkE2wOZU1tJZb7LbBw",
@@ -24,7 +24,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  window.fb = { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc };
+  window.fb = { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, doc, getDoc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, limit };
   window.dispatchEvent(new Event('fbReady'));
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1432,6 +1432,51 @@ body {
 #mod-posvendas .fn-warn{font-size:12px;color:var(--warn);margin-top:8px}
 @media (max-width:900px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}#mod-posvendas .fn-g3{grid-template-columns:1fr 1fr}}
 @media (max-width:560px){#mod-posvendas .fn-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#mod-posvendas .fn-g3,#mod-posvendas .fn-g2{grid-template-columns:1fr}}
+
+/* ===== CHAT ===== */
+.chat-badge{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:99px;background:#e5484d;color:#fff;font-size:11px;font-weight:800;text-align:center;vertical-align:middle}
+.chat-badge[hidden]{display:none}
+.chat-wrap{display:grid;grid-template-columns:240px minmax(0,1fr);height:calc(100vh - 150px);min-height:460px;margin:14px;border:1px solid rgba(255,255,255,.22);border-radius:16px;overflow:hidden;background:rgba(6,6,6,.58);color:#fff;backdrop-filter:blur(8px)}
+.chat-side{border-right:1px solid rgba(255,255,255,.18);overflow-y:auto;padding:10px;background:rgba(0,0,0,.28)}
+.chat-side h4{margin:12px 6px 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.chat-item{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:10px;background:transparent;color:#fff;font:inherit;font-size:14px;cursor:pointer;text-align:left}
+.chat-item:hover{background:rgba(255,255,255,.08)}
+.chat-item.active{background:rgba(255,255,255,.16);font-weight:700}
+.chat-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-dot{width:9px;height:9px;border-radius:50%;background:#555;flex:none}
+.chat-dot.on{background:#3ddc84}
+.chat-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.chat-head{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.18);font-weight:800;display:flex;gap:10px;align-items:center}
+.chat-head small{font-weight:400;opacity:.65}
+.chat-pin{padding:8px 16px;background:rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.18);font-size:13px}
+.chat-pin b{margin-right:6px}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.chat-day{align-self:center;margin:10px 0 6px;font-size:11px;opacity:.6;background:rgba(255,255,255,.08);padding:2px 10px;border-radius:99px}
+.chat-msg{position:relative;max-width:78%;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.1);align-self:flex-start;margin-top:6px;word-break:break-word}
+.chat-msg.eu{align-self:flex-end;background:rgba(255,255,255,.22)}
+.chat-msg .au{font-size:12px;font-weight:800;opacity:.8}
+.chat-msg .tx{white-space:pre-wrap;font-size:14px;line-height:1.4}
+.chat-msg .hr{font-size:10px;opacity:.55;margin-left:8px}
+.chat-msg .tx a{color:#fff;text-decoration:underline}
+.chat-msg .men{background:rgba(255,255,255,.28);border-radius:5px;padding:0 3px;font-weight:700}
+.chat-msg.paraMim{box-shadow:0 0 0 1.5px rgba(255,255,255,.65)}
+.chat-resp{border-left:3px solid rgba(255,255,255,.5);padding:2px 8px;margin-bottom:4px;font-size:12px;opacity:.75;background:rgba(0,0,0,.2);border-radius:4px}
+.chat-acts{position:absolute;top:-12px;right:6px;display:none;gap:2px;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:2px}
+.chat-msg:hover .chat-acts{display:flex}
+.chat-acts button{border:0;background:transparent;color:#fff;cursor:pointer;font-size:13px;padding:2px 5px}
+.chat-comp{border-top:1px solid rgba(255,255,255,.18);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.chat-rbar{display:flex;justify-content:space-between;font-size:12px;opacity:.8;background:rgba(0,0,0,.25);padding:4px 8px;border-radius:6px}
+.chat-rbar[hidden]{display:none}
+.chat-row{display:flex;gap:8px;position:relative}
+.chat-row textarea{flex:1;resize:none;height:42px;max-height:120px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;padding:9px 12px;font:inherit;font-size:14px}
+.chat-row button.env{border-radius:10px;border:1px solid rgba(255,255,255,.32);background:rgba(6,6,6,.58);color:#fff;padding:0 16px;font-weight:700;cursor:pointer}
+.chat-sug{position:absolute;bottom:48px;left:0;background:rgba(10,10,10,.95);border:1px solid rgba(255,255,255,.3);border-radius:10px;overflow:hidden;z-index:5}
+.chat-sug[hidden]{display:none}
+.chat-sug button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#fff;padding:7px 14px;cursor:pointer;font:inherit;font-size:14px}
+.chat-sug button:hover{background:rgba(255,255,255,.15)}
+.chat-so{padding:12px;text-align:center;opacity:.7;font-size:13px}
+.chat-vazio{margin:auto;opacity:.6;font-size:14px}
+@media(max-width:760px){.chat-wrap{grid-template-columns:1fr;height:calc(100vh - 120px)}.chat-side{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid rgba(255,255,255,.18);padding:6px;gap:4px}.chat-side h4{display:none}.chat-item{width:auto;white-space:nowrap}.chat-msg{max-width:92%}}
 </style>
 </head>
 <body>
@@ -1606,6 +1651,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_campanha" onclick="mostrarTool('campanha')">
     <span class="di-icon">🏆</span> Campanha
   </button>
+  <button class="drawer-item" id="di_chat" onclick="mostrarTool('chat')">
+    <span class="di-icon">💬</span> Chat <span class="chat-badge" id="chatBadgeDrawer" hidden></span>
+  </button>
   <button class="drawer-item" id="di_checklist" onclick="mostrarTool('checklist')">
     <span class="di-icon">✅</span> Checklist
   </button>
@@ -1723,6 +1771,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Campanha</div>
         <div class="hc-desc">Metas e competições do time: lance seus números, acompanhe o ranking e o progresso de cada campanha ativa.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-chat" onclick="mostrarTool('chat')">
+        <div class="hc-icon">💬</div>
+        <div class="hc-title">Chat do time <span class="chat-badge" id="chatBadgeHome" hidden></span></div>
+        <div class="hc-desc">Canais e conversas diretas para o time conversar sem sair da plataforma.</div>
+        <div class="hc-cta">Abrir chat →</div>
       </button>
       <button class="home-card c-checklist" onclick="mostrarTool('checklist')">
         <div class="hc-icon">✅</div>
@@ -1950,6 +2004,27 @@ window.APPAUTH = window.APPAUTH || {};
       <button class="camp-tab admin-only" id="campTab_pendencias" onclick="window.CAMP.mudarTab('pendencias')">Pendências <span id="campPendCount"></span></button>
     </div>
     <div id="camp_lista" class="camp-list"></div>
+  </div>
+</div>
+
+<!-- ================= TOOL: CHAT ================= -->
+<div class="tool-view tool-chat" id="view_chat">
+  <div class="tool-subbar"><span class="sb-title">💬 Chat do time</span></div>
+  <div class="chat-wrap">
+    <div class="chat-side" id="chatSide"></div>
+    <div class="chat-main">
+      <div class="chat-head" id="chatHead"></div>
+      <div class="chat-pin" id="chatPin" hidden></div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-comp" id="chatComp">
+        <div class="chat-rbar" id="chatRbar" hidden></div>
+        <div class="chat-row">
+          <div class="chat-sug" id="chatSug" hidden></div>
+          <textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea>
+          <button class="env" id="chatEnv">Enviar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3228,8 +3303,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -3253,6 +3328,7 @@ function mostrarTool(nome) {
   if (nome === 'reuniao' && window.PAUTA) window.PAUTA.renderAdminPanel();
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
+  if (window.CHAT) window.CHAT.visivel(nome === 'chat');
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
   if (nome === 'cargos' && window.CARGOS) window.CARGOS.render();
@@ -13000,5 +13076,191 @@ body{
 .pop-passo-num { background:rgba(6,6,6,.58) !important; border:1px solid rgba(255,255,255,.32) !important; color:#fff !important; }
 .tr-gostei-btn:hover { color:#fff !important; }
 </style>
+<script>
+/* ===== CHAT DO TIME ===== */
+(function(){
+  var CANAIS = [
+    {id:'geral',nome:'geral',desc:'Assuntos de todo o time'},
+    {id:'pos-vendas',nome:'pós-vendas',desc:'Rotina e clientes do pós-vendas'},
+    {id:'comercial',nome:'comercial',desc:'Vendas, ofertas e metas'},
+    {id:'avisos',nome:'avisos da Ana',desc:'Somente a Ana publica aqui',soAdmin:true}
+  ];
+  var MEMBROS = ['Ana','Adriele','Sharon','Kuka','Thiago','Amanda','Felipe','Eduardo'];
+  var ativo = 'geral', msgs = {}, unsubs = {}, lastRead = {}, presenca = {}, visivel = false;
+  var respondendo = null, editando = null, pinados = {}, hbTimer = null, presUnsub = null;
+
+  function U(){ return (window.APPAUTH && window.APPAUTH.usuarioAtual) || null; }
+  function eu(){ var u=U(); if(!u) return ''; return u.role==='admin' ? 'Ana' : (u.nome||''); }
+  function ehAdmin(){ var u=U(); return !!u && u.role==='admin'; }
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function dmId(a,b){ return 'dm_'+[a,b].sort().join('_').toLowerCase().replace(/[^a-z0-9_]/g,''); }
+  function canalDe(id){ return id.indexOf('dm_')===0; }
+  function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){} return null; }
+  function pode(id){ var c=CANAIS.filter(function(x){return x.id===id;})[0]; return !(c&&c.soAdmin&&!ehAdmin()); }
+  function podeLer(id){ if(!canalDe(id)) return true; return id.indexOf(dmId(eu(),'__')) === 0 || id.split('_').length>=2; }
+
+  function colMsgs(id){ return window.fb.collection(window.fb.db,'chat_canais',id,'msgs'); }
+  function ouvir(id){
+    if(unsubs[id] || !window.fb) return;
+    var q = window.fb.query ? window.fb.query(colMsgs(id), window.fb.orderBy('ts','desc'), window.fb.limit(150)) : colMsgs(id);
+    unsubs[id] = window.fb.onSnapshot(q, function(snap){
+      var arr=[]; snap.forEach(function(d){ var m=d.data(); m.id=d.id; arr.push(m); });
+      arr.sort(function(a,b){ return (a.ts||0)-(b.ts||0); });
+      msgs[id]=arr; pinados[id]=arr.filter(function(m){return m.fixada;}).pop()||null;
+      if(visivel && id===ativo){ marcarLido(); desenharMsgs(); desenharPin(); }
+      desenharLado(); badges();
+    });
+  }
+  function ouvirTudo(){
+    CANAIS.forEach(function(c){ ouvir(c.id); });
+    var me=eu();
+    MEMBROS.forEach(function(m){ if(m!==me) ouvir(dmId(me,m)); });
+  }
+  function iniciarPresenca(){
+    if(presUnsub || !window.fb) return;
+    presUnsub = window.fb.onSnapshot(window.fb.collection(window.fb.db,'chat_presenca'), function(snap){
+      presenca={}; snap.forEach(function(d){ presenca[d.id]=(d.data()||{}).ts||0; }); desenharLado();
+    });
+    function hb(){ try{ window.fb.setDoc(window.fb.doc(window.fb.db,'chat_presenca',eu()),{ts:Date.now()}); }catch(e){} }
+    hb(); hbTimer=setInterval(hb,60000);
+  }
+  function online(n){ return Date.now()-(presenca[n]||0) < 120000; }
+
+  function nLidas(id){
+    var lr = +ls('chat_lido_'+eu()+'_'+id) || 0, me=eu();
+    return (msgs[id]||[]).filter(function(m){ return m.ts>lr && m.de!==me; }).length;
+  }
+  function marcarLido(){ var a=msgs[ativo]||[]; var t=a.length?a[a.length-1].ts:Date.now(); ls('chat_lido_'+eu()+'_'+ativo, String(Math.max(t,Date.now()-0))); badges(); desenharLado(); }
+  function badges(){
+    var total=0, ids=Object.keys(msgs);
+    ids.forEach(function(id){ if(!(visivel&&id===ativo)) total+=nLidas(id); });
+    ['chatBadgeDrawer','chatBadgeHome'].forEach(function(i){ var e=document.getElementById(i); if(!e) return; e.hidden=!total; e.textContent=total>99?'99+':total; });
+  }
+
+  function desenharLado(){
+    var el=document.getElementById('chatSide'); if(!el||!U()) return;
+    var me=eu(), h='<h4>Canais</h4>';
+    CANAIS.forEach(function(c){
+      var n=(visivel&&c.id===ativo)?0:nLidas(c.id);
+      h+='<button class="chat-item'+(c.id===ativo?' active':'')+'" data-id="'+c.id+'"><span class="nm"># '+esc(c.nome)+'</span>'+(n?'<span class="chat-badge">'+n+'</span>':'')+'</button>';
+    });
+    h+='<h4>Conversas diretas</h4>';
+    MEMBROS.filter(function(m){return m!==me;}).forEach(function(m){
+      var id=dmId(me,m), n=(visivel&&id===ativo)?0:nLidas(id);
+      h+='<button class="chat-item'+(id===ativo?' active':'')+'" data-id="'+id+'"><span class="chat-dot'+(online(m)?' on':'')+'"></span><span class="nm">'+esc(m)+'</span>'+(n?'<span class="chat-badge">'+n+'</span>':'')+'</button>';
+    });
+    el.innerHTML=h;
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-item'),function(b){ b.onclick=function(){ abrir(b.getAttribute('data-id')); }; });
+  }
+  function tituloAtivo(){
+    if(canalDe(ativo)){ var me=eu(); var o=MEMBROS.filter(function(m){return m!==me && dmId(me,m)===ativo;})[0]||''; return {t:'💬 '+o, s:online(o)?'online agora':'offline'}; }
+    var c=CANAIS.filter(function(x){return x.id===ativo;})[0]; return {t:'# '+c.nome, s:c.desc};
+  }
+  function linkar(t){
+    var h=esc(t).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+    var me=eu().toLowerCase();
+    return h.replace(/@([A-Za-zÀ-ú]+)/g,function(x,n){ var ok=MEMBROS.some(function(m){return m.toLowerCase()===n.toLowerCase();}); return ok?'<span class="men">@'+n+'</span>':x; });
+  }
+  function hora(ts){ var d=new Date(ts); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function dia(ts){ var d=new Date(ts),h=new Date(); if(d.toDateString()===h.toDateString()) return 'Hoje'; var o=new Date(h.getTime()-864e5); if(d.toDateString()===o.toDateString()) return 'Ontem'; return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2); }
+
+  function desenharMsgs(){
+    var el=document.getElementById('chatMsgs'); if(!el) return;
+    var perto = el.scrollHeight-el.scrollTop-el.clientHeight < 80 || !el.childElementCount;
+    var a=msgs[ativo]||[], me=eu(), h='', ult='';
+    if(!a.length) h='<div class="chat-vazio">Nenhuma mensagem ainda. Comece a conversa 👋</div>';
+    a.forEach(function(m){
+      var d=dia(m.ts); if(d!==ult){ h+='<div class="chat-day">'+d+'</div>'; ult=d; }
+      var meu=m.de===me, paraMim = !meu && new RegExp('@'+me+'\\b','i').test(m.txt||'');
+      var rp = m.resp ? '<div class="chat-resp"><b>'+esc(m.resp.de)+'</b>: '+esc((m.resp.txt||'').slice(0,90))+'</div>' : '';
+      var acts='<div class="chat-acts"><button data-a="r" title="Responder">↩️</button>'+(meu?'<button data-a="e" title="Editar">✏️</button>':'')+((meu||ehAdmin())?'<button data-a="x" title="Apagar">🗑️</button>':'')+(ehAdmin()&&!canalDe(ativo)?'<button data-a="p" title="'+(m.fixada?'Desafixar':'Fixar')+'">📌</button>':'')+'</div>';
+      h+='<div class="chat-msg'+(meu?' eu':'')+(paraMim?' paraMim':'')+'" data-id="'+m.id+'">'+acts+rp+(meu?'':'<div class="au">'+esc(m.de)+'</div>')+'<div class="tx">'+linkar(m.txt)+'</div><div style="text-align:right"><span class="hr">'+(m.editada?'editada · ':'')+hora(m.ts)+'</span></div></div>';
+    });
+    el.innerHTML=h;
+    Array.prototype.forEach.call(el.querySelectorAll('.chat-acts button'),function(b){
+      b.onclick=function(){ var id=b.closest('.chat-msg').getAttribute('data-id'); acao(b.getAttribute('data-a'),id); };
+    });
+    if(perto) el.scrollTop=el.scrollHeight;
+  }
+  function desenharPin(){
+    var el=document.getElementById('chatPin'), p=pinados[ativo];
+    if(!el) return; el.hidden=!p; if(p) el.innerHTML='📌 <b>'+esc(p.de)+'</b>'+esc((p.txt||'').slice(0,160));
+  }
+  function desenharTopo(){
+    var t=tituloAtivo(); document.getElementById('chatHead').innerHTML=esc(t.t)+' <small>'+esc(t.s)+'</small>';
+    var soLeitura = !pode(ativo);
+    var comp=document.getElementById('chatComp');
+    comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
+    if(!soLeitura) ligarComp();
+  }
+  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
+  function ligarComp(){
+    var ta=document.getElementById('chatInput'), env=document.getElementById('chatEnv');
+    env.onclick=enviar;
+    ta.onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); enviar(); } };
+    ta.oninput=function(){ ta.style.height='42px'; ta.style.height=Math.min(120,ta.scrollHeight)+'px'; sugerir(); };
+    barra();
+  }
+  function sugerir(){
+    var ta=document.getElementById('chatInput'), s=document.getElementById('chatSug'); if(!ta||!s) return;
+    var m=/@([A-Za-zÀ-ú]*)$/.exec(ta.value.slice(0,ta.selectionStart));
+    if(!m){ s.hidden=true; return; }
+    var l=MEMBROS.filter(function(n){ return n!==eu() && n.toLowerCase().indexOf(m[1].toLowerCase())===0; });
+    if(!l.length){ s.hidden=true; return; }
+    s.innerHTML=l.map(function(n){return '<button data-n="'+n+'">@'+n+'</button>';}).join(''); s.hidden=false;
+    Array.prototype.forEach.call(s.querySelectorAll('button'),function(b){ b.onmousedown=function(e){ e.preventDefault();
+      var pos=ta.selectionStart, ate=ta.value.slice(0,pos).replace(/@([A-Za-zÀ-ú]*)$/,'@'+b.getAttribute('data-n')+' ');
+      ta.value=ate+ta.value.slice(pos); s.hidden=true; ta.focus(); ta.setSelectionRange(ate.length,ate.length); }; });
+  }
+  function barra(){
+    var r=document.getElementById('chatRbar'); if(!r) return;
+    if(respondendo){ r.hidden=false; r.innerHTML='<span>↩️ Respondendo a <b>'+esc(respondendo.de)+'</b>: '+esc((respondendo.txt||'').slice(0,60))+'</span><button style="background:none;border:0;color:#fff;cursor:pointer" id="chatRx">✕</button>'; document.getElementById('chatRx').onclick=function(){respondendo=null;barra();}; }
+    else if(editando){ r.hidden=false; r.innerHTML='<span>✏️ Editando mensagem</span><button style="background:none;border:0;color:#fff;cursor:pointer" id="chatRx">✕</button>'; document.getElementById('chatRx').onclick=function(){editando=null;document.getElementById('chatInput').value='';barra();}; }
+    else r.hidden=true;
+  }
+  function acao(a,id){
+    var m=(msgs[ativo]||[]).filter(function(x){return x.id===id;})[0]; if(!m) return;
+    var ref=window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',id);
+    if(a==='r'){ respondendo={de:m.de,txt:m.txt}; editando=null; barra(); var t=document.getElementById('chatInput'); if(t) t.focus(); }
+    if(a==='e'){ editando=m; respondendo=null; barra(); var t2=document.getElementById('chatInput'); if(t2){ t2.value=m.txt; t2.focus(); } }
+    if(a==='x'){ if(confirm('Apagar esta mensagem?')) window.fb.deleteDoc(ref); }
+    if(a==='p'){
+      var tudo=(msgs[ativo]||[]).filter(function(x){return x.fixada&&x.id!==id;});
+      tudo.forEach(function(x){ window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',x.id),{fixada:false}); });
+      window.fb.updateDoc(ref,{fixada:!m.fixada});
+    }
+  }
+  function enviar(){
+    var ta=document.getElementById('chatInput'); if(!ta) return;
+    var txt=ta.value.trim(); if(!txt||!pode(ativo)) return;
+    if(editando){
+      window.fb.updateDoc(window.fb.doc(window.fb.db,'chat_canais',ativo,'msgs',editando.id),{txt:txt,editada:true});
+      editando=null;
+    } else {
+      var o={de:eu(),txt:txt.slice(0,2000),ts:Date.now()};
+      if(respondendo) o.resp=respondendo;
+      window.fb.addDoc(colMsgs(ativo),o);
+      respondendo=null;
+    }
+    ta.value=''; ta.style.height='42px'; barra();
+  }
+  function abrir(id){
+    ativo=id; respondendo=null; editando=null; desenharTopo(); desenharPin(); desenharMsgs(); marcarLido();
+    var el=document.getElementById('chatMsgs'); if(el) el.scrollTop=el.scrollHeight;
+  }
+  function iniciar(){
+    if(!U()||!window.fb||unsubs.__ok) return; unsubs.__ok=true;
+    ouvirTudo(); iniciarPresenca(); desenharLado();
+  }
+  window.CHAT = {
+    visivel:function(v){ visivel=v; if(v){ iniciar(); desenharLado(); abrir(ativo); } else badges(); },
+    iniciar:iniciar
+  };
+  window.addEventListener('userAuthed', function(){ unsubs.__ok=false; iniciar(); });
+  if(U()) iniciar();
+  window.addEventListener('fbReady', iniciar);
+})();
+
+</script>
 </body>
 </html>
