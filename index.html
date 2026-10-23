@@ -312,6 +312,8 @@ body {
   .tool-oneone .history-nav { background:var(--card2); border-bottom:1px solid var(--border); padding:0 28px; display:flex; align-items:center; gap:0; overflow-x:auto; }
   .tool-oneone .history-tab { padding:11px 16px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; flex-direction:column; align-items:center; gap:1px; transition:all .15s; font-family:inherit; }
   .tool-oneone .history-tab:hover { color:var(--text); }
+  .tool-oneone .btn-del-conv { margin-left:6px; padding:7px 12px; border-radius:10px; border:1px solid rgba(255,107,107,.45); background:rgba(255,107,107,.1); color:#ff8080; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; align-self:center; }
+  .tool-oneone .btn-del-conv:hover { background:rgba(255,107,107,.2); }
   .tool-oneone .history-tab.active { color:var(--laranja); border-bottom-color:var(--laranja); font-weight:700; }
   .tool-oneone .history-tab .ht-num { font-size:9px; color:var(--muted2); }
   .tool-oneone .history-tab.active .ht-num { color:var(--laranja); opacity:.8; }
@@ -1734,7 +1736,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 13h00</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 15h20</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -4038,7 +4040,26 @@ function renderHistoryNav() {
       <span>${label}</span>
       <span class="ht-num">#${i+1}</span>
     </button>`;
-  }).join('') + `<button class="btn-new-conv" onclick="window.OO.novaConversa()">+ Nova conversa</button>`;
+  }).join('') + `<button class="btn-new-conv" onclick="window.OO.novaConversa()">+ Nova conversa</button>`
+    + `<button class="btn-del-conv" id="btnDelConv" onclick="window.OO.excluirConversa()" title="Excluir a conversa selecionada">🗑 Excluir #${convAtual+1}</button>`;
+}
+let delConfirm = null;
+function excluirConversa() {
+  const btn = document.getElementById('btnDelConv');
+  const convs = getConversas(pessoaAtual); const c = convs[convAtual]; if(!c) return;
+  if(delConfirm !== convAtual) {
+    delConfirm = convAtual;
+    if(btn) btn.textContent = 'Confirmar exclusão de ' + (c.conversa_label || formatDate(c.meta_data) || ('#'+(convAtual+1))) + '?';
+    setTimeout(() => { delConfirm = null; const b = document.getElementById('btnDelConv'); if(b) b.textContent = '🗑 Excluir #' + (convAtual+1); }, 4000);
+    return;
+  }
+  delConfirm = null;
+  convs.splice(convAtual, 1);
+  const d = getData(); d[pessoaAtual] = convs; setData(d);
+  convAtual = Math.max(0, Math.min(convAtual, convs.length - 1));
+  if(convs.length === 0) { document.getElementById('historyNav').style.display = 'none'; document.getElementById('mainWrap_o').innerHTML = emptyStateHTML(); }
+  else { renderHistoryNav(); renderForm(); }
+  showSaved();
 }
 
 function irParaConversa(idx) { convAtual = idx; renderHistoryNav(); renderForm(); }
@@ -4391,6 +4412,7 @@ popularSelect();
   window.OO.getData = getData;
   window.OO.irParaConversa = irParaConversa;
   window.OO.novaConversa = novaConversa;
+  window.OO.excluirConversa = excluirConversa;
   window.OO.onPersonChange = onPersonChange;
   window.OO.popularSelect = popularSelect;
   window.OO.renderAcoes = renderAcoes;
