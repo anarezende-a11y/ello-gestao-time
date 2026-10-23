@@ -1734,7 +1734,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 12h00</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 12h15</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -14224,7 +14224,7 @@ function render(){
 function renderDia(){
   var b=document.getElementById('ag_dia'); if(!b) return; var me=eu(), a=adm();
   var es=visiveis().filter(function(e){ return mesmoDia(new Date(e.quando),diaSel); }).sort(function(x,y){return x.quando-y.quando;});
-  b.innerHTML='<h4>'+diaSel.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+'</h4>'+(es.length?es.map(function(e){ var pode=e.src==='agenda'&&(a||e.dono===me), vis=a||e.dono===me||e.dono==='Time'&&a; var ch=e.src==='podio'?(a||e.dono===me):pode; return '<div class="ag-it"'+(e.feito?' style="opacity:.6"':'')+'><span class="h">'+hh(e.quando)+'</span><div class="q">'+(e.feito?'✅':e.tipo)+' <b'+(e.feito?' style="text-decoration:line-through"':'')+'>'+esc(e.titulo)+'</b><div class="t">'+esc(e.dono==='Time'?'Time todo':e.dono)+(e.src==='podio'?' · agendamento de cliente (gerencie no Pódio)':'')+((e.com&&e.com.length)?' · 👥 com '+esc(e.com.join(', ')):'')+(e.alerta?' · 🔔 com alerta':'')+'</div></div>'+(ch?'<button onclick="window.AGENDA.visto(\''+e.src+'\',\''+e.dono+'\',\''+e.id+'\')">'+(e.feito?'↩ Reabrir':'✔ Visto')+'</button>':'')+(pode?'<button onclick="window.AGENDA.editar(\''+e.dono+'\',\''+e.id+'\')">✏️ Alterar</button><button onclick="window.AGENDA.apagar(\''+e.dono+'\',\''+e.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada marcado neste dia.</div>');
+  b.innerHTML='<h4>'+diaSel.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+'</h4>'+(es.length?es.map(function(e){ var pode=e.src==='agenda'&&podeMexer(e), ch=e.src==='podio'?(a||e.dono===me):(a||(e.dono!=='Time'&&(e.dono===me||(e.com||[]).indexOf(me)>=0))); return '<div class="ag-it"'+(e.feito?' style="opacity:.6"':'')+'><span class="h">'+hh(e.quando)+'</span><div class="q">'+(e.feito?'✅':e.tipo)+' <b'+(e.feito?' style="text-decoration:line-through"':'')+'>'+esc(e.titulo)+'</b><div class="t">'+esc(e.dono==='Time'?'Time todo':e.dono)+(e.src==='podio'?' · agendamento de cliente (gerencie no Pódio)':'')+((e.com&&e.com.length)?' · 👥 com '+esc(e.com.join(', ')):'')+(e.alerta?' · 🔔 com alerta':'')+'</div></div>'+(ch?'<button onclick="window.AGENDA.visto(\''+e.src+'\',\''+e.dono+'\',\''+e.id+'\')">'+(e.feito?'↩ Reabrir':'✔ Visto')+'</button>':'')+(pode?'<button onclick="window.AGENDA.editar(\''+e.dono+'\',\''+e.id+'\')">✏️ Alterar</button><button onclick="window.AGENDA.apagar(\''+e.dono+'\',\''+e.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada marcado neste dia.</div>');
 }
 function dia(ts){ diaSel=new Date(ts); render(); }
 function mes(n){ mesRef.setMonth(mesRef.getMonth()+n); render(); }
@@ -14248,12 +14248,13 @@ function novo(edt){
     salvar(dn); diaSel=new Date(q); mesRef=new Date(q); mesRef.setDate(1); m.remove(); render();
   };
 }
-function editar(dn,id){ var e=todos().filter(function(x){return x.id===id&&x.dono===dn&&x.src==='agenda';})[0]; if(e){ var orig=(ev[dn]||[]).filter(function(x){return x.id===id;})[0]||{}; e.por=orig.por; e.ts=orig.ts; e.com=orig.com||[]; novo(e); } }
+function podeMexer(e){ var me=eu(); return adm()||(!!me&&e.por===me&&e.dono===me); }
+function editar(dn,id){ var e=todos().filter(function(x){return x.id===id&&x.dono===dn&&x.src==='agenda';})[0]; if(e&&podeMexer(e)){ var orig=(ev[dn]||[]).filter(function(x){return x.id===id;})[0]||{}; e.por=orig.por; e.ts=orig.ts; e.com=orig.com||[]; novo(e); } }
 function visto(src,dn,id){
   if(src==='podio'){ var r=window.PODIO.agendamentos().filter(function(x){return x.id===id;})[0]; if(r) window.PODIO.status(dn,id,r.st==='feito'?'marcado':'feito'); render(); return; }
   var x=(ev[dn]||[]).filter(function(y){return y.id===id;})[0]; if(!x) return; x.feito=!x.feito; salvar(dn); render();
 }
-function apagar(dn,id){ if(!confirm('Apagar este compromisso?')) return; ev[dn]=(ev[dn]||[]).filter(function(e){return e.id!==id;}); salvar(dn); render(); }
+function apagar(dn,id){ var x0=(ev[dn]||[]).filter(function(x){return x.id===id;})[0]; if(!x0||!podeMexer({por:x0.por,dono:dn})){ alert('Só a Ana pode apagar este compromisso.'); return; } if(!confirm('Apagar este compromisso?')) return; ev[dn]=(ev[dn]||[]).filter(function(e){return e.id!==id;}); salvar(dn); render(); }
 function comoAg(){ var me=eu(), a=adm(), o=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ if(!e.alerta||e.feito) return; if(!(d===me||d==='Time'||e.por===me||(e.com||[]).indexOf(me)>=0)) return; o.push({t:'ag',id:e.id,cliente:e.titulo,de:d==='Time'?'Time todo':d,quando:e.quando,st:'marcado',_ag:true}); }); }); return o; }
 function iniciar(){ ouvir(); render(); }
 window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar); if(U()) iniciar();
