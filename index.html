@@ -1734,7 +1734,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 11h05</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 11h20</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -14191,7 +14191,7 @@ window.PODIO.agendamentos=function(){ return lista().filter(function(r){ return 
 window.AGENDA = window.AGENDA || {};
 (function(){
 var DONOS=['Ana','Kuka','Adriele','Sharon','Thiago','Felipe','Amanda','Eduardo','Time'];
-var TIPOS=[['🗓️','Compromisso'],['🤝','Reunião'],['📞','Ligação'],['📝','Lembrete'],['🎓','Treinamento']];
+var TIPOS=[['🗓️','Compromisso'],['👥','One a One'],['🤝','Reunião'],['📞','Ligação'],['📝','Lembrete'],['🎓','Treinamento']];
 var ev={}, mesRef=new Date(); mesRef.setDate(1); var diaSel=new Date(), filtroDono='todos', ouvindo=false;
 function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
 function adm(){ var u=U(); return !!u&&u.role==='admin'; }
