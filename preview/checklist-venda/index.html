@@ -1731,7 +1731,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 09h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 09h45</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -14060,6 +14060,9 @@ function renderListas(){
   var h='<div class="pd-lista"><h4>📅 Próximos agendamentos</h4>'+(ags.length?ags.map(function(r){ var urg=r.quando-Date.now()<=15*60000; return '<div class="pd-it"><div class="q"><b>'+esc(r.cliente)+'</b><div class="t">'+esc(r.de)+' · '+dh(r.quando)+'</div></div><span class="cd'+(urg?' urg':'')+'">'+falta(r.quando)+'</span>'+(pode(r)?'<button onclick="window.PODIO.status(\''+r.de+'\',\''+r.id+'\',\'feito\')">✔ Feito</button><button onclick="window.PODIO.status(\''+r.de+'\',\''+r.id+'\',\'cancelado\')">✖ Cancelar</button>':'')+'</div>'; }).join(''):'<div class="t" style="color:var(--muted);font-size:13px">Nenhum agendamento marcado.</div>')+'</div>';
   var fes=L.filter(function(r){ return r.t==='fe'; }).sort(function(x,y){return y.ts-x.ts;}).slice(0,10);
   h+='<div class="pd-lista"><h4>✅ Últimos fechados</h4>'+(fes.length?fes.map(function(r){ return '<div class="pd-it"><div class="q"><b>'+esc(r.cliente)+'</b>'+(r.valor?' · '+esc(r.valor):'')+'<div class="t">'+esc(r.de)+' · '+dh(r.ts)+'</div></div>'+(pode(r)?'<button onclick="window.PODIO.apagar(\''+r.de+'\',\''+r.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada fechado ainda. Bora! 💪</div>')+'</div>';
+  var todos=L.slice().sort(function(x,y){ return y.ts-x.ts; }).slice(0,40);
+  var nome=function(r){ return r.t==='lig'?'📞 +'+(r.n||1)+' ligação'+((r.n||1)>1?'ões':''):r.t==='ag'?'📅 '+esc(r.cliente)+' · '+dh(r.quando)+(r.st==='feito'?' (feito)':r.st==='cancelado'?' (cancelado)':''):'✅ '+esc(r.cliente)+(r.valor?' · '+esc(r.valor):''); };
+  h+='<div class="pd-lista"><h4>📜 Histórico de lançamentos <span style="font-weight:400;font-size:11px;color:var(--muted)">(lançou errado ou testou? é só reverter)</span></h4>'+(todos.length?todos.map(function(r){ return '<div class="pd-it"><div class="q">'+nome(r)+'<div class="t">'+esc(r.de)+' · lançado '+dh(r.ts)+'</div></div>'+(pode(r)?(r.t==='ag'&&r.st!=='marcado'?'<button onclick="window.PODIO.status(\''+r.de+'\',\''+r.id+'\',\'marcado\')">↩ Reabrir</button>':'')+'<button onclick="window.PODIO.reverter(\''+r.de+'\',\''+r.id+'\')">↩ Reverter</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nenhum lançamento ainda.</div>')+(a?'<div class="row" style="margin-top:10px"><button class="pd-ok" style="background:#a33" onclick="window.PODIO.zerar()">🧹 Zerar todos os lançamentos de uma pessoa</button></div>':'')+'</div>';
   box.innerHTML=h;
 }
 function uid(){ return 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
@@ -14069,6 +14072,8 @@ function desfazLig(){ var n=quem(); var a=(regs[n]||[]).slice(); for(var i=a.len
 function agendar(){ var c=document.getElementById('pd_ag_c').value.trim(), q=document.getElementById('pd_ag_q').value; if(!c||!q){ alert('Coloque o nome do cliente e o horário.'); return; } var ts=new Date(q).getTime(); if(isNaN(ts)){ alert('Horário inválido.'); return; } add(quem(),{t:'ag',cliente:c.slice(0,80),quando:ts,st:'marcado'}); document.getElementById('pd_ag_c').value=''; }
 function fechou(){ var c=document.getElementById('pd_fe_c').value.trim(); if(!c){ alert('Coloque o nome do cliente.'); return; } add(quem(),{t:'fe',cliente:c.slice(0,80),valor:document.getElementById('pd_fe_v').value.trim().slice(0,30)}); document.getElementById('pd_fe_c').value=''; document.getElementById('pd_fe_v').value=''; if(window.somFesta) window.somFesta(); }
 function status(n,id,st){ var r=(regs[n]||[]).filter(function(x){return x.id===id;})[0]; if(!r) return; r.st=st; salvarReg(n); render(); }
+function reverter(n,id){ var r=(regs[n]||[]).filter(function(x){return x.id===id;})[0]; if(!r) return; if(!confirm('Reverter este lançamento de '+n+'? Os pontos dele saem do pódio.')) return; regs[n]=(regs[n]||[]).filter(function(x){return x.id!==id;}); salvarReg(n); render(); }
+function zerar(){ var n=prompt('Zerar TODOS os lançamentos de quem? ('+PESSOAS.map(function(p){return p.n;}).join(', ')+')'); if(!n||!pessoa(n.trim())) return; n=pessoa(n.trim()).n; if(!confirm('Apagar todos os lançamentos de '+n+'? Isso não tem volta.')) return; regs[n]=[]; salvarReg(n); render(); }
 function apagar(n,id){ if(!confirm('Apagar este registro?')) return; regs[n]=(regs[n]||[]).filter(function(x){return x.id!==id;}); salvarReg(n); render(); }
 function regrasAdm(){ var l=prompt('Pontos por ligação:',cfg.pesos.lig); if(l===null) return; var g=prompt('Pontos por agendamento:',cfg.pesos.ag); if(g===null) return; var f=prompt('Pontos por fechado:',cfg.pesos.fe); if(f===null) return; cfg.pesos={lig:+l||0,ag:+g||0,fe:+f||0}; salvarCfg(); render(); }
 function nova(){ var n=prompt('Nome da nova competição:',cfg.nome); if(!n) return; if(!confirm('Começar "'+n+'" hoje? O ranking dessa competição zera (o histórico continua guardado em "Tudo").')) return; cfg.nome=n.slice(0,40); cfg.inicio=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10); periodo='comp'; salvarCfg(); render(); }
@@ -14112,7 +14117,7 @@ setInterval(checarAlertas,15000);
 function iniciar(){ ouvir(); render(); }
 window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar);
 if(U()) iniciar();
-window.PODIO.render=render; window.PODIO.lig=lig; window.PODIO.desfazLig=desfazLig; window.PODIO.agendar=agendar; window.PODIO.fechou=fechou; window.PODIO.status=status; window.PODIO.apagar=apagar; window.PODIO.regras=regrasAdm; window.PODIO.nova=nova; window.PODIO.testarAlerta=function(){ mostraAlerta({cliente:'Cliente de teste',de:eu()||'Ana',quando:Date.now()+5*60000},5); };
+window.PODIO.render=render; window.PODIO.lig=lig; window.PODIO.desfazLig=desfazLig; window.PODIO.agendar=agendar; window.PODIO.fechou=fechou; window.PODIO.status=status; window.PODIO.apagar=apagar; window.PODIO.reverter=reverter; window.PODIO.zerar=zerar; window.PODIO.regras=regrasAdm; window.PODIO.nova=nova; window.PODIO.testarAlerta=function(){ mostraAlerta({cliente:'Cliente de teste',de:eu()||'Ana',quando:Date.now()+5*60000},5); };
 })();
 </script>
 
