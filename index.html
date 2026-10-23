@@ -1734,7 +1734,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 10h15</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 10h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -13360,7 +13360,7 @@ body{
     }, function(e){ if(id===ativo) erro(e); });
   }
   function ouvirTudo(){
-    ouvirBloqueios(); ouvirMeusBlq();
+    ouvirFotosAt(); ouvirBloqueios(); ouvirMeusBlq();
     CANAIS.forEach(function(c){ ouvir(c.id); });
     var me=eu();
     MEMBROS.forEach(function(m){ if(m!==me) ouvir(dmId(me,m)); });
@@ -13445,7 +13445,7 @@ body{
     comp.innerHTML = soLeitura ? '<div class="chat-so">📢 Canal de avisos — só a Ana publica aqui.</div>' : compHTML();
     if(!soLeitura) ligarComp();
   }
-  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><button class="ico" id="chatBtnAt" title="Chamar atenção">🔔</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
+  function compHTML(){ return '<div class="chat-rbar" id="chatRbar" hidden></div><div class="chat-row"><div class="chat-sug" id="chatSug" hidden></div><div class="chat-emo" id="chatEmo" hidden></div><button class="ico" id="chatBtnEmo" title="Emojis">😊</button><button class="ico" id="chatBtnImg" title="Enviar foto">🖼️</button><button class="ico" id="chatBtnMic" title="Gravar áudio">🎤</button><button class="ico" id="chatBtnAt" title="Chamar atenção">🔔</button><button class="ico" id="chatBtnAtM" title="Escolher quem aparece ao chamar atenção" style="padding:0 4px;font-size:11px">▾</button><input type="file" id="chatFile" accept="image/*" hidden><textarea id="chatInput" placeholder="Escreva uma mensagem… use @ para marcar alguém" rows="1"></textarea><button class="env" id="chatEnv">Enviar</button></div>'; }
   function ligarComp(){
     var ta=document.getElementById('chatInput'), env=document.getElementById('chatEnv');
     env.onclick=enviar;
@@ -13496,21 +13496,47 @@ body{
     peido(c,m,1.45,1);
     }catch(e){ console.warn('somAt',e); } try{ navigator.vibrate&&navigator.vibrate([200,80,200,80,300]); }catch(e){} }
   function peidoSolo(){ try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); if(c.state==='suspended') c.resume(); var m=c.createGain(); m.gain.value=1; m.connect(c.destination); peido(c,m,1.45,.8); }catch(e){ console.warn('peido',e); } }
-  function gordinhoNaTela(){ var o=document.getElementById('gdOver'); if(o) o.remove(); o=document.createElement('div'); o.id='gdOver'; o.innerHTML=GD; document.body.appendChild(o); setTimeout(function(){ if(o.parentNode) o.remove(); },4300); }
-  function chamouAtencao(de,recebi){
-    gordinhoNaTela();
+  var BUILTIN=[{id:'felipe',nome:'Felipe',url:'fotos/felipe-chamar.jpg'}], fotosAt=BUILTIN.slice(), fotoImg={felipe:'fotos/felipe-chamar.jpg'}, estAt=(function(){ try{ return localStorage.getItem('chat_at_estilo')||'gordinho'; }catch(e){ return 'gordinho'; } })(), fotosUnsub=false;
+  function ouvirFotosAt(){ if(fotosUnsub||!window.fb) return; fotosUnsub=true; window.fb.onSnapshot(window.fb.doc(window.fb.db,'shared_data','chamar_fotos'),function(d){ fotosAt=BUILTIN.concat((d.exists&&d.exists()?(d.data()||{}).lista:[])||[]); fotosAt.forEach(function(f){ carregaFotoAt(f.id); }); },function(){}); }
+  function carregaFotoAt(id,cb){ if(fotoImg[id]){ if(cb) cb(fotoImg[id]); return; } if(!window.fb) return; window.fb.getDoc(window.fb.doc(window.fb.db,'shared_data','chamar_foto_'+id)).then(function(d){ if(d.exists&&d.exists()){ fotoImg[id]=(d.data()||{}).img||''; if(cb&&fotoImg[id]) cb(fotoImg[id]); } }).catch(function(){}); }
+  function gordinhoNaTela(est){
+    var o=document.getElementById('gdOver'); if(o) o.remove(); o=document.createElement('div'); o.id='gdOver'; document.body.appendChild(o);
+    function g(){ o.innerHTML=GD; }
+    if(est&&est.indexOf('f:')===0){ var id=est.slice(2); if(fotoImg[id]){ o.innerHTML='<img class="at-foto" src="'+fotoImg[id]+'" alt="">'; } else { g(); carregaFotoAt(id,function(img){ if(o.parentNode) o.innerHTML='<img class="at-foto" src="'+img+'" alt="">'; }); } } else g();
+    setTimeout(function(){ if(o.parentNode) o.remove(); },4300);
+  }
+  function chamouAtencao(de,recebi,est){
+    gordinhoNaTela(est);
     if(recebi){
       somAt(); var b=document.body; b.classList.remove('nudge-t'); void b.offsetWidth; b.classList.add('nudge-t'); setTimeout(function(){ b.classList.remove('nudge-t'); },2200);
       var t=document.getElementById('nudgeToast'); if(t) t.remove(); t=document.createElement('div'); t.id='nudgeToast'; t.textContent='🔔 '+de+' está chamando sua atenção!'; document.body.appendChild(t); setTimeout(function(){ t.remove(); },4300);
     }
   }
   function chamar(id,post){
-    ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!'}); chamouAtencao(eu(),false); peidoSolo();
+    ultAt=Date.now(); post({at:1,txt:'🔔 chamou a atenção!',est:estAt}); chamouAtencao(eu(),false,estAt); peidoSolo();
   }
   function checaAt(id,arr){
     var novo=arr.filter(function(m){ return m.at && (m.ts||0)>bootAt && (m.ts||0)>(vistoAt[id]||0); });
     if(!novo.length) return; var u=novo[novo.length-1]; vistoAt[id]=u.ts;
-    if(norm(u.de)!==norm(eu())) chamouAtencao(u.de,true);
+    if(norm(u.de)!==norm(eu())) chamouAtencao(u.de,true,u.est);
+  }
+  function nomeEst(e){ if(e==='gordinho') return '🍑 Gordinho'; var f=fotosAt.filter(function(x){return 'f:'+x.id===e;})[0]; return f?'📸 '+f.nome:'🍑 Gordinho'; }
+  function menuEstilo(btn){
+    var o=document.getElementById('chatEst'); if(o){ o.remove(); return; }
+    o=document.createElement('div'); o.id='chatEst'; o.className='chat-anx'; o.style.width='230px';
+    var me=eu(), h='<small>Quem aparece ao chamar atenção</small><button data-a="gordinho">'+(estAt==='gordinho'?'✅ ':'')+'🍑 Gordinho</button>';
+    fotosAt.forEach(function(f){ h+='<button data-a="f:'+f.id+'">'+(estAt==='f:'+f.id?'✅ ':'')+'📸 '+esc(f.nome)+'</button>'; });
+    h+='<button data-a="novo">➕ Cadastrar uma foto…</button>';
+    if(ehAdmin()) fotosAt.filter(function(f){return !f.url;}).forEach(function(f){ h+='<button data-a="del:'+f.id+'" style="opacity:.7;font-size:12px">🗑️ Excluir foto "'+esc(f.nome)+'"</button>'; });
+    o.innerHTML=h; document.body.appendChild(o);
+    var r=btn.getBoundingClientRect(); o.style.left=Math.max(8,Math.min(r.left,window.innerWidth-246))+'px'; o.style.top=Math.max(8,r.top-o.offsetHeight-8)+'px';
+    o.onclick=function(e){ var b=e.target.closest('button'); if(!b) return; var a=b.getAttribute('data-a'); o.remove();
+      if(a==='novo'){ var f=document.getElementById('chatAtFile'); if(!f){ f=document.createElement('input'); f.type='file'; f.accept='image/*'; f.id='chatAtFile'; f.hidden=true; document.body.appendChild(f); f.onchange=function(){ var file=f.files[0]; f.value=''; if(!file) return; var nome=prompt('Nome de quem está na foto (ex: Felipe):'); if(!nome) return; nome=nome.trim().slice(0,20); reduzir(file,function(d){ var id='f'+Date.now(); fotoImg[id]=d; fotosAt=fotosAt.concat([{id:id,nome:nome}]); window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','chamar_foto_'+id),{img:d}).catch(erro); window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','chamar_fotos'),{lista:fotosAt.filter(function(x){return !x.url;}),ts:Date.now()}).catch(erro); estAt='f:'+id; try{ localStorage.setItem('chat_at_estilo',estAt); }catch(e){} }); }; } f.click(); return; }
+      if(a.indexOf('del:')===0){ var id=a.slice(4); if(confirm('Excluir esta foto para todos?')){ fotosAt=fotosAt.filter(function(x){return x.id!==id;}); window.fb.setDoc(window.fb.doc(window.fb.db,'shared_data','chamar_fotos'),{lista:fotosAt.filter(function(x){return !x.url;}),ts:Date.now()}).catch(erro); if(estAt==='f:'+id){ estAt='gordinho'; try{ localStorage.setItem('chat_at_estilo',estAt); }catch(e){} } } return; }
+      estAt=a; try{ localStorage.setItem('chat_at_estilo',estAt); }catch(e){}
+      btn.title='Chamar atenção com: '+nomeEst(estAt);
+    };
+    setTimeout(function(){ document.addEventListener('click',function fe(e){ if(!o.contains(e.target)){ o.remove(); document.removeEventListener('click',fe); } }); },0);
   }
   function menuAnexo(btn,fFoto,fFig){
     var o=document.getElementById('chatAnx'); if(o){ o.remove(); return; }
@@ -13545,6 +13571,7 @@ body{
   var gravando=null;
   function ligarMidia(){
     var f=document.getElementById('chatFile'), bi=document.getElementById('chatBtnImg'), be=document.getElementById('chatBtnEmo'), bm=document.getElementById('chatBtnMic'), em=document.getElementById('chatEmo'), ta=document.getElementById('chatInput');
+    document.getElementById('chatBtnAtM').onclick=function(e){ e.stopPropagation(); menuEstilo(this); };
     document.getElementById('chatBtnAt').onclick=function(){ var a_=ativo; chamar(a_,function(x){ enviarMidia(x); }); };
     bi.onclick=function(e){ e.stopPropagation(); menuAnexo(bi,function(){ f.click(); },function(g){ enviarMidia({fig:g}); }); };
     f.onchange=function(){ if(f.files[0]) reduzir(f.files[0],function(d){ enviarMidia({img:d}); }); f.value=''; };
@@ -13670,12 +13697,13 @@ body{
   function dockThread_(body,leve){
     var id=dockThread, a=msgs[id]||[], me=eu();
     if(!document.getElementById('dkMsgs')){
-      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><button class="ico" id="dkAt" title="Chamar atenção">🔔</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
+      body.innerHTML='<div class="dk-back"><button id="dkBack">← Voltar</button></div><div class="dk-msgs" id="dkMsgs"></div><div class="dk-comp"><div class="chat-emo" id="dkEmo" hidden></div><button class="ico" id="dkBtnEmo" title="Emojis">😊</button><button class="ico" id="dkImg" title="Foto">🖼️</button><button class="ico" id="dkMic" title="Gravar áudio">🎤</button><button class="ico" id="dkAt" title="Chamar atenção">🔔</button><button class="ico" id="dkAtM" title="Escolher quem aparece ao chamar atenção" style="padding:0 3px;font-size:10px">▾</button><input type="file" id="dkFile" accept="image/*" hidden><textarea id="dkIn" rows="1" placeholder="Mensagem…"></textarea><button class="env" id="dkEnv">Enviar</button></div>';
       document.getElementById('dkBack').onclick=function(){ dockThread=null; body.innerHTML=''; dockDesenha(); };
       if(peerDe(id)){ var bm=document.createElement('button'); bm.id='dkBlqM'; bm.style.cssText='float:right'; bm.onclick=function(){ alternaMeu(peerDe(dockThread)); }; document.querySelector('.dk-back').appendChild(bm);
         if(ehAdmin()){ var bb=document.createElement('button'); bb.id='dkBlq'; bb.style.cssText='float:right'; bb.onclick=function(){ alternaBloqueio(peerDe(dockThread)); }; document.querySelector('.dk-back').appendChild(bb); } }
       document.getElementById('dkEnv').onclick=dockEnviar;
       document.getElementById('dkIn').onkeydown=function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); dockEnviar(); } };
+      document.getElementById('dkAtM').onclick=function(e){ e.stopPropagation(); menuEstilo(this); };
       document.getElementById('dkAt').onclick=function(){ var t_=dockThread; chamar(t_,function(x){ dockPost(t_,x); }); };
       document.getElementById('dkImg').onclick=function(e){ e.stopPropagation(); var t_=dockThread; menuAnexo(this,function(){ document.getElementById('dkFile').click(); },function(g){ dockPost(t_,{fig:g}); }); };
       document.getElementById('dkFile').onchange=function(){ var f=this.files[0], i=dockThread; if(f) reduzir(f,function(u){ dockPost(i,{img:u}); }); this.value=''; };
@@ -13728,6 +13756,7 @@ body{
 .nudge-t{animation:tremerN .5s linear 4 both}@keyframes tremerN{0%,100%{transform:translate(0,0) rotate(0)}12%{transform:translate(-26px,8px) rotate(-1.2deg)}25%{transform:translate(24px,-10px) rotate(1.2deg)}37%{transform:translate(-30px,12px) rotate(-1.5deg)}50%{transform:translate(28px,-8px) rotate(1.5deg)}62%{transform:translate(-22px,10px) rotate(-1deg)}75%{transform:translate(26px,-12px) rotate(1.2deg)}88%{transform:translate(-16px,6px) rotate(-.6deg)}}
 #gdOver{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:100003}#gdOver .gd{width:340px;height:392px;filter:drop-shadow(0 20px 40px rgba(0,0,0,.6));animation:entraG .5s cubic-bezier(.2,1.3,.3,1)}@keyframes entraG{from{transform:translateY(120px) scale(.4);opacity:0}to{transform:none;opacity:1}}
 #nudgeToast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:100004;background:rgba(14,16,20,.95);color:#fff;border:1px solid #ff9a2e;border-radius:99px;padding:9px 18px;font:600 14px system-ui;box-shadow:0 8px 30px #000a}
+.at-foto{max-width:min(78vw,440px);max-height:72vh;border-radius:22px;border:7px solid #fff;box-shadow:0 24px 60px rgba(0,0,0,.65);animation:entraG .5s cubic-bezier(.2,1.3,.3,1),wobbleF .35s linear .5s 8}@keyframes wobbleF{25%{transform:rotate(-3deg) scale(1.03)}75%{transform:rotate(3deg) scale(1.03)}}
 .chat-fig{padding:4px 0}.chat-fig .gd{width:120px;height:138px}
 .chat-anx{position:fixed;z-index:100001;background:rgba(14,16,20,.97);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:8px;color:#fff;font:13px system-ui;box-shadow:0 10px 34px #000a;width:190px}.chat-anx button{display:block;width:100%;text-align:left;padding:8px;border-radius:8px;border:0;background:transparent;color:#fff;cursor:pointer;font-size:13px}.chat-anx button:hover{background:rgba(255,255,255,.1)}.chat-anx small{display:block;opacity:.65;margin:6px 4px 2px;font-size:11px}.chat-anx .fg{display:flex;gap:6px;flex-wrap:wrap}.chat-anx .fg button{width:auto;padding:4px;background:rgba(255,255,255,.07)}.chat-anx .fg .gd{width:64px;height:74px}
 /* ===== TEMAS SAZONAIS (html[data-tema]) ===== */
