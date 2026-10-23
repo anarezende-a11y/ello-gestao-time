@@ -1690,6 +1690,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_campanha" onclick="mostrarTool('campanha')">
     <span class="di-icon">🏆</span> Campanha
   </button>
+  <button class="drawer-item" id="di_podio" onclick="mostrarTool('podio')">
+    <span class="di-icon">🏅</span> Pódio
+  </button>
   <button class="drawer-item" id="di_chat" onclick="mostrarTool('chat')">
     <span class="di-icon">💬</span> Chat <span class="chat-badge" id="chatBadgeDrawer" hidden></span>
   </button>
@@ -1728,7 +1731,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 22/10 · 20h00</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 09h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -1810,6 +1813,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Campanha</div>
         <div class="hc-desc">Metas e competições do time: lance seus números, acompanhe o ranking e o progresso de cada campanha ativa.</div>
         <div class="hc-cta">Abrir ferramenta →</div>
+      </button>
+      <button class="home-card c-campanha" onclick="mostrarTool('podio')">
+        <div class="hc-icon">🏅</div>
+        <div class="hc-title">Pódio</div>
+        <div class="hc-desc">Competição do time: ligações, agendamentos e fechados num pódio, com alerta na hora de cada agendamento.</div>
+        <div class="hc-cta">Abrir pódio →</div>
       </button>
       <button class="home-card c-chat" onclick="mostrarTool('chat')">
         <div class="hc-icon">💬</div>
@@ -2053,6 +2062,21 @@ window.APPAUTH = window.APPAUTH || {};
 </div>
 
 <!-- ================= TOOL: CHAT ================= -->
+<div class="tool-view tool-podio" id="view_podio">
+  <div class="tool-subbar">
+    <span class="sb-title">🏅 Pódio · Competição</span>
+    <span class="save-ind" id="saveInd_podio">✓ Salvo</span>
+    <button class="btn admin-only" onclick="window.PODIO.regras()">⚙️ Pontos</button>
+    <button class="btn admin-only" onclick="window.PODIO.nova()">🔄 Nova competição</button>
+  </div>
+  <div class="wrap" style="max-width:1000px;">
+    <div class="pd-chips" id="podio_chips"></div>
+    <div id="podio_podio"></div>
+    <div id="podio_reg"></div>
+    <div id="podio_listas"></div>
+  </div>
+</div>
+
 <div class="tool-view tool-chat" id="view_chat">
   <div class="tool-subbar"><span class="sb-title">💬 Chat do time</span></div>
   <div class="chat-wrap">
@@ -3347,8 +3371,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -3372,6 +3396,7 @@ function mostrarTool(nome) {
   if (nome === 'reuniao' && window.PAUTA) window.PAUTA.renderAdminPanel();
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
+  if (nome === 'podio' && window.PODIO) window.PODIO.render();
   if (window.CHAT) window.CHAT.visivel(nome === 'chat');
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
@@ -12928,6 +12953,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     roleplay:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
     rco:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     campanha:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    podio:'<path d="M8 21V12H3v9"/><path d="M21 21v-6h-5v6"/><path d="M15 21V6H9v15"/><path d="M3 21h18"/>',
     chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     checklist:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
     feedback:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
@@ -12942,7 +12968,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     dashboard:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     pop:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'
   };
-  var COR = { chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
+  var COR = { podio:'o', chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
     feedback:'v', contratos:'c', cargos:'o', posvendas:'g', pdl:'o', atualizacoes:'g', desafioreuniao:'r', provas:'c', dashboard:'v', pop:'g', home:'o' };
   function svg(k){ return P[k] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[k]+'</svg>' : ''; }
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
@@ -12990,7 +13016,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','chat','checklist','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','chat','checklist','podio','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
@@ -13935,5 +13961,160 @@ html[data-foto="1"] body{background:linear-gradient(rgba(3,8,12,.58),rgba(3,8,12
   if(U()) iniciar();
 })();
 </script>
+<!-- ===== JS: Pódio · Competição ===== -->
+<style>
+.pd-chips{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 14px}.pd-chips button{padding:7px 14px;border-radius:99px;border:1px solid var(--border2);background:var(--card2,rgba(255,255,255,.06));color:var(--muted);cursor:pointer;font:inherit;font-size:12px;font-weight:700}.pd-chips button.on{background:var(--laranja,#FD7400);border-color:var(--laranja,#FD7400);color:#fff}
+.pd-podio{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:10px 0 18px;min-height:300px}
+.pd-col{flex:1;max-width:210px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.pd-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#fff;border:3px solid rgba(255,255,255,.5);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.pd-col.p1 .pd-av{width:82px;height:82px;font-size:28px;border-color:#FFD34D;box-shadow:0 0 28px rgba(255,211,77,.65)}
+.pd-coroa{font-size:30px;line-height:1;margin-bottom:2px;animation:pdFlut 2s ease-in-out infinite}@keyframes pdFlut{50%{transform:translateY(-5px) rotate(4deg)}}
+.pd-nome{font-weight:800;margin-top:6px;font-size:15px;color:var(--text)}.pd-pts{font-size:22px;font-weight:900;color:var(--text)}.pd-pts small{font-size:11px;font-weight:600;color:var(--muted)}
+.pd-st{font-size:11px;color:var(--muted);margin:2px 0 6px}
+.pd-bloco{width:100%;border-radius:14px 14px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:34px;font-weight:900;color:rgba(0,0,0,.55)}
+.pd-col.p1 .pd-bloco{height:160px;background:linear-gradient(180deg,#FFE27A,#E6A800)}.pd-col.p2 .pd-bloco{height:120px;background:linear-gradient(180deg,#F1F1F1,#A9AFB8)}.pd-col.p3 .pd-bloco{height:92px;background:linear-gradient(180deg,#E8A766,#A9672C)}
+.pd-resto{max-width:620px;margin:0 auto 18px;display:flex;flex-direction:column;gap:8px}
+.pd-lin{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card,rgba(255,255,255,.05))}.pd-lin b.n{width:22px;color:var(--muted)}.pd-lin .pd-av{width:38px;height:38px;font-size:14px;border-width:2px}.pd-lin .nm{flex:1;font-weight:700;color:var(--text)}.pd-lin .st{font-size:11px;color:var(--muted)}.pd-lin .pt{font-weight:900;color:var(--text)}
+.pd-reg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+.pd-card{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--card,rgba(255,255,255,.05))}.pd-card h4{margin:0 0 8px;font-size:14px;color:var(--text)}
+.pd-card input,.pd-card select{width:100%;box-sizing:border-box;margin:3px 0;padding:8px 10px;border-radius:9px;border:1px solid var(--border2);background:rgba(0,0,0,.25);color:var(--text);font:inherit;font-size:13px}
+.pd-card .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.pd-card .row button,.pd-ok{padding:8px 12px;border-radius:9px;border:0;background:var(--laranja,#FD7400);color:#fff;font-weight:800;cursor:pointer;font-size:13px}.pd-card .row button.sec{background:rgba(255,255,255,.12)}
+.pd-lista{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:14px;background:var(--card,rgba(255,255,255,.05))}.pd-lista h4{margin:0 0 8px;font-size:14px;color:var(--text)}
+.pd-it{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--border);font-size:13px;color:var(--text);flex-wrap:wrap}.pd-it:first-of-type{border-top:0}.pd-it .q{flex:1;min-width:150px}.pd-it .t{font-size:11px;color:var(--muted)}.pd-it .cd{font-weight:900}.pd-it .cd.urg{color:#ff4d4d}
+.pd-it button{border:0;border-radius:8px;padding:4px 9px;cursor:pointer;background:rgba(255,255,255,.12);color:var(--text);font-size:12px}
+#pdAlerta{position:fixed;inset:0;z-index:100010;display:flex;align-items:center;justify-content:center;background:rgba(160,0,0,.88);animation:pdPisca .5s steps(2) infinite}
+@keyframes pdPisca{50%{background:rgba(255,40,40,.92)}}
+#pdAlerta .box{background:#fff;color:#111;border-radius:22px;padding:30px 38px;text-align:center;max-width:90vw;box-shadow:0 20px 80px rgba(0,0,0,.6);animation:pdTrem .35s linear infinite}
+@keyframes pdTrem{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#pdAlerta h2{margin:0 0 6px;font-size:30px;color:#c00}#pdAlerta .cl{font-size:26px;font-weight:900}#pdAlerta .qd{font-size:18px;margin:6px 0 16px}#pdAlerta button{padding:12px 28px;border:0;border-radius:12px;background:#c00;color:#fff;font-size:17px;font-weight:900;cursor:pointer}
+</style>
+<script>
+window.PODIO = window.PODIO || {};
+(function(){
+var PESSOAS=[{n:'Kuka',c:'#059669'},{n:'Adriele',c:'#DB2777'},{n:'Sharon',c:'#9333EA'},{n:'Thiago',c:'#2563EB'},{n:'Felipe',c:'#0891B2'}];
+var cfg={nome:'Competição',inicio:'',pesos:{lig:1,ag:5,fe:20}}, regs={}, periodo='comp', ouvindo=false;
+function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
+function adm(){ var u=U(); return !!u&&u.role==='admin'; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function norm(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function eu(){ var u=U(); if(!u) return null; var l=norm(u.nome||String(u.email||'').split('@')[0]); var a=PESSOAS.filter(function(p){ return l.indexOf(norm(p.n))===0; })[0]; return a?a.n:null; }
+function pessoa(n){ return PESSOAS.filter(function(p){return p.n===n;})[0]; }
+function docRef(n){ return window.fb.doc(window.fb.db,'shared_data','podio_'+norm(n)); }
+function cfgRef(){ return window.fb.doc(window.fb.db,'shared_data','podio_config'); }
+function ind(t){ var i=document.getElementById('saveInd_podio'); if(i){ i.textContent=t; i.classList.add('show'); } }
+function salvarReg(n){ ind('Salvando...'); window.fb.setDoc(docRef(n),{regs:regs[n]||[],ts:Date.now()}).then(function(){ ind('✓ Salvo'); }).catch(function(e){ console.error('PODIO',e); ind('⚠ Erro ao salvar'); }); }
+function salvarCfg(){ window.fb.setDoc(cfgRef(),{nome:cfg.nome,inicio:cfg.inicio,pesos:cfg.pesos,ts:Date.now()}).catch(function(e){ console.error('PODIO cfg',e); }); }
+function ouvir(){
+  if(ouvindo||!window.fb||!U()) return; ouvindo=true;
+  window.fb.onSnapshot(cfgRef(),function(d){ if(d.exists&&d.exists()){ var x=d.data()||{}; cfg={nome:x.nome||'Competição',inicio:x.inicio||'',pesos:Object.assign({lig:1,ag:5,fe:20},x.pesos||{})}; } render(); },function(){});
+  PESSOAS.forEach(function(p){ window.fb.onSnapshot(docRef(p.n),function(d){ regs[p.n]=(d.exists&&d.exists()?(d.data()||{}).regs:[])||[]; render(); checarAlertas(); },function(){}); });
+}
+function ini(ts){ var d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); }
+function limite(){
+  var h=ini(Date.now());
+  if(periodo==='hoje') return h;
+  if(periodo==='sem'){ var d=new Date(h); var dow=(d.getDay()+6)%7; return h-dow*86400000; }
+  if(periodo==='mes'){ var m=new Date(); return new Date(m.getFullYear(),m.getMonth(),1).getTime(); }
+  if(periodo==='comp'&&cfg.inicio) return new Date(cfg.inicio+'T00:00:00').getTime();
+  return 0;
+}
+function conta(n){
+  var L=limite(), o={lig:0,ag:0,fe:0,pts:0};
+  (regs[n]||[]).forEach(function(r){ if((r.ts||0)<L) return;
+    if(r.t==='lig') o.lig+=(r.n||1); else if(r.t==='ag'&&r.st!=='cancelado') o.ag++; else if(r.t==='fe') o.fe++; });
+  var w=cfg.pesos; o.pts=o.lig*(+w.lig||0)+o.ag*(+w.ag||0)+o.fe*(+w.fe||0); return o;
+}
+function render(){
+  var v=document.getElementById('view_podio'); if(!v) return;
+  var ch=document.getElementById('podio_chips'); if(!ch) return;
+  var cs=[['hoje','Hoje'],['sem','Semana'],['mes','Mês'],['comp','🏁 '+esc(cfg.nome)+(cfg.inicio?' (desde '+cfg.inicio.split('-').reverse().slice(0,2).join('/')+')':'')],['tudo','Tudo']];
+  ch.innerHTML=cs.map(function(c){ return '<button class="'+(periodo===c[0]?'on':'')+'" data-p="'+c[0]+'">'+c[1]+'</button>'; }).join('');
+  Array.prototype.forEach.call(ch.querySelectorAll('button'),function(b){ b.onclick=function(){ periodo=b.getAttribute('data-p'); render(); }; });
+  var rk=PESSOAS.map(function(p){ var c=conta(p.n); c.n=p.n; c.cor=p.c; return c; }).sort(function(a,b){ return b.pts-a.pts||b.fe-a.fe||b.ag-a.ag||b.lig-a.lig||a.n.localeCompare(b.n); });
+  var st=function(x){ return '📞 '+x.lig+' · 📅 '+x.ag+' · ✅ '+x.fe; };
+  var col=function(x,pos){ var cls='p'+pos; return '<div class="pd-col '+cls+'">'+(pos===1&&x.pts>0?'<div class="pd-coroa">👑</div>':'')+'<div class="pd-av" style="background:'+x.cor+'">'+esc(x.n.slice(0,2).toUpperCase())+'</div><div class="pd-nome">'+esc(x.n)+'</div><div class="pd-pts">'+x.pts+' <small>pts</small></div><div class="pd-st">'+st(x)+'</div><div class="pd-bloco">'+pos+'º</div></div>'; };
+  document.getElementById('podio_podio').innerHTML='<div class="pd-podio">'+col(rk[1],2)+col(rk[0],1)+col(rk[2],3)+'</div><div class="pd-resto">'+rk.slice(3).map(function(x,i){ return '<div class="pd-lin"><b class="n">'+(i+4)+'º</b><div class="pd-av" style="background:'+x.cor+'">'+esc(x.n.slice(0,2).toUpperCase())+'</div><div class="nm">'+esc(x.n)+'<div class="st">'+st(x)+'</div></div><div class="pt">'+x.pts+' pts</div></div>'; }).join('')+'</div><div style="text-align:center;font-size:11px;color:var(--muted);margin:-8px 0 14px">Pontos: 📞 ligação = '+cfg.pesos.lig+' · 📅 agendamento = '+cfg.pesos.ag+' · ✅ fechado = '+cfg.pesos.fe+'</div>';
+  renderReg(); renderListas();
+}
+function quem(){ var s=document.getElementById('pd_quem'); return s?s.value:eu(); }
+function renderReg(){
+  var box=document.getElementById('podio_reg'); if(!box) return;
+  if(document.activeElement&&box.contains(document.activeElement)&&/INPUT|SELECT/.test(document.activeElement.tagName)) return; // não atrapalha quem digita
+  var me=eu(), a=adm();
+  if(!me&&!a){ box.innerHTML='<div class="pd-lista" style="text-align:center;color:var(--muted)">Você acompanha a competição por aqui. Quem compete: Kuka, Adriele, Sharon, Thiago e Felipe.</div>'; return; }
+  var prev=quem();
+  var sel=a?'<select id="pd_quem">'+PESSOAS.map(function(p){ return '<option'+(p.n===(prev||me)?' selected':'')+'>'+p.n+'</option>'; }).join('')+'</select>':'<input type="hidden" id="pd_quem" value="'+esc(me)+'">';
+  var agora=new Date(Date.now()+3600000); agora.setMinutes(0,0,0); var def=new Date(agora.getTime()-agora.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  box.innerHTML='<div class="pd-card" style="margin-bottom:12px"><h4>'+(a?'Lançar para:':'Lançando como <b>'+esc(me)+'</b>')+'</h4>'+sel+'</div><div class="pd-reg">'+
+   '<div class="pd-card"><h4>📞 Ligações</h4><div class="row"><button onclick="window.PODIO.lig(1)">+1</button><button onclick="window.PODIO.lig(5)">+5</button><button onclick="window.PODIO.lig(10)">+10</button></div><input id="pd_lig_n" type="number" min="1" placeholder="Outra quantidade"><div class="row"><button class="sec" onclick="window.PODIO.lig(+document.getElementById(\'pd_lig_n\').value)">Adicionar</button><button class="sec" onclick="window.PODIO.desfazLig()">↩ Desfazer última</button></div></div>'+
+   '<div class="pd-card"><h4>📅 Agendamento</h4><input id="pd_ag_c" placeholder="Nome do cliente"><input id="pd_ag_q" type="datetime-local" value="'+def+'"><div class="row"><button onclick="window.PODIO.agendar()">Agendar</button></div><div style="font-size:11px;opacity:.7;margin-top:6px">Perto do horário toca um alerta bem alto.</div></div>'+
+   '<div class="pd-card"><h4>✅ Fechado</h4><input id="pd_fe_c" placeholder="Nome do cliente"><input id="pd_fe_v" placeholder="Valor (opcional)"><div class="row"><button onclick="window.PODIO.fechou()">Registrar fechado</button></div></div></div>';
+}
+function lista(){ var out=[]; PESSOAS.forEach(function(p){ (regs[p.n]||[]).forEach(function(r){ out.push(Object.assign({de:p.n},r)); }); }); return out; }
+function dh(ts){ return new Date(ts).toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function falta(ts){ var m=Math.round((ts-Date.now())/60000); if(m<=-1) return 'passou há '+(-m)+' min'; if(m<=0) return 'AGORA'; if(m<60) return 'em '+m+' min'; var h=Math.floor(m/60); return 'em '+h+'h'+(m%60?(' '+(m%60)+'min'):''); }
+function renderListas(){
+  var box=document.getElementById('podio_listas'); if(!box) return; var me=eu(), a=adm(), L=lista();
+  var ags=L.filter(function(r){ return r.t==='ag'&&r.st==='marcado'&&r.quando>Date.now()-3600000; }).sort(function(x,y){return x.quando-y.quando;});
+  var pode=function(r){ return a||r.de===me; };
+  var h='<div class="pd-lista"><h4>📅 Próximos agendamentos</h4>'+(ags.length?ags.map(function(r){ var urg=r.quando-Date.now()<=15*60000; return '<div class="pd-it"><div class="q"><b>'+esc(r.cliente)+'</b><div class="t">'+esc(r.de)+' · '+dh(r.quando)+'</div></div><span class="cd'+(urg?' urg':'')+'">'+falta(r.quando)+'</span>'+(pode(r)?'<button onclick="window.PODIO.status(\''+r.de+'\',\''+r.id+'\',\'feito\')">✔ Feito</button><button onclick="window.PODIO.status(\''+r.de+'\',\''+r.id+'\',\'cancelado\')">✖ Cancelar</button>':'')+'</div>'; }).join(''):'<div class="t" style="color:var(--muted);font-size:13px">Nenhum agendamento marcado.</div>')+'</div>';
+  var fes=L.filter(function(r){ return r.t==='fe'; }).sort(function(x,y){return y.ts-x.ts;}).slice(0,10);
+  h+='<div class="pd-lista"><h4>✅ Últimos fechados</h4>'+(fes.length?fes.map(function(r){ return '<div class="pd-it"><div class="q"><b>'+esc(r.cliente)+'</b>'+(r.valor?' · '+esc(r.valor):'')+'<div class="t">'+esc(r.de)+' · '+dh(r.ts)+'</div></div>'+(pode(r)?'<button onclick="window.PODIO.apagar(\''+r.de+'\',\''+r.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada fechado ainda. Bora! 💪</div>')+'</div>';
+  box.innerHTML=h;
+}
+function uid(){ return 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
+function add(n,r){ if(!n||!pessoa(n)) return; regs[n]=(regs[n]||[]).concat([Object.assign({id:uid(),ts:Date.now()},r)]); salvarReg(n); render(); checarAlertas(); }
+function lig(q){ q=Math.floor(+q); if(!(q>0)) return; add(quem(),{t:'lig',n:q}); }
+function desfazLig(){ var n=quem(); var a=(regs[n]||[]).slice(); for(var i=a.length-1;i>=0;i--){ if(a[i].t==='lig'){ a.splice(i,1); regs[n]=a; salvarReg(n); render(); return; } } }
+function agendar(){ var c=document.getElementById('pd_ag_c').value.trim(), q=document.getElementById('pd_ag_q').value; if(!c||!q){ alert('Coloque o nome do cliente e o horário.'); return; } var ts=new Date(q).getTime(); if(isNaN(ts)){ alert('Horário inválido.'); return; } add(quem(),{t:'ag',cliente:c.slice(0,80),quando:ts,st:'marcado'}); document.getElementById('pd_ag_c').value=''; }
+function fechou(){ var c=document.getElementById('pd_fe_c').value.trim(); if(!c){ alert('Coloque o nome do cliente.'); return; } add(quem(),{t:'fe',cliente:c.slice(0,80),valor:document.getElementById('pd_fe_v').value.trim().slice(0,30)}); document.getElementById('pd_fe_c').value=''; document.getElementById('pd_fe_v').value=''; if(window.somFesta) window.somFesta(); }
+function status(n,id,st){ var r=(regs[n]||[]).filter(function(x){return x.id===id;})[0]; if(!r) return; r.st=st; salvarReg(n); render(); }
+function apagar(n,id){ if(!confirm('Apagar este registro?')) return; regs[n]=(regs[n]||[]).filter(function(x){return x.id!==id;}); salvarReg(n); render(); }
+function regrasAdm(){ var l=prompt('Pontos por ligação:',cfg.pesos.lig); if(l===null) return; var g=prompt('Pontos por agendamento:',cfg.pesos.ag); if(g===null) return; var f=prompt('Pontos por fechado:',cfg.pesos.fe); if(f===null) return; cfg.pesos={lig:+l||0,ag:+g||0,fe:+f||0}; salvarCfg(); render(); }
+function nova(){ var n=prompt('Nome da nova competição:',cfg.nome); if(!n) return; if(!confirm('Começar "'+n+'" hoje? O ranking dessa competição zera (o histórico continua guardado em "Tudo").')) return; cfg.nome=n.slice(0,40); cfg.inicio=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10); periodo='comp'; salvarCfg(); render(); }
+
+/* ---- Alerta bem alto de agendamento ---- */
+var actx=null, sirene=null;
+['pointerdown','keydown','touchstart'].forEach(function(ev){ document.addEventListener(ev,function un(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} document.removeEventListener(ev,un); },true); });
+function toca(){
+  try{ var c=actx||(actx=new (window.AudioContext||window.webkitAudioContext)()); if(c.state==='suspended') c.resume();
+    var m=c.createGain(); m.gain.value=2; var k=c.createDynamicsCompressor(); m.connect(k); k.connect(c.destination);
+    for(var i=0;i<16;i++){ (function(i){ var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+i*.3; o.type='square'; o.frequency.setValueAtTime(i%2?740:1040,t); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.7,t+.02); g.gain.setValueAtTime(.7,t+.26); g.gain.linearRampToValueAtTime(0,t+.29); o.connect(g); g.connect(m); o.start(t); o.stop(t+.3); })(i); }
+  }catch(e){ console.warn('sirene',e); }
+  try{ navigator.vibrate&&navigator.vibrate([400,150,400,150,600]); }catch(e){}
+}
+var tTit=null;
+function mostraAlerta(r,est){
+  var o=document.getElementById('pdAlerta'); if(o) o.remove();
+  var quando=est===0?'É AGORA!':'Faltam '+Math.max(1,Math.round((r.quando-Date.now())/60000))+' minutos';
+  o=document.createElement('div'); o.id='pdAlerta'; o.innerHTML='<div class="box"><h2>⏰ AGENDAMENTO!</h2><div class="cl">'+esc(r.cliente)+'</div><div class="qd">'+esc(r.de)+' · '+dh(r.quando)+'<br><b>'+quando+'</b></div><button id="pdOk">Entendi 👍</button></div>';
+  document.body.appendChild(o); toca();
+  clearInterval(tTit); var t0=document.title, f=0; tTit=setInterval(function(){ document.title=(f++%2)?t0:'⏰ AGENDAMENTO '+r.cliente; },700);
+  document.getElementById('pdOk').onclick=function(){ o.remove(); clearInterval(tTit); document.title=t0; };
+  clearInterval(sirene); var n=0; sirene=setInterval(function(){ if(!document.getElementById('pdAlerta')||++n>5){ clearInterval(sirene); return; } toca(); },5000);
+}
+function jaAvisou(k){ try{ return (JSON.parse(localStorage.getItem('podio_alertado')||'[]')).indexOf(k)>=0; }catch(e){ return false; } }
+function marca(k){ try{ var a=JSON.parse(localStorage.getItem('podio_alertado')||'[]'); a.push(k); localStorage.setItem('podio_alertado',JSON.stringify(a.slice(-200))); }catch(e){} }
+function checarAlertas(){
+  var me=eu(), a=adm(); if(!me&&!a) return;
+  var agora=Date.now();
+  lista().forEach(function(r){
+    if(r.t!=='ag'||r.st!=='marcado'||!r.quando) return; if(!a&&r.de!==me) return;
+    var m=(r.quando-agora)/60000, est=null;
+    if(m<=0&&m>-30) est=0; else if(m>0&&m<=5) est=5; else if(m>5&&m<=15) est=15;
+    if(est===null) return; var k=r.id+':'+est; if(jaAvisou(k)) return;
+    // se já passou de um estágio mais urgente, não repete os mais fracos
+    marca(k); if(est===15) marca(r.id+':15'); if(est===5){ marca(r.id+':15'); } if(est===0){ marca(r.id+':15'); marca(r.id+':5'); }
+    mostraAlerta(r,est);
+  });
+}
+setInterval(checarAlertas,15000);
+function iniciar(){ ouvir(); render(); }
+window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar);
+if(U()) iniciar();
+window.PODIO.render=render; window.PODIO.lig=lig; window.PODIO.desfazLig=desfazLig; window.PODIO.agendar=agendar; window.PODIO.fechou=fechou; window.PODIO.status=status; window.PODIO.apagar=apagar; window.PODIO.regras=regrasAdm; window.PODIO.nova=nova; window.PODIO.testarAlerta=function(){ mostraAlerta({cliente:'Cliente de teste',de:eu()||'Ana',quando:Date.now()+5*60000},5); };
+})();
+</script>
+
 </body>
 </html>
