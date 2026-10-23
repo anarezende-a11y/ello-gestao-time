@@ -1693,6 +1693,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_podio" onclick="mostrarTool('podio')">
     <span class="di-icon">🏅</span> Pódio
   </button>
+  <button class="drawer-item" id="di_agenda" onclick="mostrarTool('agenda')">
+    <span class="di-icon">📆</span> Agenda
+  </button>
   <button class="drawer-item" id="di_chat" onclick="mostrarTool('chat')">
     <span class="di-icon">💬</span> Chat <span class="chat-badge" id="chatBadgeDrawer" hidden></span>
   </button>
@@ -1731,7 +1734,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 09h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 10h15</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -1819,6 +1822,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Pódio</div>
         <div class="hc-desc">Competição do time: ligações, agendamentos e fechados num pódio, com alerta na hora de cada agendamento.</div>
         <div class="hc-cta">Abrir pódio →</div>
+      </button>
+      <button class="home-card c-checklist" onclick="mostrarTool('agenda')">
+        <div class="hc-icon">📆</div>
+        <div class="hc-title">Agenda</div>
+        <div class="hc-desc">Calendário do time: compromissos, reuniões e os agendamentos de clientes, com alerta na hora.</div>
+        <div class="hc-cta">Abrir agenda →</div>
       </button>
       <button class="home-card c-chat" onclick="mostrarTool('chat')">
         <div class="hc-icon">💬</div>
@@ -2074,6 +2083,20 @@ window.APPAUTH = window.APPAUTH || {};
     <div id="podio_podio"></div>
     <div id="podio_reg"></div>
     <div id="podio_listas"></div>
+  </div>
+</div>
+
+<div class="tool-view tool-agenda" id="view_agenda">
+  <div class="tool-subbar">
+    <span class="sb-title">📆 Agenda do time</span>
+    <span class="save-ind" id="saveInd_agenda">✓ Salvo</span>
+    <button class="btn btn-amber" onclick="window.AGENDA.novo()">+ Compromisso</button>
+  </div>
+  <div class="wrap" style="max-width:1100px;">
+    <div class="ag-top"><button onclick="window.AGENDA.mes(-1)">‹</button><b id="ag_titulo"></b><button onclick="window.AGENDA.mes(1)">›</button><button onclick="window.AGENDA.hoje()">Hoje</button>
+      <select id="ag_filtro" onchange="window.AGENDA.filtro(this.value)"></select></div>
+    <div class="ag-grid" id="ag_grid"></div>
+    <div class="ag-dia" id="ag_dia"></div>
   </div>
 </div>
 
@@ -3371,8 +3394,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', agenda:'view_agenda', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', agenda:'Agenda do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -3397,6 +3420,7 @@ function mostrarTool(nome) {
   if (nome === 'campanha' && window.CAMP) window.CAMP.render();
   if (nome === 'checklist' && window.CHECK) window.CHECK.render();
   if (nome === 'podio' && window.PODIO) window.PODIO.render();
+  if (nome === 'agenda' && window.AGENDA) window.AGENDA.render();
   if (window.CHAT) window.CHAT.visivel(nome === 'chat');
   if (nome === 'feedback' && window.FEED) window.FEED.render();
   if (nome === 'contratos' && window.CONTR) window.CONTR.render();
@@ -12953,6 +12977,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     roleplay:'<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>',
     rco:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
     campanha:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    agenda:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
     podio:'<path d="M8 21V12H3v9"/><path d="M21 21v-6h-5v6"/><path d="M15 21V6H9v15"/><path d="M3 21h18"/>',
     chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
     checklist:'<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
@@ -12968,7 +12993,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
     dashboard:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
     pop:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'
   };
-  var COR = { podio:'o', chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
+  var COR = { agenda:'c', podio:'o', chat:'c', daily:'o', reuniao:'g', pauta:'c', oneone:'v', treinamentos:'c', roleplay:'v', rco:'o', campanha:'o', checklist:'g',
     feedback:'v', contratos:'c', cargos:'o', posvendas:'g', pdl:'o', atualizacoes:'g', desafioreuniao:'r', provas:'c', dashboard:'v', pop:'g', home:'o' };
   function svg(k){ return P[k] ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[k]+'</svg>' : ''; }
   function chave(el){ var m = (el.getAttribute('onclick')||'').match(/mostrarTool\('(\w+)'\)/); return m ? m[1] : null; }
@@ -13016,7 +13041,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['campanha','chat','checklist','podio','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['agenda','campanha','chat','checklist','podio','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
@@ -14103,8 +14128,8 @@ function marca(k){ try{ var a=JSON.parse(localStorage.getItem('podio_alertado')|
 function checarAlertas(){
   var me=eu(), a=adm(); if(!me&&!a) return;
   var agora=Date.now();
-  lista().forEach(function(r){
-    if(r.t!=='ag'||r.st!=='marcado'||!r.quando) return; if(!a&&r.de!==me) return;
+  lista().concat(window.AGENDA&&window.AGENDA.comoAg?window.AGENDA.comoAg():[]).forEach(function(r){
+    if(r.t!=='ag'||r.st!=='marcado'||!r.quando) return; if(!r._ag&&!a&&r.de!==me) return;
     var m=(r.quando-agora)/60000, est=null;
     if(m<=0&&m>-30) est=0; else if(m>0&&m<=5) est=5; else if(m>5&&m<=15) est=15;
     if(est===null) return; var k=r.id+':'+est; if(jaAvisou(k)) return;
@@ -14117,7 +14142,83 @@ setInterval(checarAlertas,15000);
 function iniciar(){ ouvir(); render(); }
 window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar);
 if(U()) iniciar();
-window.PODIO.render=render; window.PODIO.lig=lig; window.PODIO.desfazLig=desfazLig; window.PODIO.agendar=agendar; window.PODIO.fechou=fechou; window.PODIO.status=status; window.PODIO.apagar=apagar; window.PODIO.reverter=reverter; window.PODIO.zerar=zerar; window.PODIO.regras=regrasAdm; window.PODIO.nova=nova; window.PODIO.testarAlerta=function(){ mostraAlerta({cliente:'Cliente de teste',de:eu()||'Ana',quando:Date.now()+5*60000},5); };
+window.PODIO.agendamentos=function(){ return lista().filter(function(r){ return r.t==='ag'&&r.st!=='cancelado'; }); }; window.PODIO.render=render; window.PODIO.lig=lig; window.PODIO.desfazLig=desfazLig; window.PODIO.agendar=agendar; window.PODIO.fechou=fechou; window.PODIO.status=status; window.PODIO.apagar=apagar; window.PODIO.reverter=reverter; window.PODIO.zerar=zerar; window.PODIO.regras=regrasAdm; window.PODIO.nova=nova; window.PODIO.testarAlerta=function(){ mostraAlerta({cliente:'Cliente de teste',de:eu()||'Ana',quando:Date.now()+5*60000},5); };
+})();
+</script>
+
+<!-- ===== JS: Agenda do time ===== -->
+<style>
+.ag-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 12px}.ag-top b{font-size:18px;color:var(--text);min-width:170px;text-align:center;text-transform:capitalize}.ag-top button,.ag-top select{padding:7px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--card2,rgba(255,255,255,.06));color:var(--text);cursor:pointer;font:inherit;font-size:13px}.ag-top select{margin-left:auto}
+.ag-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.ag-h{text-align:center;font-size:11px;font-weight:800;color:var(--muted);padding:4px 0;text-transform:uppercase}
+.ag-c{min-height:78px;border:1px solid var(--border);border-radius:10px;padding:5px 6px;background:var(--card,rgba(255,255,255,.05));cursor:pointer;overflow:hidden;font-size:11px;color:var(--text)}.ag-c:hover{border-color:var(--laranja,#FD7400)}.ag-c.fora{opacity:.35}.ag-c.hoje{border-color:var(--laranja,#FD7400);box-shadow:0 0 0 1px var(--laranja,#FD7400) inset}.ag-c.sel{background:rgba(253,116,0,.18)}
+.ag-c .d{font-weight:800;font-size:12px;margin-bottom:3px}.ag-e{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:5px;padding:1px 4px;margin-top:2px;font-size:10.5px;background:rgba(255,255,255,.12)}.ag-e.cli{background:rgba(253,116,0,.35)}.ag-e.time{background:rgba(79,139,255,.4)}.ag-mais{font-size:10px;color:var(--muted);margin-top:2px}
+.ag-dia{margin-top:14px;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--card,rgba(255,255,255,.05));color:var(--text)}.ag-dia h4{margin:0 0 8px}
+.ag-it{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);flex-wrap:wrap;font-size:13px}.ag-it:first-of-type{border-top:0}.ag-it .h{font-weight:900;min-width:48px}.ag-it .q{flex:1;min-width:160px}.ag-it .t{font-size:11px;color:var(--muted)}.ag-it button{border:0;border-radius:8px;padding:4px 9px;cursor:pointer;background:rgba(255,255,255,.12);color:var(--text);font-size:12px}
+#agModal{position:fixed;inset:0;z-index:100005;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}#agModal .box{width:min(420px,92vw);background:#12161d;border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:18px;color:#fff;display:flex;flex-direction:column;gap:8px}#agModal h3{margin:0}#agModal input,#agModal select{padding:9px 10px;border-radius:9px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:14px}#agModal label{font-size:12px;opacity:.8}#agModal .bt{display:flex;gap:8px;margin-top:6px}#agModal .bt button{flex:1;padding:10px;border-radius:10px;border:0;cursor:pointer;font-weight:800;background:rgba(255,255,255,.14);color:#fff}#agModal .bt .ok{background:#FD7400}
+@media(max-width:700px){.ag-c{min-height:54px}.ag-e{display:none}}
+</style>
+<script>
+window.AGENDA = window.AGENDA || {};
+(function(){
+var DONOS=['Ana','Kuka','Adriele','Sharon','Thiago','Felipe','Amanda','Eduardo','Time'];
+var TIPOS=[['🗓️','Compromisso'],['🤝','Reunião'],['📞','Ligação'],['📝','Lembrete'],['🎓','Treinamento']];
+var ev={}, mesRef=new Date(); mesRef.setDate(1); var diaSel=new Date(), filtroDono='todos', ouvindo=false;
+function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
+function adm(){ var u=U(); return !!u&&u.role==='admin'; }
+function norm(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function eu(){ var u=U(); if(!u) return null; if(u.role==='admin') return 'Ana'; var l=norm(u.nome||String(u.email||'').split('@')[0]); return DONOS.filter(function(d){ return d!=='Time'&&d!=='Ana'&&l.indexOf(norm(d))===0; })[0]||null; }
+function ref(d){ return window.fb.doc(window.fb.db,'shared_data','agenda_'+norm(d)); }
+function salvar(d){ var i=document.getElementById('saveInd_agenda'); if(i){ i.textContent='Salvando...'; i.classList.add('show'); } window.fb.setDoc(ref(d),{ev:ev[d]||[],ts:Date.now()}).then(function(){ if(i) i.textContent='✓ Salvo'; }).catch(function(e){ console.error('AGENDA',e); if(i) i.textContent='⚠ Erro ao salvar'; }); }
+function ouvir(){ if(ouvindo||!window.fb||!U()) return; ouvindo=true; DONOS.forEach(function(d){ window.fb.onSnapshot(ref(d),function(s){ ev[d]=(s.exists&&s.exists()?(s.data()||{}).ev:[])||[]; render(); },function(){}); }); }
+function pod(){ var o=[]; try{ ['Kuka','Adriele','Sharon','Thiago','Felipe'].forEach(function(n){}); }catch(e){} return o; }
+function todos(){
+  var out=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ out.push({id:e.id,dono:d,titulo:e.titulo,quando:e.quando,tipo:e.tipo||'🗓️',alerta:!!e.alerta,src:'agenda'}); }); });
+  if(window.PODIO&&window.PODIO.agendamentos) window.PODIO.agendamentos().forEach(function(a){ out.push({id:a.id,dono:a.de,titulo:a.cliente,quando:a.quando,tipo:'📅',alerta:false,src:'podio',st:a.st}); });
+  return out.filter(function(e){ return !e.st||e.st==='marcado'||e.st==='feito'; });
+}
+function visiveis(){ return todos().filter(function(e){ return filtroDono==='todos'||e.dono===filtroDono||(filtroDono==='meus'&&(e.dono===eu()||e.dono==='Time')); }); }
+function mesmoDia(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function hh(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function render(){
+  var g=document.getElementById('ag_grid'); if(!g) return;
+  var f=document.getElementById('ag_filtro'); if(f&&!f.options.length){ f.innerHTML='<option value="todos">Todo o time</option><option value="meus">Só os meus (e do time)</option>'+DONOS.filter(function(d){return d!=='Time';}).map(function(d){return '<option>'+d+'</option>';}).join(''); } if(f) f.value=filtroDono;
+  document.getElementById('ag_titulo').textContent=mesRef.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  var evs=visiveis(), ini=new Date(mesRef), off=(ini.getDay()+6)%7; ini.setDate(1-off);
+  var h=['seg','ter','qua','qui','sex','sáb','dom'].map(function(x){ return '<div class="ag-h">'+x+'</div>'; }).join('');
+  for(var i=0;i<42;i++){ var d=new Date(ini); d.setDate(ini.getDate()+i); if(i>=35&&d.getMonth()!==mesRef.getMonth()) break;
+    var es=evs.filter(function(e){ return mesmoDia(new Date(e.quando),d); }).sort(function(a,b){return a.quando-b.quando;});
+    h+='<div class="ag-c'+(d.getMonth()!==mesRef.getMonth()?' fora':'')+(mesmoDia(d,new Date())?' hoje':'')+(mesmoDia(d,diaSel)?' sel':'')+'" onclick="window.AGENDA.dia('+d.getTime()+')"><div class="d">'+d.getDate()+'</div>'+es.slice(0,3).map(function(e){ return '<span class="ag-e '+(e.src==='podio'?'cli':e.dono==='Time'?'time':'')+'">'+e.tipo+' '+hh(e.quando)+' '+esc(e.titulo)+'</span>'; }).join('')+(es.length>3?'<div class="ag-mais">+'+(es.length-3)+' mais</div>':'')+'</div>'; }
+  g.innerHTML=h; renderDia();
+}
+function renderDia(){
+  var b=document.getElementById('ag_dia'); if(!b) return; var me=eu(), a=adm();
+  var es=visiveis().filter(function(e){ return mesmoDia(new Date(e.quando),diaSel); }).sort(function(x,y){return x.quando-y.quando;});
+  b.innerHTML='<h4>'+diaSel.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+'</h4>'+(es.length?es.map(function(e){ var pode=e.src==='agenda'&&(a||e.dono===me); return '<div class="ag-it"><span class="h">'+hh(e.quando)+'</span><div class="q">'+e.tipo+' <b>'+esc(e.titulo)+'</b><div class="t">'+esc(e.dono==='Time'?'Time todo':e.dono)+(e.src==='podio'?' · agendamento de cliente (gerencie no Pódio)':'')+(e.alerta?' · 🔔 com alerta':'')+'</div></div>'+(pode?'<button onclick="window.AGENDA.apagar(\''+e.dono+'\',\''+e.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada marcado neste dia.</div>');
+}
+function dia(ts){ diaSel=new Date(ts); render(); }
+function mes(n){ mesRef.setMonth(mesRef.getMonth()+n); render(); }
+function hoje(){ mesRef=new Date(); mesRef.setDate(1); diaSel=new Date(); render(); }
+function filtro(v){ filtroDono=v; render(); }
+function novo(){
+  var me=eu(); if(!me&&!adm()){ alert('Entre com o seu login para criar compromissos.'); return; }
+  var m=document.getElementById('agModal'); if(m) m.remove();
+  var d=new Date(diaSel); d.setHours(Math.max(8,new Date().getHours()+1),0,0,0); var v=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  var dono=adm()?'<label>Para quem</label><select id="agm_dono">'+DONOS.map(function(x){return '<option value="'+x+'">'+(x==='Time'?'Time todo':x)+'</option>';}).join('')+'</select>':'<input type="hidden" id="agm_dono" value="'+esc(me)+'">';
+  m=document.createElement('div'); m.id='agModal'; m.innerHTML='<div class="box"><h3>Novo compromisso</h3><label>O que é</label><input id="agm_t" placeholder="Ex: Reunião com cliente X"><label>Quando</label><input id="agm_q" type="datetime-local" value="'+v+'"><label>Tipo</label><select id="agm_tipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'">'+t[0]+' '+t[1]+'</option>';}).join('')+'</select>'+dono+'<label style="display:flex;gap:8px;align-items:center;font-size:13px;opacity:1"><input type="checkbox" id="agm_al" checked style="width:auto"> 🔔 Tocar alerta alto perto do horário</label><div class="bt"><button id="agm_c">Cancelar</button><button class="ok" id="agm_s">Salvar</button></div></div>';
+  document.body.appendChild(m);
+  document.getElementById('agm_c').onclick=function(){ m.remove(); };
+  document.getElementById('agm_s').onclick=function(){
+    var t=document.getElementById('agm_t').value.trim(), q=new Date(document.getElementById('agm_q').value).getTime(); if(!t||isNaN(q)){ alert('Preencha o que é e quando.'); return; }
+    var dn=document.getElementById('agm_dono').value; ev[dn]=(ev[dn]||[]).concat([{id:'a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),titulo:t.slice(0,80),quando:q,tipo:document.getElementById('agm_tipo').value,alerta:document.getElementById('agm_al').checked,por:me||'Ana',ts:Date.now()}]);
+    salvar(dn); diaSel=new Date(q); mesRef=new Date(q); mesRef.setDate(1); m.remove(); render();
+  };
+}
+function apagar(dn,id){ if(!confirm('Apagar este compromisso?')) return; ev[dn]=(ev[dn]||[]).filter(function(e){return e.id!==id;}); salvar(dn); render(); }
+function comoAg(){ var me=eu(), a=adm(), o=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ if(!e.alerta) return; if(!(a||d===me||d==='Time')) return; o.push({t:'ag',id:e.id,cliente:e.titulo,de:d==='Time'?'Time todo':d,quando:e.quando,st:'marcado',_ag:true}); }); }); return o; }
+function iniciar(){ ouvir(); render(); }
+window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar); if(U()) iniciar();
+window.AGENDA.render=render; window.AGENDA.dia=dia; window.AGENDA.mes=mes; window.AGENDA.hoje=hoje; window.AGENDA.filtro=filtro; window.AGENDA.novo=novo; window.AGENDA.apagar=apagar; window.AGENDA.comoAg=comoAg;
 })();
 </script>
 
