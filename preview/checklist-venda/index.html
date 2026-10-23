@@ -1734,7 +1734,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 11h20</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 11h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -14203,8 +14203,8 @@ function salvar(d){ var i=document.getElementById('saveInd_agenda'); if(i){ i.te
 function ouvir(){ if(ouvindo||!window.fb||!U()) return; ouvindo=true; DONOS.forEach(function(d){ window.fb.onSnapshot(ref(d),function(s){ ev[d]=(s.exists&&s.exists()?(s.data()||{}).ev:[])||[]; render(); },function(){}); }); }
 function pod(){ var o=[]; try{ ['Kuka','Adriele','Sharon','Thiago','Felipe'].forEach(function(n){}); }catch(e){} return o; }
 function todos(){
-  var out=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ out.push({id:e.id,dono:d,titulo:e.titulo,quando:e.quando,tipo:e.tipo||'🗓️',alerta:!!e.alerta,src:'agenda'}); }); });
-  if(window.PODIO&&window.PODIO.agendamentos) window.PODIO.agendamentos().forEach(function(a){ out.push({id:a.id,dono:a.de,titulo:a.cliente,quando:a.quando,tipo:'📅',alerta:false,src:'podio',st:a.st}); });
+  var out=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ out.push({id:e.id,dono:d,titulo:e.titulo,quando:e.quando,tipo:e.tipo||'🗓️',alerta:!!e.alerta,feito:!!e.feito,src:'agenda'}); }); });
+  if(window.PODIO&&window.PODIO.agendamentos) window.PODIO.agendamentos().forEach(function(a){ out.push({id:a.id,dono:a.de,titulo:a.cliente,quando:a.quando,tipo:'📅',alerta:false,src:'podio',st:a.st,feito:a.st==='feito'}); });
   return out.filter(function(e){ return !e.st||e.st==='marcado'||e.st==='feito'; });
 }
 function visiveis(){ return todos().filter(function(e){ return filtroDono==='todos'||e.dono===filtroDono||(filtroDono==='meus'&&(e.dono===eu()||e.dono==='Time')); }); }
@@ -14218,37 +14218,45 @@ function render(){
   var h=['seg','ter','qua','qui','sex','sáb','dom'].map(function(x){ return '<div class="ag-h">'+x+'</div>'; }).join('');
   for(var i=0;i<42;i++){ var d=new Date(ini); d.setDate(ini.getDate()+i); if(i>=35&&d.getMonth()!==mesRef.getMonth()) break;
     var es=evs.filter(function(e){ return mesmoDia(new Date(e.quando),d); }).sort(function(a,b){return a.quando-b.quando;});
-    h+='<div class="ag-c'+(d.getMonth()!==mesRef.getMonth()?' fora':'')+(mesmoDia(d,new Date())?' hoje':'')+(mesmoDia(d,diaSel)?' sel':'')+'" onclick="window.AGENDA.dia('+d.getTime()+')"><div class="d">'+d.getDate()+'</div>'+es.slice(0,3).map(function(e){ return '<span class="ag-e '+(e.src==='podio'?'cli':e.dono==='Time'?'time':'')+'">'+e.tipo+' '+hh(e.quando)+' '+esc(e.titulo)+'</span>'; }).join('')+(es.length>3?'<div class="ag-mais">+'+(es.length-3)+' mais</div>':'')+'</div>'; }
+    h+='<div class="ag-c'+(d.getMonth()!==mesRef.getMonth()?' fora':'')+(mesmoDia(d,new Date())?' hoje':'')+(mesmoDia(d,diaSel)?' sel':'')+'" onclick="window.AGENDA.dia('+d.getTime()+')"><div class="d">'+d.getDate()+'</div>'+es.slice(0,3).map(function(e){ return '<span class="ag-e '+(e.src==='podio'?'cli':e.dono==='Time'?'time':'')+'"'+(e.feito?' style="text-decoration:line-through;opacity:.55"':'')+'>'+(e.feito?'✔':e.tipo)+' '+hh(e.quando)+' '+esc(e.titulo)+'</span>'; }).join('')+(es.length>3?'<div class="ag-mais">+'+(es.length-3)+' mais</div>':'')+'</div>'; }
   g.innerHTML=h; renderDia();
 }
 function renderDia(){
   var b=document.getElementById('ag_dia'); if(!b) return; var me=eu(), a=adm();
   var es=visiveis().filter(function(e){ return mesmoDia(new Date(e.quando),diaSel); }).sort(function(x,y){return x.quando-y.quando;});
-  b.innerHTML='<h4>'+diaSel.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+'</h4>'+(es.length?es.map(function(e){ var pode=e.src==='agenda'&&(a||e.dono===me); return '<div class="ag-it"><span class="h">'+hh(e.quando)+'</span><div class="q">'+e.tipo+' <b>'+esc(e.titulo)+'</b><div class="t">'+esc(e.dono==='Time'?'Time todo':e.dono)+(e.src==='podio'?' · agendamento de cliente (gerencie no Pódio)':'')+(e.alerta?' · 🔔 com alerta':'')+'</div></div>'+(pode?'<button onclick="window.AGENDA.apagar(\''+e.dono+'\',\''+e.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada marcado neste dia.</div>');
+  b.innerHTML='<h4>'+diaSel.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})+'</h4>'+(es.length?es.map(function(e){ var pode=e.src==='agenda'&&(a||e.dono===me), vis=a||e.dono===me||e.dono==='Time'&&a; var ch=e.src==='podio'?(a||e.dono===me):pode; return '<div class="ag-it"'+(e.feito?' style="opacity:.6"':'')+'><span class="h">'+hh(e.quando)+'</span><div class="q">'+(e.feito?'✅':e.tipo)+' <b'+(e.feito?' style="text-decoration:line-through"':'')+'>'+esc(e.titulo)+'</b><div class="t">'+esc(e.dono==='Time'?'Time todo':e.dono)+(e.src==='podio'?' · agendamento de cliente (gerencie no Pódio)':'')+(e.alerta?' · 🔔 com alerta':'')+'</div></div>'+(ch?'<button onclick="window.AGENDA.visto(\''+e.src+'\',\''+e.dono+'\',\''+e.id+'\')">'+(e.feito?'↩ Reabrir':'✔ Visto')+'</button>':'')+(pode?'<button onclick="window.AGENDA.editar(\''+e.dono+'\',\''+e.id+'\')">✏️ Alterar</button><button onclick="window.AGENDA.apagar(\''+e.dono+'\',\''+e.id+'\')">🗑️</button>':'')+'</div>'; }).join(''):'<div style="color:var(--muted);font-size:13px">Nada marcado neste dia.</div>');
 }
 function dia(ts){ diaSel=new Date(ts); render(); }
 function mes(n){ mesRef.setMonth(mesRef.getMonth()+n); render(); }
 function hoje(){ mesRef=new Date(); mesRef.setDate(1); diaSel=new Date(); render(); }
 function filtro(v){ filtroDono=v; render(); }
-function novo(){
+function novo(edt){
   var me=eu(); if(!me&&!adm()){ alert('Entre com o seu login para criar compromissos.'); return; }
   var m=document.getElementById('agModal'); if(m) m.remove();
-  var d=new Date(diaSel); d.setHours(Math.max(8,new Date().getHours()+1),0,0,0); var v=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  var d=edt?new Date(edt.quando):new Date(diaSel); if(!edt) d.setHours(Math.max(8,new Date().getHours()+1),0,0,0); var v=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
   var dono=adm()?'<label>Para quem</label><select id="agm_dono">'+DONOS.map(function(x){return '<option value="'+x+'">'+(x==='Time'?'Time todo':x)+'</option>';}).join('')+'</select>':'<input type="hidden" id="agm_dono" value="'+esc(me)+'">';
-  m=document.createElement('div'); m.id='agModal'; m.innerHTML='<div class="box"><h3>Novo compromisso</h3><label>O que é</label><input id="agm_t" placeholder="Ex: Reunião com cliente X"><label>Quando</label><input id="agm_q" type="datetime-local" value="'+v+'"><label>Tipo</label><select id="agm_tipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'">'+t[0]+' '+t[1]+'</option>';}).join('')+'</select>'+dono+'<label style="display:flex;gap:8px;align-items:center;font-size:13px;opacity:1"><input type="checkbox" id="agm_al" checked style="width:auto"> 🔔 Tocar alerta alto perto do horário</label><div class="bt"><button id="agm_c">Cancelar</button><button class="ok" id="agm_s">Salvar</button></div></div>';
+  m=document.createElement('div'); m.id='agModal'; m.innerHTML='<div class="box"><h3>'+(edt?'Alterar compromisso':'Novo compromisso')+'</h3><label>O que é</label><input id="agm_t" placeholder="Ex: Reunião com cliente X" value="'+esc(edt?edt.titulo:'')+'"><label>Quando</label><input id="agm_q" type="datetime-local" value="'+v+'"><label>Tipo</label><select id="agm_tipo">'+TIPOS.map(function(t){return '<option value="'+t[0]+'">'+t[0]+' '+t[1]+'</option>';}).join('')+'</select>'+dono+'<label style="display:flex;gap:8px;align-items:center;font-size:13px;opacity:1"><input type="checkbox" id="agm_al" checked style="width:auto"> 🔔 Tocar alerta alto perto do horário</label><div class="bt"><button id="agm_c">Cancelar</button><button class="ok" id="agm_s">Salvar</button></div></div>';
   document.body.appendChild(m);
+  if(edt){ document.getElementById('agm_tipo').value=edt.tipo||'🗓️'; document.getElementById('agm_al').checked=!!edt.alerta; if(adm()) document.getElementById('agm_dono').value=edt.dono; }
   document.getElementById('agm_c').onclick=function(){ m.remove(); };
   document.getElementById('agm_s').onclick=function(){
     var t=document.getElementById('agm_t').value.trim(), q=new Date(document.getElementById('agm_q').value).getTime(); if(!t||isNaN(q)){ alert('Preencha o que é e quando.'); return; }
-    var dn=document.getElementById('agm_dono').value; ev[dn]=(ev[dn]||[]).concat([{id:'a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),titulo:t.slice(0,80),quando:q,tipo:document.getElementById('agm_tipo').value,alerta:document.getElementById('agm_al').checked,por:me||'Ana',ts:Date.now()}]);
+    var dn=document.getElementById('agm_dono').value;
+    if(edt){ var ant=edt.dono; ev[ant]=(ev[ant]||[]).filter(function(x){return x.id!==edt.id;}); var novoE={id:(q===edt.quando?edt.id:'a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)),titulo:t.slice(0,80),quando:q,tipo:document.getElementById('agm_tipo').value,alerta:document.getElementById('agm_al').checked,feito:q===edt.quando?!!edt.feito:false,por:edt.por||me||'Ana',ts:edt.ts||Date.now(),alterado:Date.now()}; ev[dn]=(ev[dn]||[]).concat([novoE]); if(ant!==dn) salvar(ant); salvar(dn); diaSel=new Date(q); mesRef=new Date(q); mesRef.setDate(1); m.remove(); render(); return; }
+    ev[dn]=(ev[dn]||[]).concat([{id:'a_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),titulo:t.slice(0,80),quando:q,tipo:document.getElementById('agm_tipo').value,alerta:document.getElementById('agm_al').checked,por:me||'Ana',ts:Date.now()}]);
     salvar(dn); diaSel=new Date(q); mesRef=new Date(q); mesRef.setDate(1); m.remove(); render();
   };
 }
+function editar(dn,id){ var e=todos().filter(function(x){return x.id===id&&x.dono===dn&&x.src==='agenda';})[0]; if(e){ var orig=(ev[dn]||[]).filter(function(x){return x.id===id;})[0]||{}; e.por=orig.por; e.ts=orig.ts; novo(e); } }
+function visto(src,dn,id){
+  if(src==='podio'){ var r=window.PODIO.agendamentos().filter(function(x){return x.id===id;})[0]; if(r) window.PODIO.status(dn,id,r.st==='feito'?'marcado':'feito'); render(); return; }
+  var x=(ev[dn]||[]).filter(function(y){return y.id===id;})[0]; if(!x) return; x.feito=!x.feito; salvar(dn); render();
+}
 function apagar(dn,id){ if(!confirm('Apagar este compromisso?')) return; ev[dn]=(ev[dn]||[]).filter(function(e){return e.id!==id;}); salvar(dn); render(); }
-function comoAg(){ var me=eu(), a=adm(), o=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ if(!e.alerta) return; if(!(a||d===me||d==='Time')) return; o.push({t:'ag',id:e.id,cliente:e.titulo,de:d==='Time'?'Time todo':d,quando:e.quando,st:'marcado',_ag:true}); }); }); return o; }
+function comoAg(){ var me=eu(), a=adm(), o=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ if(!e.alerta||e.feito) return; if(!(a||d===me||d==='Time')) return; o.push({t:'ag',id:e.id,cliente:e.titulo,de:d==='Time'?'Time todo':d,quando:e.quando,st:'marcado',_ag:true}); }); }); return o; }
 function iniciar(){ ouvir(); render(); }
 window.addEventListener('userAuthed',iniciar); window.addEventListener('fbReady',iniciar); if(U()) iniciar();
-window.AGENDA.render=render; window.AGENDA.dia=dia; window.AGENDA.mes=mes; window.AGENDA.hoje=hoje; window.AGENDA.filtro=filtro; window.AGENDA.novo=novo; window.AGENDA.apagar=apagar; window.AGENDA.comoAg=comoAg;
+window.AGENDA.render=render; window.AGENDA.dia=dia; window.AGENDA.mes=mes; window.AGENDA.hoje=hoje; window.AGENDA.filtro=filtro; window.AGENDA.novo=novo; window.AGENDA.apagar=apagar; window.AGENDA.editar=editar; window.AGENDA.visto=visto; window.AGENDA.comoAg=comoAg;
 })();
 </script>
 
