@@ -1736,7 +1736,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 23/10 · 15h20</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 26/10 · 09h45</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -7743,10 +7743,8 @@ function renderCardAdmin(f) {
   let statusBadge;
   if (!msgs.length) {
     statusBadge = `<span class="feed-resposta-badge pendente">⏳ sem resposta</span>`;
-  } else if (ultima.de === 'liderado') {
-    statusBadge = `<span class="feed-resposta-badge urgente">🔴 aguardando sua resposta</span>`;
   } else {
-    statusBadge = `<span class="feed-resposta-badge feito">💬 respondido</span>`;
+    statusBadge = '';   // depois que o liderado responde, fica só o selo de aceite
   }
   const aceiteBadge = f.aceito
     ? `<span class="feed-resposta-badge feito">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
