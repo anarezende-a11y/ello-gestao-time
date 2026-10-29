@@ -1738,6 +1738,7 @@ window.APPAUTH = window.APPAUTH || {};
   <div class="drawer-foot">
     <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 29/10 · 16h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
+    <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
   </div>
@@ -3500,6 +3501,37 @@ window.ELLO_NUVEM = function(chave, docId, aoReceber){
   window.addEventListener('fbReady', ouvir);
   setTimeout(ouvir, 0);
   return { salvar: salvar };
+};
+</script>
+
+<script>
+/* Backup: baixa um .json com todos os documentos de shared_data (e os dados locais da plataforma) */
+window.ELLO_BACKUP = async function(){
+  if(!window.fb || !window.APPAUTH || !window.APPAUTH.usuarioAtual){ alert('Entre na plataforma para baixar o backup.'); return; }
+  const fb = window.fb, saida = { geradoEm: new Date().toISOString(), por: window.APPAUTH.usuarioAtual.email || '', shared_data: {}, local: {} };
+  const conhecidos = ['atualizacoes','campanhas','cargos','contratos','daily_tarefas','dailys','desafio_reuniao','feedbacks','funil_cs','integracoes','one_on_one','pdl','podio_config','pop','posvendas_config','posvendas_negocios','posvendas_vinculos','provas','rco','reuniao_semanal','roleplay','treinamentos','chat_bloqueios'];
+  let viaColecao = false;
+  try {
+    await new Promise((ok, falha) => {
+      let un = null;
+      un = fb.onSnapshot(fb.collection(fb.db, 'shared_data'), q => {
+        (q.docs || []).forEach(d => { const id = d.id; if(/^(chamar_foto_|tema_img_)/.test(id)) return; saida.shared_data[id] = d.data(); });
+        viaColecao = true; try { un && un(); } catch(e) {} ok();
+      }, falha);
+      setTimeout(() => falha(new Error('tempo')), 15000);
+    });
+  } catch(e) { /* sem permissão para listar: vai documento por documento */ }
+  if(!viaColecao){
+    for(const id of conhecidos){ try { const sn = await fb.getDoc(fb.doc(fb.db, 'shared_data', id)); if(sn.exists()) saida.shared_data[id] = sn.data(); } catch(e) {} }
+  }
+  try { Object.keys(localStorage).filter(k => /^ello/.test(k)).forEach(k => saida.local[k] = localStorage.getItem(k)); } catch(e) {}
+  const n = Object.keys(saida.shared_data).length;
+  const blob = new Blob([JSON.stringify(saida, null, 1)], {type:'application/json'});
+  const a = document.createElement('a'); const hoje = new Date();
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup-ello-gestao-' + hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0') + '.json';
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  console.log('Backup gerado com ' + n + ' documentos');
 };
 </script>
 
