@@ -1736,7 +1736,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 26/10 · 09h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 29/10 · 16h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button id="fixAdminBtn" class="tr-btn-delete" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.APPAUTH.corrigirAdmin()">🛠️ Corrigir minha permissão de admin</button>
     <button class="tr-btn-delete" style="width:100%; justify-content:center; display:flex;" onclick="window.APPAUTH.sair()">🚪 Sair</button>
@@ -3449,6 +3449,60 @@ function aplicarPermissoes(role) {
 }
 </script>
 
+<!-- ===== JS: sincronização na nuvem para abas que guardavam só no navegador ===== -->
+<script>
+/* Antes, Reunião Semanal e One-on-One ficavam só no localStorage do computador de quem usava.
+   Agora o localStorage vira cache e o Firebase (shared_data/<docId>) é a fonte.
+   - Primeira vez sem nada na nuvem: sobe o que existe neste navegador (migração).
+   - Já existe na nuvem e este navegador nunca sincronizou: a nuvem vale; o local fica guardado em <chave>_backup_antes_nuvem. */
+window.ELLO_NUVEM = function(chave, docId, aoReceber){
+  var flag = chave + '_nuvem_ok', pronto = false, pendente = null, timer = null, ultimoEnviado = null;
+  function enviar(txt){
+    if(!window.fb || !window.APPAUTH || !window.APPAUTH.usuarioAtual) return;
+    ultimoEnviado = txt;
+    var u = window.APPAUTH.usuarioAtual;
+    window.fb.setDoc(window.fb.doc(window.fb.db, 'shared_data', docId), { dados: txt, atualizadoEm: Date.now(), por: u.email || '' })
+      .catch(function(e){ console.error('Nuvem ' + docId + ': erro ao salvar', e); });
+  }
+  function salvar(txt){
+    if(!pronto){ pendente = txt; return; }
+    clearTimeout(timer); timer = setTimeout(function(){ enviar(txt); }, 700);
+  }
+  var ouvindo = false;
+  function ouvir(){
+    if(ouvindo || !window.fb || !window.APPAUTH || !window.APPAUTH.usuarioAtual) return;
+    ouvindo = true;
+    window.fb.onSnapshot(window.fb.doc(window.fb.db, 'shared_data', docId), function(snap){
+      var local = null; try { local = localStorage.getItem(chave); } catch(e){}
+      var jaSincronizou = false; try { jaSincronizou = localStorage.getItem(flag) === '1'; } catch(e){}
+      var remoto = snap.exists() ? (snap.data() || {}).dados : null;
+      if(!remoto){
+        // nada na nuvem ainda: sobe o que este navegador tem
+        pronto = true; try { localStorage.setItem(flag, '1'); } catch(e){}
+        var subir = pendente || local; pendente = null;
+        if(subir) enviar(subir);
+        return;
+      }
+      if(!pronto && !jaSincronizou && local && local !== remoto){
+        try { localStorage.setItem(chave + '_backup_antes_nuvem', local); } catch(e){}
+      }
+      pronto = true; try { localStorage.setItem(flag, '1'); } catch(e){}
+      if(remoto === ultimoEnviado) return;   // eco do que este navegador acabou de salvar
+      if(pendente && jaSincronizou){ var p = pendente; pendente = null; enviar(p); return; }
+      pendente = null;
+      if(remoto !== local){
+        try { localStorage.setItem(chave, remoto); } catch(e){}
+        try { aoReceber && aoReceber(); } catch(e){ console.error(e); }
+      }
+    }, function(e){ pronto = true; console.error('Nuvem ' + docId + ': sem acesso', e); });
+  }
+  window.addEventListener('userAuthed', ouvir);
+  window.addEventListener('fbReady', ouvir);
+  setTimeout(ouvir, 0);
+  return { salvar: salvar };
+};
+</script>
+
 <!-- ===== JS: Reunião Semanal (escopo isolado) ===== -->
 <script>
 window.RS = window.RS || {};
@@ -3474,7 +3528,14 @@ function getData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { semanas: [] }; }
   catch(e) { return { semanas: [] }; }
 }
-function setData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function setData(d) { const txt = JSON.stringify(d); localStorage.setItem(STORAGE_KEY, txt); nuvemRS.salvar(txt); }
+const nuvemRS = window.ELLO_NUVEM(STORAGE_KEY, 'reuniao_semanal', function(){
+  const v = document.getElementById('view_reuniao');
+  if (v && v.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return; // não atrapalha quem está digitando
+  const n = (getData().semanas || []).length;
+  if (semanaAtual > n - 1) semanaAtual = Math.max(0, n - 1);
+  try { renderWeekNav(); renderForm(); } catch(e) {}
+});
 
 function getSemana(i) {
   const d = getData();
@@ -3884,7 +3945,15 @@ function getData() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
   catch(e) { return {}; }
 }
-function setData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function setData(d) { const txt = JSON.stringify(d); localStorage.setItem(STORAGE_KEY, txt); nuvemOO.salvar(txt); }
+const nuvemOO = window.ELLO_NUVEM(STORAGE_KEY, 'one_on_one', function(){
+  const v = document.getElementById('view_oneone');
+  if (v && v.contains(document.activeElement) && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if (!pessoaAtual) return;
+  const n = getConversas(pessoaAtual).length;
+  if (convAtual > n - 1) convAtual = Math.max(0, n - 1);
+  try { if (n) { renderHistoryNav(); renderForm(); } } catch(e) {}
+});
 function getConversas(pessoa) { const d = getData(); return d[pessoa] || []; }
 function saveConversa(pessoa, idx, conv) {
   const d = getData();
