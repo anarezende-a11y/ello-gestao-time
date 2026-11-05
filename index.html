@@ -1546,7 +1546,7 @@ window.APPAUTH = window.APPAUTH || {};
 (function(){
   const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
   // e-mails que não começam com o primeiro nome: força o nome usado nas listas do portal
-  const NOMES_POR_EMAIL = { 'duardogon@gmail.com': 'Eduardo' };
+  const NOMES_POR_EMAIL = { 'duardogon@gmail.com': 'Eduardo', 'felipe.spezza@gmail.com': 'Felipe Spezza', 'felipe.spezza@ellosolar.com.br': 'Felipe Spezza' };
   const nomeDoEmail = e => { const m = String(e||'').trim().toLowerCase(); if (NOMES_POR_EMAIL[m]) return NOMES_POR_EMAIL[m]; if (/spezza/.test(m.split('@')[0])) return 'Felipe Spezza'; return m.split('@')[0]; };
   let fbReady = false;
 
