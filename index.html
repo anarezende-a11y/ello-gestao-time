@@ -1547,7 +1547,7 @@ window.APPAUTH = window.APPAUTH || {};
   const ADMIN_EMAIL = 'ana.rezende@ellosolar.com';
   // e-mails que não começam com o primeiro nome: força o nome usado nas listas do portal
   const NOMES_POR_EMAIL = { 'duardogon@gmail.com': 'Eduardo' };
-  const nomeDoEmail = e => NOMES_POR_EMAIL[String(e||'').trim().toLowerCase()] || String(e||'').split('@')[0];
+  const nomeDoEmail = e => { const m = String(e||'').trim().toLowerCase(); if (NOMES_POR_EMAIL[m]) return NOMES_POR_EMAIL[m]; if (/spezza/.test(m.split('@')[0])) return 'Felipe Spezza'; return m.split('@')[0]; };
   let fbReady = false;
 
   function whenFbReady(cb) {
@@ -1593,7 +1593,7 @@ window.APPAUTH = window.APPAUTH || {};
       return { email: user.email, role: role, nome: nomeDoEmail(user.email) };
     }
     const dados = snap.data();
-    if (NOMES_POR_EMAIL[String(user.email||'').trim().toLowerCase()]) dados.nome = nomeDoEmail(user.email);
+    if (NOMES_POR_EMAIL[String(user.email||'').trim().toLowerCase()] || /spezza/i.test(String(user.email||'').split('@')[0])) dados.nome = nomeDoEmail(user.email);
     return dados;
   }
 
@@ -1736,7 +1736,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 29/10 · 18h00</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 05/11 · 09h05</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -13552,7 +13552,7 @@ body{
     {id:'geral',nome:'todos do time',desc:'Conversa com todo mundo — o 🔔 aqui chama a atenção de todos'}
   ];
   var MEMBROS = ['Ana','Adriele','Sharon','Kuka','Thiago','Amanda','Felipe','Eduardo'];
-  try { window.EQUIPE.vincular(MEMBROS, 'chat'); } catch(e) {}
+  try { window.EQUIPE.vincular(MEMBROS, 'chat', function(){ try { var me=eu(); if(me) MEMBROS.forEach(function(m){ if(m!==me) ouvir(dmId(me,m)); }); desenharLado(); } catch(e) {} }); } catch(e) {}
   var ativo = 'avisos', msgs = {}, unsubs = {}, lastRead = {}, presenca = {}, visivel = false;
   var respondendo = null, editando = null, pinados = {}, hbTimer = null, presUnsub = null;
 
@@ -13563,7 +13563,7 @@ body{
   }
   function U(){ return (window.APPAUTH && window.APPAUTH.usuarioAtual) || null; }
   function norm(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-  function canon(n){ var l=norm(n); if(!l) return null; for(var i=0;i<MEMBROS.length;i++){ var k=norm(MEMBROS[i]); if(l===k||l.indexOf(k)===0) return MEMBROS[i]; } return null; }
+  function canon(n){ var l=norm(n); if(!l) return null; var melhor=null, tam=0; for(var i=0;i<MEMBROS.length;i++){ var k=norm(MEMBROS[i]); if(!k) continue; if(l===k) return MEMBROS[i]; if(l.indexOf(k)===0 && k.length>tam){ melhor=MEMBROS[i]; tam=k.length; } } return melhor; }
   function eu(){
     var u=U(); if(!u) return ''; if(u.role==='admin') return 'Ana';
     var c=canon(u.nome)||canon(String(u.email||'').split('@')[0]); if(c) return c;
