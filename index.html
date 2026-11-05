@@ -557,6 +557,21 @@ body {
 .feed-card { border-left:4px solid var(--laranja); }
 .feed-card.tipo-melhoria { border-left-color:#E0B23A; }
 .feed-card.tipo-alinhamento { border-left-color:#3AAFE0; }
+.feed-card.tipo-advertencia { border:1px solid rgba(255,70,70,.55)!important; border-left:6px solid #ff3b3b!important; background:linear-gradient(160deg, rgba(120,12,12,.6), rgba(40,6,8,.8))!important; box-shadow:0 0 0 1px rgba(255,59,59,.15), 0 10px 30px rgba(120,0,0,.35)!important; }
+.feed-card.tipo-advertencia .tr-card-cat { background:#ff3b3b!important; color:#fff!important; letter-spacing:.06em; font-weight:900; }
+.adv-head { display:flex; align-items:center; gap:8px; margin:8px 0 2px; font-size:12px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:#ffb3b3; }
+.adv-ladder { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin:10px 0 6px; }
+.adv-ladder span { text-align:center; font-size:10px; font-weight:800; line-height:1.15; padding:6px 2px; border-radius:7px; background:rgba(255,255,255,.06); color:rgba(255,220,220,.55); border:1px solid rgba(255,120,120,.18); }
+.adv-ladder span.feito { background:rgba(255,59,59,.35); color:#fff; border-color:rgba(255,90,90,.6); }
+.adv-ladder span.atual { background:#ff3b3b; color:#fff; border-color:#ff7b7b; box-shadow:0 0 12px rgba(255,59,59,.6); }
+.adv-ladder span.fim { background:rgba(0,0,0,.45); color:#ff9b9b; border:1px dashed rgba(255,90,90,.6); }
+.adv-prox { font-size:12px; font-weight:800; color:#ffd0d0; }
+.adv-prox b { color:#fff; }
+.adv-info { margin-top:8px; font-size:12px; line-height:1.5; color:#ffd0d0; padding:10px 12px; border-radius:10px; background:rgba(255,59,59,.12); border:1px solid rgba(255,90,90,.4); }
+.adv-banner { margin-bottom:14px; padding:16px; border-radius:12px; background:linear-gradient(160deg,#7a0d0d,#2a0507); border:1px solid #ff4d4d; color:#ffe9e9; }
+.adv-banner h4 { margin:0 0 6px; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
+.adv-banner p { margin:6px 0 0; font-size:13px; line-height:1.55; }
+.adv-resumo { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-8px 0 18px; padding:10px 14px; border-radius:12px; background:rgba(255,59,59,.1); border:1px solid rgba(255,90,90,.4); color:#ffd0d0; font-size:13px; font-weight:700; }
 .feed-card:hover { transform:translateY(-4px) scale(1.008); box-shadow:0 16px 34px rgba(0,0,0,0.3); }
 .feed-empty { text-align:center; padding:64px 20px; color:var(--muted); background:linear-gradient(165deg, rgba(21,57,74,0.2) 0%, rgba(15,42,54,0.2) 100%); border:1px dashed var(--border2); border-radius:8px; }
 .feed-empty .fe-icon { font-size:34px; margin-bottom:10px; opacity:.7; }
@@ -1736,7 +1751,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 05/11 · 09h05</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 05/11 · 10h40</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -2182,7 +2197,18 @@ window.APPAUTH = window.APPAUTH || {};
           <option value="positivo">👍 Positivo</option>
           <option value="melhoria">🎯 Ponto de melhoria</option>
           <option value="alinhamento">🧭 Alinhamento</option>
+          <option value="advertencia">⚠️ Advertência (alerta disciplinar)</option>
         </select>
+      </div>
+      <div class="tr-field" id="feed_nivel_wrap" style="display:none;">
+        <label>Nível da advertência</label>
+        <select class="tr-text-input" id="feed_nivel">
+          <option value="verbal">1 · Advertência verbal</option>
+          <option value="escrita1">2 · 1ª advertência escrita</option>
+          <option value="escrita2">3 · 2ª advertência escrita</option>
+          <option value="escrita3">4 · 3ª advertência escrita (última)</option>
+        </select>
+        <div id="feed_nivel_info" class="adv-info"></div>
       </div>
       <div class="tr-field">
         <label>Feedback</label>
@@ -2212,6 +2238,7 @@ window.APPAUTH = window.APPAUTH || {};
       <button class="tr-modal-close" onclick="window.FEED.fecharView()">✕</button>
     </div>
     <div class="tr-modal-body">
+      <div id="feedview_banner" style="display:none;"></div>
       <div id="feedview_texto" style="font-size:14px; line-height:1.55; white-space:pre-wrap; margin-bottom:14px;"></div>
       <div id="feedview_aceite" style="margin-bottom:18px;"></div>
       <div class="tr-field">
@@ -7853,7 +7880,46 @@ window.FEED = window.FEED || {};
 (function(){
 const MEMBROS = ['Kuka','Thiago','Amanda','Adriele','Felipe','Sharon','Eduardo'];
 window.EQUIPE.vincular(MEMBROS, 'nomes', window.EQUIPE.seAberta('feedback', () => window.FEED.render()));
-const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento' };
+const TIPOS = { positivo:'👍 Positivo', melhoria:'🎯 Ponto de melhoria', alinhamento:'🧭 Alinhamento', advertencia:'⚠️ ADVERTÊNCIA' };
+/* Medida disciplinar progressiva: 1 verbal → 3 escritas → desligamento */
+const NIVEIS = [
+  { id:'verbal',   curto:'Verbal',     nome:'Advertência verbal' },
+  { id:'escrita1', curto:'1ª escrita', nome:'1ª advertência escrita' },
+  { id:'escrita2', curto:'2ª escrita', nome:'2ª advertência escrita' },
+  { id:'escrita3', curto:'3ª escrita', nome:'3ª advertência escrita' }
+];
+const nivelIdx = id => Math.max(0, NIVEIS.findIndex(n => n.id === id));
+const proximoPasso = idx => idx < NIVEIS.length - 1 ? NIVEIS[idx + 1].nome : 'desligamento';
+function escadaHTML(idx) {
+  return `<div class="adv-ladder">${NIVEIS.map((n, i) => `<span class="${i < idx ? 'feito' : i === idx ? 'atual' : ''}">${n.curto}</span>`).join('')}<span class="fim">Desligamento</span></div>`;
+}
+function advertenciasDe(nome, excetoId) {
+  return (getData().lista || []).filter(f => f.tipo === 'advertencia' && f.liderado === nome && f.id !== excetoId);
+}
+function sugerirNivel(nome, excetoId) {
+  const feitas = advertenciasDe(nome, excetoId).map(f => nivelIdx(f.nivel));
+  const maior = feitas.length ? Math.max.apply(null, feitas) : -1;
+  return NIVEIS[Math.min(NIVEIS.length - 1, maior + 1)].id;
+}
+function atualizarCampoNivel(sugerir) {
+  const tipo = document.getElementById('feed_tipo').value;
+  const wrap = document.getElementById('feed_nivel_wrap');
+  wrap.style.display = tipo === 'advertencia' ? 'block' : 'none';
+  if (tipo !== 'advertencia') return;
+  const nome = document.getElementById('feed_liderado').value;
+  if (sugerir) document.getElementById('feed_nivel').value = sugerirNivel(nome, modalId);
+  const idx = nivelIdx(document.getElementById('feed_nivel').value);
+  const ant = advertenciasDe(nome, modalId);
+  document.getElementById('feed_nivel_info').innerHTML =
+    (ant.some(f => nivelIdx(f.nivel) === NIVEIS.length - 1) ? `<div style="font-weight:900;color:#fff;background:#ff3b3b;padding:8px 10px;border-radius:8px;margin-bottom:8px;">🚫 ${escapeHTML(nome)} já recebeu a 3ª advertência escrita. Pela regra, o próximo passo é o desligamento.</div>` : '') +
+    `<b>${escapeHTML(nome)}</b> já tem ${ant.length} advertência(s) registrada(s).` + escadaHTML(idx) +
+    (idx === NIVEIS.length - 1 ? '⚠️ Esta é a <b>última advertência</b>. Na próxima ocorrência, o caminho é o <b>desligamento</b>.' : `Depois desta, o próximo passo é a <b>${proximoPasso(idx)}</b>.`) +
+    '<br>Descreva o fato, a data, a regra ou o combinado descumprido e o que se espera daqui pra frente.';
+}
+function advBlocoCard(f) {
+  const idx = nivelIdx(f.nivel);
+  return `<div class="adv-head">🚨 ${NIVEIS[idx].nome}</div>${escadaHTML(idx)}<div class="adv-prox">${idx === NIVEIS.length - 1 ? '⚠️ Última advertência. Próxima ocorrência: <b>desligamento</b>.' : 'Próximo passo: <b>' + proximoPasso(idx) + '</b>'}</div>`;
+}
 
 let cachedData = null;
 let listenerAtivo = false;
@@ -7938,7 +8004,15 @@ function render() {
       listaWrap.innerHTML = renderEmpty(pessoaFiltro);
       return;
     }
-    listaWrap.innerHTML = `<div class="feed-grid">${filtrada.map(f => renderCardAdmin(f)).join('')}</div>`;
+    let resumoAdv = '';
+    if (pessoaFiltro !== 'todos') {
+      const adv = advertenciasDe(pessoaFiltro);
+      if (adv.length) {
+        const idx = Math.max.apply(null, adv.map(f => nivelIdx(f.nivel)));
+        resumoAdv = `<div class="adv-resumo">⚠️ ${escapeHTML(pessoaFiltro)}: ${adv.length} advertência(s) · nível atual <b>${NIVEIS[idx].nome}</b> · próximo passo: <b>${proximoPasso(idx)}</b></div>`;
+      }
+    }
+    listaWrap.innerHTML = resumoAdv + `<div class="feed-grid">${filtrada.map(f => renderCardAdmin(f)).join('')}</div>`;
   } else {
     const contadorEl = document.getElementById('feed_contadorAceite');
     if (contadorEl) contadorEl.style.display = 'none';
@@ -7992,6 +8066,7 @@ function renderCardAdmin(f) {
   return `<button class="tr-card feed-card tipo-${f.tipo||'positivo'}" onclick="window.FEED.abrirModal('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
     <div class="tr-card-title">${escapeHTML(f.liderado)}</div>
+    ${f.tipo === 'advertencia' ? advBlocoCard(f) : ''}
     <div class="tr-card-desc" style="-webkit-line-clamp:3;">${escapeHTML(f.texto)}</div>
     <div class="tr-card-meta" style="justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
       <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
@@ -8014,9 +8089,10 @@ function renderCardLiderado(f) {
   }
   const aceiteBloco = f.aceito
     ? `<span class="feed-resposta-badge feito" style="white-space:nowrap;">✅ Aceito em ${formatarDataHora(f.aceitoEm)}</span>`
-    : `<button class="btn btn-amber" style="padding:6px 12px; font-size:13px; white-space:nowrap;" onclick="event.stopPropagation(); window.FEED.aceitarFeedback('${f.id}')">✅ Confirmar recebimento</button>`;
+    : `<button class="btn btn-amber" style="padding:6px 12px; font-size:13px; white-space:nowrap;" onclick="event.stopPropagation(); window.FEED.aceitarFeedback('${f.id}')">${f.tipo === 'advertencia' ? '✍️ Li e estou ciente' : '✅ Confirmar recebimento'}</button>`;
   return `<div class="tr-card feed-card tipo-${f.tipo||'positivo'}" style="cursor:pointer;" onclick="window.FEED.abrirView('${f.id}')">
     <div class="tr-card-cat">${TIPOS[f.tipo] || 'Feedback'}</div>
+    ${f.tipo === 'advertencia' ? advBlocoCard(f) : ''}
     <div class="tr-card-desc" style="-webkit-line-clamp:3; min-height:auto;">${escapeHTML(f.texto)}</div>
     <div class="tr-card-meta" style="justify-content:space-between; align-items:center;">
       <span>${f.data ? f.data.split('-').reverse().join('/') : ''}</span>
@@ -8046,6 +8122,7 @@ function novoFeedback() {
   document.getElementById('feed_liderado').disabled = false;
   document.getElementById('feed_data').value = new Date().toISOString().slice(0,10);
   document.getElementById('feed_tipo').value = 'positivo';
+  atualizarCampoNivel(true);
   document.getElementById('feed_texto').value = '';
   document.getElementById('feed_resposta_wrap').style.display = 'none';
   document.getElementById('feed_thread_input').value = '';
@@ -8064,6 +8141,7 @@ function abrirModal(id) {
   document.getElementById('feed_liderado').disabled = false;
   document.getElementById('feed_data').value = f.data || '';
   document.getElementById('feed_tipo').value = f.tipo || 'positivo';
+  if (f.tipo === 'advertencia') { document.getElementById('feed_nivel').value = f.nivel || 'verbal'; atualizarCampoNivel(false); } else atualizarCampoNivel(true);
   document.getElementById('feed_texto').value = f.texto || '';
   document.getElementById('feed_resposta_wrap').style.display = 'block';
   document.getElementById('feed_thread_input').value = '';
@@ -8089,13 +8167,17 @@ function salvarFeedback() {
   const tipo = document.getElementById('feed_tipo').value;
   const texto = document.getElementById('feed_texto').value.trim();
   if (!liderado || !texto) { alert('Escolhe o liderado e escreve o feedback.'); return; }
+  const nivel = tipo === 'advertencia' ? document.getElementById('feed_nivel').value : '';
+  if (tipo === 'advertencia' && !modalId && !confirm('Registrar ' + NIVEIS[nivelIdx(nivel)].nome.toUpperCase() + ' para ' + liderado + '?\n\nIsso fica no histórico disciplinar da pessoa.')) return;
   const d = getData();
   if (!d.lista) d.lista = [];
   if (modalId) {
     const item = d.lista.find(x => x.id === modalId);
-    if (item) { item.liderado = liderado; item.data = data; item.tipo = tipo; item.texto = texto; }
+    if (item) { item.liderado = liderado; item.data = data; item.tipo = tipo; item.texto = texto; if (nivel) item.nivel = nivel; else delete item.nivel; }
   } else {
-    d.lista.push({ id: 'f_' + Date.now(), liderado, data, tipo, texto, resposta:'', criadoEm: Date.now() });
+    const novo = { id: 'f_' + Date.now(), liderado, data, tipo, texto, resposta:'', criadoEm: Date.now() };
+    if (nivel) novo.nivel = nivel;
+    d.lista.push(novo);
   }
   cachedData = d;
   salvar();
@@ -8117,9 +8199,9 @@ function excluirFeedback() {
 function aceitarFeedback(id) {
   const user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (!user) return;
-  if (!confirm('Confirma que você recebeu e leu este feedback?')) return;
   const d = getData();
   const item = (d.lista || []).find(x => x.id === id);
+  if (!confirm(item && item.tipo === 'advertencia' ? 'Confirmo que li esta advertência, entendi o motivo e estou ciente das consequências caso se repita.' : 'Confirma que você recebeu e leu este feedback?')) return;
   if (!item || item.aceito) return;
   item.aceito = true;
   item.aceitoEm = Date.now();
@@ -8134,8 +8216,8 @@ function atualizarStatusAceiteView(f) {
   const el = document.getElementById('feedview_aceite');
   if (!el) return;
   el.innerHTML = f.aceito
-    ? `<span class="feed-resposta-badge feito">✅ Você confirmou o recebimento em ${formatarDataHora(f.aceitoEm)}</span>`
-    : `<button class="btn btn-amber" onclick="window.FEED.aceitarFeedback('${f.id}')">✅ Confirmar recebimento</button>`;
+    ? `<span class="feed-resposta-badge feito">✅ Você ${f.tipo === 'advertencia' ? 'deu ciência' : 'confirmou o recebimento'} em ${formatarDataHora(f.aceitoEm)}</span>`
+    : `<button class="btn btn-amber" onclick="window.FEED.aceitarFeedback('${f.id}')">${f.tipo === 'advertencia' ? '✍️ Li e estou ciente' : '✅ Confirmar recebimento'}</button>`;
 }
 
 function abrirView(id) {
@@ -8144,6 +8226,15 @@ function abrirView(id) {
   viewId = id;
   document.getElementById('feedview_titulo').textContent = (TIPOS[f.tipo] || 'Feedback') + (f.data ? ' · ' + f.data.split('-').reverse().join('/') : '');
   document.getElementById('feedview_texto').textContent = f.texto || '';
+  const ban = document.getElementById('feedview_banner');
+  if (f.tipo === 'advertencia') {
+    const idx = nivelIdx(f.nivel);
+    ban.style.display = 'block';
+    ban.innerHTML = `<div class="adv-banner"><h4>🚨 ${NIVEIS[idx].nome}</h4>${escadaHTML(idx)}
+      <p>Este é um <b>alerta formal</b> e fica registrado no seu histórico. Na Ello, a medida disciplinar segue esta ordem: <b>1 advertência verbal, 3 advertências escritas e, depois, o desligamento</b>.</p>
+      <p>${idx === NIVEIS.length - 1 ? '⚠️ <b>Esta é a sua última advertência.</b> Se acontecer de novo, o próximo passo é o desligamento.' : 'Se a situação se repetir, o próximo passo é a <b>' + proximoPasso(idx) + '</b>.'}</p>
+      <p>Leia com atenção, converse com a Ana se tiver qualquer dúvida e confirme abaixo que está ciente.</p></div>`;
+  } else { ban.style.display = 'none'; ban.innerHTML = ''; }
   document.getElementById('feedview_novaMsg').value = '';
   renderThread('feedview_thread', f);
   atualizarStatusAceiteView(f);
@@ -8195,6 +8286,9 @@ function enviarMensagemLiderado() {
   render();
 }
 
+document.getElementById('feed_tipo').addEventListener('change', () => atualizarCampoNivel(true));
+document.getElementById('feed_liderado').addEventListener('change', () => atualizarCampoNivel(true));
+document.getElementById('feed_nivel').addEventListener('change', () => atualizarCampoNivel(false));
 window.FEED.render = render;
 window.FEED.filtrarPessoa = filtrarPessoa;
 window.FEED.novoFeedback = novoFeedback;
@@ -8218,8 +8312,9 @@ function montarPrintArea(f) {
       </div>
       <div class="fp-tag">${escapeHTML(TIPOS[f.tipo] || 'Feedback')}</div>
     </div>
-    <h1>Registro de Feedback</h1>
+    <h1>${f.tipo === 'advertencia' ? 'Advertência · ' + NIVEIS[nivelIdx(f.nivel)].nome : 'Registro de Feedback'}</h1>
     <div class="rp-meta">Liderado(a): <b>${escapeHTML(f.liderado)}</b> &nbsp;·&nbsp; Data: ${dataFmt}</div>
+    ${f.tipo === 'advertencia' ? '<div class="fp-body" style="border:1px solid #c00; padding:10px; margin-bottom:10px;"><b>Medida disciplinar progressiva:</b> 1 advertência verbal → 3 advertências escritas → desligamento. Esta é a <b>' + NIVEIS[nivelIdx(f.nivel)].nome + '</b>. ' + (nivelIdx(f.nivel) === NIVEIS.length - 1 ? 'Na próxima ocorrência, o caminho é o desligamento.' : 'Próximo passo, se houver reincidência: ' + proximoPasso(nivelIdx(f.nivel)) + '.') + (f.aceito ? ' Ciência registrada na plataforma em ' + formatarDataHora(f.aceitoEm) + '.' : '') + '</div>' : ''}
     <div class="fp-body">${escapeHTML(f.texto)}</div>
     ${getMensagens(f).length ? `<h2>Conversa</h2>` + getMensagens(f).map(m => `<div class="fp-resposta"><b>${m.de==='admin'?'Ana':escapeHTML(f.liderado)}:</b> ${escapeHTML(m.texto)}</div>`).join('') : ''}
     <div class="fp-sign-row">
