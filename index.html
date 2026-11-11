@@ -1768,7 +1768,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h50</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -14641,7 +14641,7 @@ var ouvidos={};
 if(window.EQUIPE&&window.EQUIPE.vincular){ window.EQUIPE.vincular(DONOS,'chat',function(){ if(DONOS.indexOf('Time')<0) DONOS.push('Time'); var f=document.getElementById('ag_filtro'); if(f) f.innerHTML=''; if(ouvindo){ ouvindo=false; ouvir(); } try{ render(); }catch(e){} }); if(DONOS.indexOf('Time')<0) DONOS.push('Time'); }
 var TIPOS=[['🗓️','Compromisso'],['👥','One a One'],['🤝','Reunião'],['📞','Ligação'],['📝','Lembrete'],['🎓','Treinamento']];
 var ev={}, mesRef=new Date(); mesRef.setDate(1); var diaSel=new Date(), filtroDono='todos', ouvindo=false, modoVer='mes', escopoVer='meu';
-function doLiderado(e){ return e.dono!=='Ana'&&e.dono!=='Time'&&(e.com||[]).indexOf('Ana')<0&&e.por!=='Ana'; }
+function doLiderado(e){ return e.dono!=='Ana'&&e.dono!=='Time'&&(e.com||[]).indexOf('Ana')<0; }
 var CORES={'🗓️':['k-comp','#9fb4c9'],'👥':['k-oo','#b98cff'],'🤝':['k-reun','#3ddc84'],'📞':['k-lig','#22d3ee'],'📝':['k-lem','#facc15'],'🎓':['k-trei','#f472b6'],'📅':['k-cli','#FD7400']};
 function kc(e){ return (CORES[e.src==='podio'?'📅':e.tipo]||CORES['🗓️']); }
 function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
