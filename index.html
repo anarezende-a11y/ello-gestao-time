@@ -1768,7 +1768,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h40</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -14630,7 +14630,7 @@ window.PODIO.agendamentos=function(){ return lista().filter(function(r){ return 
 .ag-li{display:flex;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--border);cursor:pointer}.ag-li:hover{background:rgba(255,255,255,.04)}.ag-li .hr{font-weight:900;font-size:16px;min-width:52px}.ag-li .bar{width:4px;align-self:stretch;border-radius:4px}.ag-li .tx{flex:1;min-width:0}.ag-li .tx b{display:block;font-size:14px}.ag-li .tx span{font-size:12px;color:var(--muted)}
 .ag-vazio{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
 #agModal .box{max-height:90vh;overflow:auto}
-.oo-row{display:grid;grid-template-columns:22px 1fr 90px 92px 130px;gap:8px;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px}.oo-row input,.oo-row select{padding:6px 8px!important}
+.oo-row{display:grid;grid-template-columns:22px 1fr 90px 92px 190px;gap:8px;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.08);font-size:13px}.oo-row input,.oo-row select{padding:6px 8px!important}
 @media(max-width:700px){.ag-c{min-height:54px}.ag-e{display:none}.oo-row{grid-template-columns:22px 1fr 1fr;}.ag-modo{margin-left:0}}
 </style>
 <script>
@@ -14731,26 +14731,54 @@ function pdf(){
    '<script>window.onload=function(){setTimeout(function(){window.print();},300);}<\/script></body></html>';
   var w=window.open('','_blank'); if(!w){ alert('Libere as janelas pop-up deste site para gerar o PDF.'); return; } w.document.open(); w.document.write(html); w.document.close();
 }
+function ocupado(p,de,ate){ // compromissos da Ana e da pessoa (exceto o próprio 1:1 dela)
+  var o=[]; DONOS.forEach(function(d){ (ev[d]||[]).forEach(function(e){ if(e.oo===p) return; var c=e.com||[]; if(!(d==='Ana'||d==='Time'||c.indexOf('Ana')>=0||d===p||c.indexOf(p)>=0)) return;
+    ocorrencias(e,de,ate).forEach(function(t){ o.push({t:t,titulo:e.titulo}); }); }); });
+  if(window.PODIO&&window.PODIO.agendamentos) window.PODIO.agendamentos().forEach(function(a){ if(a.de===p&&a.quando>=de&&a.quando<=ate&&(!a.st||a.st==='marcado')) o.push({t:a.quando,titulo:'Cliente: '+a.cliente}); });
+  return o; }
+function datasOO(base,wd,hm,cada,sem){ var d=new Date(base+'T00:00:00'); while(d.getDay()!==wd) d.setDate(d.getDate()+1); d.setHours(Math.floor(hm/60),hm%60,0,0); var o=[]; for(var i=0;i<sem;i+=cada){ var x=new Date(d); x.setDate(d.getDate()+7*i); o.push(x.getTime()); } return o; }
+function choque(p,base,wd,hm,cada,extra){ // 1:1 de 30 min; outros compromissos considerados com 1h
+  var ds=datasOO(base,wd,hm,cada,8), de=ds[0]-3600000, ate=ds[ds.length-1]+3600000, oc=ocupado(p,de,ate).concat(extra||[]);
+  for(var i=0;i<ds.length;i++){ for(var j=0;j<oc.length;j++){ var t=ds[i], u=oc[j].t, fimU=u+(oc[j].dur||60)*60000; if(t<fimU&&t+30*60000>u) return {quando:u,titulo:oc[j].titulo}; } }
+  var q=new Date(ds[0]), hmn=q.getHours()*60+q.getMinutes(); if(hmn<9*60) return {quando:ds[0],titulo:'Daily das 08:30'};
+  return null; }
 function oneOnes(){
   if(!adm()) return; var m=document.getElementById('agModal'); if(m) m.remove();
   var pes=DONOS.filter(function(x){ return x!=='Time'&&x!=='Ana'; });
   var ja={}; (ev['Ana']||[]).forEach(function(e){ if(e.oo) ja[e.oo]=e; });
   var dias=[[2,'Terça'],[3,'Quarta'],[4,'Quinta'],[1,'Segunda'],[5,'Sexta']];
-  var seg=new Date(); seg.setDate(seg.getDate()+((8-seg.getDay())%7||7)); var ini=isoDia(seg.getTime());
+  var seg=new Date(); seg.setDate(seg.getDate()+((8-seg.getDay())%7||7)); var ini=isoDia(seg.getTime()), cada0=2;
+  // sugestão sem choque: tarde de ter/qua/qui primeiro, depois manhã, depois segunda
+  var slots=[]; [[2,3,4],[1]].forEach(function(gd){ [14*60,14*60+30,15*60,15*60+30,16*60,10*60,10*60+30,11*60,11*60+30,13*60+30].forEach(function(hm){ gd.forEach(function(wd){ slots.push([wd,hm]); }); }); });
+  var usados=[], sug={};
+  pes.forEach(function(p){ if(ja[p]){ var q=new Date(ja[p].quando); sug[p]=[ja[p].rep.dias[0],q.getHours()*60+q.getMinutes()]; } });
+  pes.forEach(function(p){ if(sug[p]) return; for(var i=0;i<slots.length;i++){ var s=slots[i];
+      var ext=Object.keys(sug).filter(function(k){return sug[k][0]===s[0];}).map(function(k){ return {t:datasOO(ini,sug[k][0],sug[k][1],cada0,1)[0],titulo:'One-on-One com '+k,dur:30}; });
+      if(!choque(p,ini,s[0],s[1],cada0,ext.map(function(x){ return x; }).concat(Object.keys(sug).filter(function(k){return sug[k][0]===s[0];}).reduce(function(a,k){ return a.concat(datasOO(ini,sug[k][0],sug[k][1],cada0,8).map(function(t){ return {t:t,titulo:'One-on-One com '+k,dur:30}; })); },[])))){ sug[p]=s; break; } }
+    if(!sug[p]) sug[p]=[2,17*60]; });
   m=document.createElement('div'); m.id='agModal';
-  m.innerHTML='<div class="box" style="width:min(640px,94vw)"><h3>👥 Agendar One-on-Ones</h3><div style="font-size:12.5px;opacity:.8;line-height:1.5">Cada conversa entra na sua agenda e na da pessoa, com alerta para os dois. Sugestão já preenchida: 30 min, a cada 2 semanas, espalhados de terça a quinta à tarde (longe da daily e do treinamento de sexta). Ajuste o que quiser.</div>'+
+  m.innerHTML='<div class="box" style="width:min(680px,94vw)"><h3>👥 Agendar One-on-Ones</h3><div style="font-size:12.5px;opacity:.8;line-height:1.5">Cada conversa entra na sua agenda e na da pessoa, com alerta para os dois. A sugestão já desvia dos seus compromissos e dos da pessoa (daily, treinamento de sexta, SolarZ, clientes…). Se algum horário bater, aparece em vermelho.</div>'+
    '<label>Começar a partir de</label><input type="date" id="oo_ini" value="'+ini+'"><label>Frequência</label><select id="oo_freq"><option value="2">A cada 2 semanas (recomendado)</option><option value="1">Toda semana</option><option value="4">A cada 4 semanas</option></select>'+
-   '<div style="margin-top:6px">'+pes.map(function(p,i){ var e=ja[p], wd=e?e.rep.dias[0]:dias[i%3][0], hr=e?hh(e.quando):p2(14+Math.floor(i/3))+':'+(i%2?'30':'00'); return '<div class="oo-row"><input type="checkbox" class="oo_c" data-p="'+esc(p)+'" '+(e?'':'checked')+' style="width:auto"><b>'+esc(p)+(e?' <span style="font-size:11px;color:#3ddc84">✓ já agendado</span>':'')+'</b><select class="oo_d">'+dias.map(function(d){ return '<option value="'+d[0]+'"'+(d[0]===wd?' selected':'')+'>'+d[1]+'</option>'; }).join('')+'</select><input type="time" class="oo_h" value="'+hr+'"><span style="font-size:11.5px;opacity:.7">'+(e?'marque para refazer':'30 min')+'</span></div>'; }).join('')+'</div>'+
+   '<div style="margin-top:6px">'+pes.map(function(p){ var e=ja[p], s=sug[p], hr=p2(Math.floor(s[1]/60))+':'+p2(s[1]%60); return '<div class="oo-row" data-p="'+esc(p)+'"><input type="checkbox" class="oo_c" data-p="'+esc(p)+'" '+(e?'':'checked')+' style="width:auto"><b>'+esc(p)+(e?' <span style="font-size:11px;color:#3ddc84">✓ já agendado</span>':'')+'</b><select class="oo_d">'+dias.map(function(d){ return '<option value="'+d[0]+'"'+(d[0]===s[0]?' selected':'')+'>'+d[1]+'</option>'; }).join('')+'</select><input type="time" class="oo_h" value="'+hr+'"><span class="oo_st" style="font-size:11.5px"></span></div>'; }).join('')+'</div>'+
    '<div class="bt"><button id="oo_x">Cancelar</button><button class="ok" id="oo_ok">Agendar</button></div></div>';
   document.body.appendChild(m);
+  function linhas(){ return Array.prototype.slice.call(m.querySelectorAll('.oo-row')).map(function(r){ var h=(r.querySelector('.oo_h').value||'14:00').split(':'); return {r:r,p:r.getAttribute('data-p'),on:r.querySelector('.oo_c').checked,wd:+r.querySelector('.oo_d').value,hm:(+h[0])*60+(+h[1])}; }); }
+  function checar(){ var base=document.getElementById('oo_ini').value, cada=+document.getElementById('oo_freq').value, ls=linhas(), ruins=0; if(!base) return 0;
+    ls.forEach(function(l){ var st=l.r.querySelector('.oo_st');
+      var outros=ls.filter(function(o){ return o!==l&&o.on; }).reduce(function(a,o){ return a.concat(datasOO(base,o.wd,o.hm,cada,8).map(function(t){ return {t:t,titulo:'One-on-One com '+o.p,dur:30}; })); },[]);
+      var c=choque(l.p,base,l.wd,l.hm,cada,outros);
+      if(c&&l.on){ ruins++; l.r.style.background='rgba(255,59,59,.14)'; st.style.color='#ff8a8a'; st.textContent='⚠️ bate com '+c.titulo+' ('+new Date(c.quando).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+hh(c.quando)+')'; }
+      else { l.r.style.background=''; st.style.color='#3ddc84'; st.textContent=l.on?'✓ livre · 30 min':''; } });
+    return ruins; }
+  m.querySelectorAll('select,input').forEach(function(x){ x.addEventListener('change',checar); }); checar();
   document.getElementById('oo_x').onclick=function(){ m.remove(); };
   document.getElementById('oo_ok').onclick=function(){
     var base=document.getElementById('oo_ini').value, cada=+document.getElementById('oo_freq').value, n=0; if(!base){ alert('Escolha a data de início.'); return; }
-    m.querySelectorAll('.oo-row').forEach(function(r){ var c=r.querySelector('.oo_c'); if(!c.checked) return; var p=c.getAttribute('data-p'), wd=+r.querySelector('.oo_d').value, h=(r.querySelector('.oo_h').value||'14:00').split(':');
-      var d=new Date(base+'T00:00:00'); while(d.getDay()!==wd) d.setDate(d.getDate()+1); d.setHours(+h[0],+h[1],0,0);
-      ev['Ana']=(ev['Ana']||[]).filter(function(e){ return e.oo!==p; }).concat([{id:'oo_'+norm(p)+'_'+Date.now(),oo:p,titulo:'One-on-One com '+p,quando:d.getTime(),tipo:'👥',alerta:true,com:[p],rep:{dias:[wd],ate:'',cada:cada},por:'Ana',ts:Date.now()}]); n++; });
+    var ruins=checar(); if(ruins&&!confirm(ruins+' horário(s) estão batendo com outros compromissos (em vermelho). Agendar mesmo assim?')) return;
+    linhas().forEach(function(l){ if(!l.on) return; var p=l.p, d=new Date(datasOO(base,l.wd,l.hm,cada,1)[0]);
+      ev['Ana']=(ev['Ana']||[]).filter(function(e){ return e.oo!==p; }).concat([{id:'oo_'+norm(p)+'_'+Date.now(),oo:p,titulo:'One-on-One com '+p,quando:d.getTime(),tipo:'👥',alerta:true,com:[p],rep:{dias:[l.wd],ate:'',cada:cada},por:'Ana',ts:Date.now()}]); n++; });
     if(!n){ alert('Marque pelo menos uma pessoa.'); return; }
-    salvar('Ana'); m.remove(); filtroDono='todos'; render(); alert('✅ '+n+' One-on-One'+(n>1?'s agendados':' agendado')+'. Cada pessoa recebe o alerta junto com você.');
+    salvar('Ana'); m.remove(); escopoVer='meu'; filtroDono='todos'; render(); alert('✅ '+n+' One-on-One'+(n>1?'s agendados':' agendado')+'. Cada pessoa recebe o alerta junto com você.');
   };
 }
 function dia(ts){ diaSel=new Date(ts); render(); }
