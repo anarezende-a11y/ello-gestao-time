@@ -1768,7 +1768,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h15</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 11/11 · 18h25</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -14618,16 +14618,18 @@ window.PODIO.agendamentos=function(){ return lista().filter(function(r){ return 
 window.AGENDA = window.AGENDA || {};
 (function(){
 var DONOS=['Ana','Kuka','Adriele','Sharon','Thiago','Felipe','Amanda','Eduardo','Time'];
+var ouvidos={};
+if(window.EQUIPE&&window.EQUIPE.vincular){ window.EQUIPE.vincular(DONOS,'chat',function(){ if(DONOS.indexOf('Time')<0) DONOS.push('Time'); var f=document.getElementById('ag_filtro'); if(f) f.innerHTML=''; if(ouvindo){ ouvindo=false; ouvir(); } try{ render(); }catch(e){} }); if(DONOS.indexOf('Time')<0) DONOS.push('Time'); }
 var TIPOS=[['🗓️','Compromisso'],['👥','One a One'],['🤝','Reunião'],['📞','Ligação'],['📝','Lembrete'],['🎓','Treinamento']];
 var ev={}, mesRef=new Date(); mesRef.setDate(1); var diaSel=new Date(), filtroDono='todos', ouvindo=false;
 function U(){ return window.APPAUTH&&window.APPAUTH.usuarioAtual; }
 function adm(){ var u=U(); return !!u&&u.role==='admin'; }
 function norm(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-function eu(){ var u=U(); if(!u) return null; if(u.role==='admin') return 'Ana'; var l=norm(u.nome||String(u.email||'').split('@')[0]); return DONOS.filter(function(d){ return d!=='Time'&&d!=='Ana'&&l.indexOf(norm(d))===0; })[0]||null; }
+function eu(){ var u=U(); if(!u) return null; if(u.role==='admin') return 'Ana'; var l=norm(u.nome||String(u.email||'').split('@')[0]); return DONOS.filter(function(d){ return d!=='Time'&&d!=='Ana'&&l.indexOf(norm(d))===0; }).sort(function(a,b){ return norm(b).length-norm(a).length; })[0]||null; }
 function ref(d){ return window.fb.doc(window.fb.db,'shared_data','agenda_'+norm(d)); }
 function salvar(d){ var i=document.getElementById('saveInd_agenda'); if(i){ i.textContent='Salvando...'; i.classList.add('show'); } window.fb.setDoc(ref(d),{ev:ev[d]||[],ts:Date.now()}).then(function(){ if(i) i.textContent='✓ Salvo'; }).catch(function(e){ console.error('AGENDA',e); if(i) i.textContent='⚠ Erro ao salvar'; }); }
-function ouvir(){ if(ouvindo||!window.fb||!U()) return; ouvindo=true; DONOS.forEach(function(d){ window.fb.onSnapshot(ref(d),function(s){ ev[d]=(s.exists&&s.exists()?(s.data()||{}).ev:[])||[]; render(); },function(){}); }); }
+function ouvir(){ if(ouvindo||!window.fb||!U()) return; ouvindo=true; DONOS.forEach(function(d){ if(ouvidos[d]) return; ouvidos[d]=1; window.fb.onSnapshot(ref(d),function(s){ ev[d]=(s.exists&&s.exists()?(s.data()||{}).ev:[])||[]; render(); },function(){}); }); }
 function pod(){ var o=[]; try{ ['Kuka','Adriele','Sharon','Thiago','Felipe'].forEach(function(n){}); }catch(e){} return o; }
 var DIAS=[[1,'seg'],[2,'ter'],[3,'qua'],[4,'qui'],[5,'sex'],[6,'sáb'],[0,'dom']];
 function p2(n){ return (n<10?'0':'')+n; }
