@@ -1777,7 +1777,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 11h45</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 16h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -2950,6 +2950,20 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-field">
         <label>Por pessoa (o que cada um falou)</label>
         <div id="dly_pp" class="dly-pp"></div>
+        <div class="dly-wa">
+          <div class="dly-wa-h">📲 Mandar no WhatsApp</div>
+          <div class="dly-wa-r">
+            <select class="tr-text-input" id="dly_wa_p" onchange="window.DAILY.waPrevia()"></select>
+            <select class="tr-text-input" id="dly_wa_t" onchange="window.DAILY.waPrevia()">
+              <option value="res">📊 Cobrar resultados</option>
+              <option value="comb">✅ Combinados da daily</option>
+              <option value="falta">🚫 Falta na daily</option>
+              <option value="fb">🚨 Alerta de feedback (3+ pontos)</option>
+            </select>
+          </div>
+          <textarea class="tr-text-input" id="dly_wa_txt" rows="9"></textarea>
+          <div class="dly-wa-r"><span id="dly_wa_info" class="dly-wa-i"></span><button type="button" class="btn dly-wa-b" onclick="window.DAILY.waEnviar()">📲 Abrir no WhatsApp</button></div>
+        </div>
       </div>
     </div>
     <div class="tr-modal-foot">
@@ -7976,13 +7990,27 @@ function alertasDe(nome) {
   const lim = corte.toISOString().slice(0, 10);
   return (getData().lista || []).filter(f => f.liderado === nome && (f.tipo === 'melhoria' || f.tipo === 'advertencia') && (f.data || '') >= lim);
 }
+function textoAlertaWhats(nome) {
+  const itens = alertasDe(nome).slice().sort((x, y) => String(x.data).localeCompare(String(y.data)));
+  const dm = iso => { const p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : iso; };
+  const resp = f => !!(f.aceito || (f.respostas && f.respostas.length) || f.resposta);
+  const curto = t => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > 70 ? t.slice(0, 69) + '…' : t; };
+  const NV = { verbal:'Advertência verbal', escrita1:'1ª advertência escrita', escrita2:'2ª advertência escrita', escrita3:'3ª advertência escrita' };
+  const linhas = itens.map(f => { const t = (f.tipo === 'advertencia' ? (NV[f.nivel] || 'Advertência') + ' – ' : '') + curto(f.texto);
+    return resp(f) ? `✅ ${dm(f.data)} – ${t} _(ciente${f.aceitoEm ? ' em ' + new Date(f.aceitoEm).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : ''})_` : `⏳ *${dm(f.data)} – ${t} – AGUARDANDO SEU ACEITE*`; }).join('\n');
+  const pend = itens.filter(f => !resp(f));
+  let m = `🚨 *ALERTA – Ello Solar*\n\nOlá, ${nome}. Você está com *${itens.length} pontos de melhoria* nos últimos ${AL_DIAS} dias:\n\n${linhas}\n\n`;
+  if (pend.length) m += `Você ainda não deu ciência ${pend.length > 1 ? 'nos feedbacks de *' + pend.map(f => dm(f.data)).join(', ') + '*' : 'no feedback de *' + dm(pend[0].data) + '*'}. Entre hoje na plataforma, leia e clique em *"Li e estou ciente"*.\n\n`;
+  return m + `Isso é sério: a medida disciplinar da Ello segue *1 advertência verbal → 3 advertências escritas → desligamento*.\n\nVamos conversar ainda hoje.\nAna`;
+}
 function linkWhats(nome, n) {
   const tel = (window.EQUIPE && window.EQUIPE.tel ? window.EQUIPE.tel(nome) : '').replace(/\D/g, '');
-  const msg = `🚨 ALERTA - Ello Solar\n\nOlá, ${nome}. Você está com ${n} pontos de melhoria registrados nos últimos ${AL_DIAS} dias na plataforma de gestão do time.\n\nIsso é sério: a medida disciplinar da Ello segue 1 advertência verbal, 3 advertências escritas e, depois, o desligamento.\n\nEntre na plataforma, leia os feedbacks em aberto e confirme que está ciente. Vamos conversar ainda hoje.\n\nAna`;
   if (!tel) return '';
   const num = tel.length <= 11 ? '55' + tel : tel;
-  return 'https://wa.me/' + num + '?text=' + encodeURIComponent(msg);
+  return 'https://wa.me/' + num + '?text=' + encodeURIComponent(textoAlertaWhats(nome));
 }
+window.FEED.textoAlertaWhats = textoAlertaWhats;
+window.FEED.qtdAlertas = n => alertasDe(n).length;
 function faixaAlertaAdmin() {
   const pessoas = MEMBROS.map(n => ({ n, q: alertasDe(n).length })).filter(x => x.q >= AL_LIMITE).sort((a, b) => b.q - a.q);
   if (!pessoas.length) return '';
@@ -12902,6 +12930,43 @@ function importar(){
   desenharPessoas(); desenharPP();
   msg.textContent = '✓ Preenchido: '+n+' pessoa(s), pautas e combinados. Confira e clique em Salvar.'; msg.style.color = '#3ee39a';
 }
+/* ===== WhatsApp a partir da daily ===== */
+function waTel(n){ const t = String(window.EQUIPE && window.EQUIPE.tel ? window.EQUIPE.tel(n) : '').replace(/\D/g,''); return t ? (t.length <= 11 ? '55'+t : t) : ''; }
+function waMontar(n, tipo){
+  const data = (document.getElementById('dly_data')||{}).value || hoje(), hora = (document.getElementById('dly_hora')||{}).value || '08:30';
+  const d5 = dataBR(data).slice(0,5);
+  const abertas = listaTar().filter(t => t.responsavel === n && t.status !== 'feita').sort((x,y) => (x.prazo||'9999').localeCompare(y.prazo||'9999'));
+  const linhaT = t => '• '+t.texto+(t.prazo ? ' — até '+dataBR(t.prazo).slice(0,5) : '')+(statusPrazo(t)==='venc' ? ' ⚠️ *ATRASADA*' : statusPrazo(t)==='hoje' ? ' ⏰ *vence hoje*' : '');
+  if(tipo === 'res'){
+    let m = '📊 *Cobrança de resultados – Ello Solar*\n\nOlá, '+n+'! Preciso do seu retorno sobre os resultados.\n\n';
+    if(abertas.length) m += '*Seus combinados em aberto:*\n'+abertas.map(linhaT).join('\n')+'\n\n';
+    m += '*Me mande hoje até as 17h:*\n1. O que já foi entregue\n2. O que falta e para quando\n3. O que está travando (se precisar de ajuda, me fala)\n\nResultado é compromisso com o time e com o cliente. Conto com você! 💪\nAna';
+    return m;
+  }
+  if(tipo === 'comb'){
+    const meus = String((document.getElementById('dly_comb')||{}).value||'').split(/\n+/).map(l => l.replace(/^[\s•\-\*]+/,'').trim()).filter(l => { const m = l.match(/^\[([^\]]+)\]/); return m && (acharPessoa(m[1]) === n || /^(todos|time|equipe)$/i.test(m[1].trim())); }).map(l => '• '+l.replace(/^\[[^\]]+\]\s*/,''));
+    const lst = meus.length ? meus : abertas.map(linhaT);
+    return '✅ *Combinados da daily – '+d5+'*\n\nOi, '+n+'! Ficou combinado com você:\n\n'+(lst.length ? lst.join('\n') : '• (nenhum combinado registrado)')+'\n\nQualquer trava, me avisa antes do prazo. Bora! 🚀\nAna';
+  }
+  if(tipo === 'falta') return '🚫 *Daily – '+d5+' às '+hora+'*\n\nOi, '+n+'. Você não participou da daily de hoje e não houve justificativa.\n\nA daily é o nosso momento de alinhar prioridades e combinados do dia. A falta foi registrada na plataforma como ponto de melhoria.\n\nMe responda aqui o que aconteceu e já se atualize com o time sobre os combinados.\nAna';
+  if(tipo === 'fb'){ if(!(window.FEED && window.FEED.textoAlertaWhats)) return ''; const q = window.FEED.qtdAlertas(n); return q ? window.FEED.textoAlertaWhats(n) : ''; }
+  return '';
+}
+function waPrevia(){
+  const sp = document.getElementById('dly_wa_p'), st = document.getElementById('dly_wa_t'); if(!sp) return;
+  if(!sp.options.length || sp.options.length !== PESSOAS.length){ const v = sp.value; sp.innerHTML = PESSOAS.map(n => '<option>'+esc(n)+'</option>').join(''); if(v) sp.value = v; }
+  const n = sp.value, t = st.value; let txt = waMontar(n, t);
+  document.getElementById('dly_wa_txt').value = txt;
+  const tel = waTel(n), inf = document.getElementById('dly_wa_info');
+  if(t === 'fb' && !txt){ inf.innerHTML = esc(n)+' não tem pontos de melhoria nos últimos 90 dias (ou abra a aba Feedback uma vez para carregar).'; return; }
+  inf.innerHTML = tel ? '✓ vai para o WhatsApp de '+esc(n)+' — você pode editar o texto antes' : '⚠️ '+esc(n)+' sem WhatsApp cadastrado. <a href="#" onclick="window.EQUIPE.abrirAdmin();return false">Cadastrar em Equipe</a>';
+}
+function waEnviar(){
+  const n = document.getElementById('dly_wa_p').value, tel = waTel(n), txt = document.getElementById('dly_wa_txt').value.trim();
+  if(!tel){ alert(n+' ainda não tem WhatsApp cadastrado. Abra 👥 Equipe e coloque o número.'); return; }
+  if(!txt){ alert('A mensagem está vazia.'); return; }
+  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(txt), '_blank', 'noopener');
+}
 function trocar(n){ lerPP(); presenca[n] = ({p:'a', a:'j', j:'n', n:'p'})[presenca[n]||'n']; desenharPessoas(); desenharPP(); }
 function todos(v){ lerPP(); PESSOAS.forEach(n => presenca[n] = v); desenharPessoas(); desenharPP(); }
 function novo(){
@@ -12910,7 +12975,7 @@ function novo(){
   document.getElementById('dly_pauta').value = ''; document.getElementById('dly_comb').value = '';
   document.getElementById('dly_del').style.display = 'none';
   porPessoa = {}; granolaUrl = ''; document.getElementById('dly_imp_txt').value = ''; document.getElementById('dly_imp_msg').textContent = '';
-  desenharPessoas(); desenharPP(); document.getElementById('dailyModalOverlay').classList.add('open');
+  desenharPessoas(); desenharPP(); waPrevia(); document.getElementById('dailyModalOverlay').classList.add('open');
 }
 function abrir(id){
   const r = lista().find(x=>x.id===id); if(!r) return;
@@ -12919,7 +12984,7 @@ function abrir(id){
   document.getElementById('dly_pauta').value = r.pauta||''; document.getElementById('dly_comb').value = r.combinados||'';
   document.getElementById('dly_del').style.display = 'inline-flex';
   porPessoa = Object.assign({}, r.porPessoa||{}); granolaUrl = r.fonte||''; document.getElementById('dly_imp_txt').value = ''; document.getElementById('dly_imp_msg').textContent = '';
-  desenharPessoas(); desenharPP(); document.getElementById('dailyModalOverlay').classList.add('open');
+  desenharPessoas(); desenharPP(); waPrevia(); document.getElementById('dailyModalOverlay').classList.add('open');
 }
 function fechar(){ document.getElementById('dailyModalOverlay').classList.remove('open'); }
 function salvar(){
@@ -13004,7 +13069,7 @@ function imprimir(){
   el.querySelectorAll('table').forEach(t=>{ t.style.width='100%'; t.style.borderCollapse='collapse'; t.querySelectorAll('th,td').forEach(c=>{ c.style.border='1px solid #ccc'; c.style.padding='6px 8px'; c.style.color='#111'; }); });
   window.print(); setTimeout(()=>{ el.innerHTML=''; }, 500);
 }
-Object.assign(window.DAILY, { render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar, periodo, navegar, filtrarTar, alternarTarefa, excluirTarefa, novaTarefa, checkTarefas });
+Object.assign(window.DAILY, { waPrevia, waEnviar, render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar, periodo, navegar, filtrarTar, alternarTarefa, excluirTarefa, novaTarefa, checkTarefas });
 })();
 </script>
 <!-- ===== TEMA ELLO (visual do Dashboard Pós-vendas em toda a plataforma) ===== -->
@@ -13378,6 +13443,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
 .chk-tar-box p{margin:0 0 6px;font-size:12px;color:var(--muted)}
 .dly-imp{border:1px dashed rgba(245,165,36,.5);border-radius:12px;padding:10px 12px;margin-bottom:14px;background:rgba(245,165,36,.05)}
 .dly-imp summary{cursor:pointer;font-weight:800;font-size:13px;color:#ffd18a}
+.dly-wa{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(37,211,102,.4);background:rgba(37,211,102,.07);display:flex;flex-direction:column;gap:8px}.dly-wa-h{font-weight:800}.dly-wa-r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.dly-wa-r select{flex:1;min-width:160px}.dly-wa textarea{min-height:170px;font-size:13px;line-height:1.45}.dly-wa-i{flex:1;font-size:12.5px;opacity:.8}.dly-wa-i a{color:#3ddc84}.dly-wa-b{background:#25D366!important;color:#062b14!important;border:0!important;font-weight:900}
 .dly-pp{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .dly-pp-item label{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .dly-pp-item textarea{width:100%;min-height:64px}
