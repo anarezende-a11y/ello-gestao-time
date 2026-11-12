@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Migração Firebase → Supabase</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--bg:#0f1416;--card:#182024;--tx:#e9f2f1;--mut:#9fb3b5;--lar:#FD7400;--ok:#3ddc84;--err:#ff7b7b;--bd:rgba(255,255,255,.12)}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif;padding:24px 16px}
+  .w{max-width:760px;margin:0 auto} h1{font-size:24px;margin:0 0 4px} p.s{color:var(--mut);margin:0 0 20px}
+  .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+  .c h2{font-size:16px;margin:0 0 10px} label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
+  input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:#0b1012;color:var(--tx);font:inherit}
+  button{margin-top:12px;padding:12px 18px;border-radius:12px;border:0;background:var(--lar);color:#fff;font-weight:800;font:inherit;font-weight:800;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default} .st{margin-top:8px;font-size:13px} .ok{color:var(--ok)} .er{color:var(--err)}
+  #log{white-space:pre-wrap;font:12.5px/1.5 ui-monospace,Consolas,monospace;background:#0b1012;border-radius:10px;padding:12px;max-height:340px;overflow:auto;margin-top:10px}
+</style>
+</head>
+<body><div class="w">
+<h1>🔁 Migração Firebase → Supabase</h1>
+<p class="s">Copia tudo da plataforma (feedbacks, agenda, funis, chat, reuniões…) do Firebase para o Supabase. O Firebase não é alterado — só lido. Pode rodar mais de uma vez: a última cópia vale.</p>
+
+<div class="c"><h2>1. Entrar no Firebase (de onde vem)</h2>
+  <label>E-mail</label><input id="fe" type="email" value="ana.rezende@ellosolar.com">
+  <label>Senha da plataforma</label><input id="fs" type="password">
+  <button id="fb">Entrar no Firebase</button><div id="fst" class="st"></div></div>
+
+<div class="c"><h2>2. Entrar no Supabase (para onde vai)</h2>
+  <label>Project URL</label><input id="su" value="https://jjnkkwvzospfrcgczdno.supabase.co">
+  <label>Chave publishable</label><input id="sk" value="sb_publishable_vSWI2WXgV4OBQ1bfVo__EQ_rQLexBkh">
+  <label>E-mail (o usuário que você criou em Authentication → Users)</label><input id="se" type="email" value="ana.rezende@ellosolar.com">
+  <label>Senha desse usuário no Supabase</label><input id="ss" type="password">
+  <button id="sb">Entrar no Supabase</button><div id="sst" class="st"></div></div>
+
+<div class="c"><h2>3. Copiar</h2>
+  <button id="go" disabled>Copiar tudo para o Supabase</button>
+  <div id="gst" class="st"></div><div id="log"></div></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm";
+
+const fbApp = initializeApp({ apiKey: "AIzaSyC7cNQNOQI4I68r2zkE2wOZU1tJZb7LbBw", authDomain: "pos-vendas-95eee.firebaseapp.com", projectId: "pos-vendas-95eee", storageBucket: "pos-vendas-95eee.firebasestorage.app", messagingSenderId: "942831555560", appId: "1:942831555560:web:42fed71157834d67070a5d" });
+const fauth = getAuth(fbApp), fdb = getFirestore(fbApp);
+const $ = id => document.getElementById(id);
+const log = t => { $('log').textContent += t + '\n'; $('log').scrollTop = 1e9; };
+let sb = null, okF = false, okS = false;
+const pronto = () => ($('go').disabled = !(okF && okS));
+try { const c = JSON.parse(localStorage.getItem('ello_supa_cfg') || '{}'); if (c.url) $('su').value = c.url; if (c.key) $('sk').value = c.key; } catch (e) {}
+
+$('fb').onclick = async () => {
+  $('fst').textContent = 'Entrando...';
+  try { await signInWithEmailAndPassword(fauth, $('fe').value.trim(), $('fs').value); okF = true; $('fst').innerHTML = '<span class="ok">✔ Firebase conectado</span>'; }
+  catch (e) { $('fst').innerHTML = '<span class="er">✖ ' + e.code + '</span>'; }
+  pronto();
+};
+$('sb').onclick = async () => {
+  $('sst').textContent = 'Entrando...';
+  try {
+    const url = $('su').value.trim().replace(/\/+$/, ''), key = $('sk').value.trim();
+    if (/sb_secret_/.test(key)) throw new Error('Use a chave PUBLISHABLE, nunca a secret.');
+    localStorage.setItem('ello_supa_cfg', JSON.stringify({ url, key }));
+    sb = createClient(url, key);
+    const { error } = await sb.auth.signInWithPassword({ email: $('se').value.trim(), password: $('ss').value });
+    if (error) throw error;
+    const t = await sb.from('docs').select('id', { count: 'exact', head: true });
+    if (t.error) throw new Error('Login ok, mas a tabela "docs" não existe. Rode o setup.sql no SQL Editor primeiro. (' + t.error.message + ')');
+    okS = true; $('sst').innerHTML = '<span class="ok">✔ Supabase conectado</span>';
+  } catch (e) { $('sst').innerHTML = '<span class="er">✖ ' + (e.message || e) + '</span>'; }
+  pronto();
+};
+
+const norm = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const dmId = (a, b) => 'dm_' + [norm(a), norm(b)].sort().join('_');
+const tamanho = o => new Blob([JSON.stringify(o)]).size;
+
+async function gravar(rows) {
+  for (let i = 0; i < rows.length; ) {
+    let lote = [], bytes = 0;
+    while (i < rows.length && lote.length < 200 && bytes < 4e6) { bytes += tamanho(rows[i].data); lote.push(rows[i++]); }
+    const { error } = await sb.from('docs').upsert(lote.map(r => ({ ...r, updated_at: new Date().toISOString() })));
+    if (error) throw new Error(error.message);
+  }
+}
+async function copiarColecao(caminho) {
+  const snap = await getDocs(collection(fdb, ...caminho.split('/')));
+  const rows = snap.docs.map(d => ({ col: caminho, id: d.id, data: JSON.parse(JSON.stringify(d.data())) }));
+  if (rows.length) await gravar(rows);
+  return rows;
+}
+
+$('go').onclick = async () => {
+  $('go').disabled = true; $('log').textContent = ''; $('gst').textContent = 'Copiando... não feche a página.';
+  let total = 0;
+  try {
+    for (const c of ['shared_data', 'posvendas_config', 'posvendas_negocios', 'checklists_diarios', 'pautas_semanais', 'chat_presenca']) {
+      try { const r = await copiarColecao(c); total += r.length; log('✔ ' + c + ': ' + r.length + ' documento(s)' + (c === 'shared_data' ? ' → ' + r.map(x => x.id).join(', ') : '')); }
+      catch (e) { log('⚠ ' + c + ': ' + (e.code || e.message)); }
+    }
+    // chat: canais fixos + conversas privadas entre todas as pessoas que já passaram pelo time
+    const eq = await getDoc(doc(fdb, 'shared_data', 'equipe'));
+    const nomes = new Set(['Ana', 'Adriele', 'Sharon', 'Kuka', 'Thiago', 'Amanda', 'Felipe', 'Eduardo', 'Cheila', 'Robson', 'Felipe Spezza']);
+    ((eq.exists() && eq.data().pessoas) || []).forEach(p => p.nome && nomes.add(p.nome));
+    const lista = [...nomes], canais = new Set(['avisos', 'geral']);
+    lista.forEach(a => lista.forEach(b => { if (a !== b) canais.add(dmId(a, b)); }));
+    let nMsg = 0;
+    for (const id of canais) {
+      try { const r = await copiarColecao('chat_canais/' + id + '/msgs'); if (r.length) { nMsg += r.length; log('✔ chat ' + id + ': ' + r.length + ' mensagem(ns)'); } }
+      catch (e) { log('⚠ chat ' + id + ': ' + (e.code || e.message)); }
+    }
+    total += nMsg;
+    const { count } = await sb.from('docs').select('id', { count: 'exact', head: true });
+    $('gst').innerHTML = '<span class="ok">✅ Pronto! ' + total + ' itens copiados (' + nMsg + ' mensagens de chat). No Supabase agora há ' + count + ' documentos.</span>';
+    log('\nTUDO COPIADO. Avise o Claude para virar a chave da plataforma para o Supabase.');
+  } catch (e) { $('gst').innerHTML = '<span class="er">✖ Parou: ' + (e.message || e) + '</span>'; }
+  $('go').disabled = false;
+};
+</script>
+</body></html>
