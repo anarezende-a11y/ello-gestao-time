@@ -26,7 +26,7 @@ echo ""
 echo "▶ PASSO 2/3 — API Key do WasenderAPI"
 read -r -s -p "   Cole a API Key e aperte Enter (não aparece nada na tela, é normal): " KEY; echo ""
 [ -n "$KEY" ] || { echo "❌ Nenhuma chave colada. Rode o comando de novo."; exit 1; }
-printf %s "$KEY" | $FB functions:secrets:set WASENDER_KEY --data-file=- --project $P --force >/dev/null
+printf %s "$KEY" | $FB functions:secrets:set WASENDER_KEY --data-file=- --project $P >/dev/null
 unset KEY
 echo "   chave guardada no Firebase ✔"
 echo ""
