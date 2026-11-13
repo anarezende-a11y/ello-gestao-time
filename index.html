@@ -1736,6 +1736,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_podio" onclick="mostrarTool('podio')">
     <span class="di-icon">🏅</span> Pódio
   </button>
+  <button class="drawer-item" id="di_indicacoes" onclick="mostrarTool('indicacoes')">
+    <span class="di-icon">🤝</span> Indicações
+  </button>
   <button class="drawer-item admin-only" id="di_mensagens" onclick="mostrarTool('mensagens')">
     <span class="di-icon">📲</span> Central de Mensagens
   </button>
@@ -1780,7 +1783,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 21h50</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 13/11 · 14h00</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -1870,6 +1873,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Pódio</div>
         <div class="hc-desc">Competição do time: ligações, agendamentos e fechados num pódio, com alerta na hora de cada agendamento.</div>
         <div class="hc-cta">Abrir pódio →</div>
+      </button>
+      <button class="home-card c-checklist" onclick="mostrarTool('indicacoes')">
+        <div class="hc-icon">🤝</div>
+        <div class="hc-title">Indicações</div>
+        <div class="hc-desc">Registre indicações quentes e frias, passe para o pré-vendas (SDR) com um clique e acompanhe até virar venda.</div>
+        <div class="hc-cta">Abrir indicações →</div>
       </button>
       <button class="home-card c-chat admin-only" onclick="mostrarTool('mensagens')">
         <div class="hc-icon">📲</div>
@@ -2139,6 +2148,272 @@ window.APPAUTH = window.APPAUTH || {};
     <div id="podio_listas"></div>
   </div>
 </div>
+
+
+<!-- ===== TOOL: INDICAÇÕES (pós-venda → pré-vendas/SDR) ===== -->
+<style>
+.ind-wrap{max-width:1180px}
+.ind-sub{color:var(--muted);margin:2px 0 14px;font-size:14px;line-height:1.5}
+.ind-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.ind-k{border:1px solid var(--border);border-radius:14px;background:var(--card,rgba(255,255,255,.05));padding:12px 14px;color:var(--text)}
+.ind-k b{display:block;font-size:26px;line-height:1.1}.ind-k span{font-size:12px;color:var(--muted)}
+.ind-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+.ind-bar select,.ind-bar input{padding:8px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--card2,rgba(255,255,255,.06));color:var(--text);font:inherit;font-size:13px}
+.ind-chip{border:1px solid var(--border2);background:transparent;color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.ind-chip.on{background:var(--laranja,#FD7400);border-color:var(--laranja,#FD7400);color:#fff}
+.ind-paineis{display:grid;grid-template-columns:1.25fr 1fr;gap:12px;margin-bottom:14px}
+.ind-pn{border:1px solid var(--border);border-radius:14px;background:var(--card,rgba(255,255,255,.05));padding:14px;color:var(--text)}
+.ind-pn h4{margin:0 0 10px;font-size:14px}
+.ind-funis{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ind-fn h5{margin:0 0 6px;font-size:13px;display:flex;align-items:center;gap:6px}
+.ind-fn .lv{margin:0 auto 4px;color:#fff;font-weight:800;font-size:12px;text-align:center;padding:7px 4px;clip-path:polygon(0 0,100% 0,94% 100%,6% 100%);display:flex;justify-content:center;gap:6px}
+.ind-fn .lv small{font-weight:700;opacity:.8}
+.ind-pes{display:flex;flex-direction:column;gap:7px}
+.ind-pr{display:grid;grid-template-columns:96px 1fr 56px;gap:8px;align-items:center;font-size:12.5px}
+.ind-pr .tr{height:16px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;display:flex}
+.ind-pr .tr i{display:block;height:100%}
+.ind-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:10px;overflow-x:auto;padding-bottom:8px}
+.ind-col{border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03);min-height:120px;display:flex;flex-direction:column}
+.ind-col h5{margin:0;padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--text)}
+.ind-col h5 small{background:rgba(255,255,255,.1);border-radius:99px;padding:1px 8px}
+.ind-cards{padding:8px;display:flex;flex-direction:column;gap:8px}
+.ind-c{border:1px solid var(--border2);border-left:4px solid #7cc4ff;border-radius:11px;background:var(--card,rgba(255,255,255,.06));padding:9px 10px;cursor:pointer;color:var(--text);font-size:12.5px}
+.ind-c.quente{border-left-color:#ff6b3d}.ind-c.fria{border-left-color:#5aa9ff}
+.ind-c b{display:block;font-size:14px;margin-bottom:2px}
+.ind-c .m{color:var(--muted);font-size:11.5px;line-height:1.4}
+.ind-tg{display:inline-block;font-size:10.5px;font-weight:900;border-radius:99px;padding:1px 7px;margin:4px 4px 0 0}
+.ind-tg.q{background:rgba(255,107,61,.2);color:#ff9c7a}.ind-tg.f{background:rgba(90,169,255,.2);color:#9ccaff}
+.ind-tg.sla{background:rgba(255,77,77,.25);color:#ffb0b0}.ind-tg.ok{background:rgba(61,220,132,.2);color:#7ef0b0}.ind-tg.n{background:rgba(255,255,255,.1);color:var(--text)}
+.ind-vazio{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
+.ind-tipo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ind-tipo label{border:1px solid var(--border2);border-radius:12px;padding:10px;cursor:pointer;font-size:12.5px;line-height:1.4;display:block}
+.tr-field .ind-tipo label{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text);font-size:12.5px;margin:0}.ind-tipo label .t{display:block;font-size:14.5px;margin-bottom:2px}
+.ind-tipo input{display:none}.ind-tipo input:checked+span{display:block}
+.ind-tipo label.on{border-color:var(--laranja,#FD7400);background:rgba(253,116,0,.12)}
+.ind-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ind-hist{font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:10px;padding-top:8px;max-height:140px;overflow:auto}
+.ind-etp{display:flex;flex-wrap:wrap;gap:6px}
+.ind-etp button{border:1px solid var(--border2);background:transparent;color:var(--text);border-radius:99px;padding:6px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.ind-etp button.on{color:#062b14;border-color:transparent}
+@media(max-width:860px){.ind-paineis{grid-template-columns:1fr}.ind-funis{grid-template-columns:1fr 1fr}.ind-g2{grid-template-columns:1fr}}
+@media(max-width:520px){.ind-funis{grid-template-columns:1fr}}
+</style>
+<div class="tool-view tool-indicacoes" id="view_indicacoes">
+  <div class="tool-subbar">
+    <span class="sb-title">🤝 Indicações</span>
+    <span class="save-ind" id="saveInd_ind">✓ Salvo</span>
+    <button class="btn ind-adm" onclick="window.IND.config()">⚙️ SDR</button>
+    <button class="btn btn-amber" onclick="window.IND.nova()">+ Nova indicação</button>
+  </div>
+  <div class="wrap ind-wrap">
+    <div class="ind-bar" id="ind_bar"></div>
+    <div class="ind-kpis" id="ind_kpis"></div>
+    <div class="ind-paineis"><div class="ind-pn"><h4>📉 Funil das indicações</h4><div class="ind-funis" id="ind_funis"></div></div><div class="ind-pn"><h4>🏆 Quem mais indicou</h4><div class="ind-pes" id="ind_pes"></div></div></div>
+    <div class="ind-board" id="ind_board"></div>
+  </div>
+</div>
+<div class="tr-modal-overlay" id="indModal" onclick="if(event.target===this) window.IND.fechar()">
+  <div class="tr-modal" style="max-width:620px;">
+    <div class="tr-modal-head"><span class="tr-modal-title-input" style="padding-top:8px;" id="ind_m_tit">Nova indicação</span><button class="tr-modal-close" onclick="window.IND.fechar()">✕</button></div>
+    <div class="tr-modal-body" id="ind_m_body"></div>
+    <div class="tr-modal-foot" id="ind_m_foot"></div>
+  </div>
+</div>
+<script>
+window.IND = (function(){
+  var ETAPAS = [
+    {id:'enviada', n:'Enviada ao SDR', c:'#7cc4ff', s:'Aguardando o 1º contato'},
+    {id:'contato', n:'Contato', c:'#5ee6dc', s:'SDR falou com o indicado'},
+    {id:'negocio', n:'Negócio', c:'#c48bff', s:'Oportunidade aberta'},
+    {id:'ra', n:'R.A', c:'#ffd166', s:'Reunião agendada'},
+    {id:'rr', n:'R.R', c:'#f5a524', s:'Reunião realizada'},
+    {id:'venda', n:'Venda 🎉', c:'#3ee39a', s:'Fechou!'},
+    {id:'perdida', n:'Não avançou', c:'#ff8fa3', s:'Sem interesse / sem retorno'}
+  ];
+  var INTERESSE = ['Gerador (sistema novo)','Ampliação','Seguro','Manutenção / limpeza','Ainda não sabe'];
+  var SLA_H = 48;
+  var dados = {}, cfgSdr = {}, ouvindo = false, PES = [], filtro = {per:'mes', pessoa:'', tipo:'', q:''}, edit = null;
+  try { window.EQUIPE.vincular(PES, 'nomes', function(){ if (ativa()) render(); }); } catch(e) {}
+  function ativa(){ var v = document.getElementById('view_indicacoes'); return v && v.classList.contains('active'); }
+  function U(){ return window.APPAUTH && window.APPAUTH.usuarioAtual; }
+  function adm(){ var u = U(); return !!u && u.role === 'admin'; }
+  function norm(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+  function eu(){ var u = U(); if (!u) return ''; if (u.role === 'admin') return 'Ana'; var l = norm(u.nome || String(u.email||'').split('@')[0]); var m = PES.filter(function(p){ return l.indexOf(norm(p)) === 0; }).sort(function(a,b){ return norm(b).length - norm(a).length; })[0]; return m || u.nome || ''; }
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function ref(id){ return window.fb.doc(window.fb.db, 'shared_data', id); }
+  function et(id){ return ETAPAS.filter(function(e){ return e.id === id; })[0] || ETAPAS[0]; }
+  function idx(id){ for (var i=0;i<ETAPAS.length;i++) if (ETAPAS[i].id===id) return i; return 0; }
+  function dBR(ts){ return ts ? new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) : ''; }
+  function horas(ts){ return ts ? (Date.now() - ts) / 3600000 : 0; }
+  function ouvir(){
+    if (ouvindo || !window.fb || !U()) return; ouvindo = true;
+    window.fb.onSnapshot(ref('indicacoes'), function(s){ dados = (s.exists && s.exists() ? s.data() : {}) || {}; if (ativa() && !edit) render(); }, function(e){ console.error('IND', e); });
+    window.fb.onSnapshot(ref('indicacoes_cfg'), function(s){ cfgSdr = (s.exists && s.exists() ? s.data() : {}) || {}; }, function(){});
+  }
+  function salvar(id, obj){
+    var i = document.getElementById('saveInd_ind'); if (i){ i.textContent = 'Salvando...'; i.classList.add('show'); }
+    var o = {}; o[id] = obj;
+    return window.fb.setDoc(ref('indicacoes'), o, {merge:true}).then(function(){ if (i) i.textContent = '✓ Salvo'; }).catch(function(e){ alert('Não consegui salvar: ' + (e.message||e)); });
+  }
+  function lista(){
+    return Object.keys(dados).map(function(id){ var x = Object.assign({}, dados[id]); x.id = id; return x; }).filter(function(x){ return x && !x._apagado && x.indicado; })
+      .filter(function(x){ return adm() || x.por === eu(); });
+  }
+  function noPeriodo(x){
+    if (filtro.per === 'tudo') return true;
+    var d = new Date(x.criadoEm || 0), h = new Date();
+    if (filtro.per === 'mes') return d.getMonth() === h.getMonth() && d.getFullYear() === h.getFullYear();
+    if (filtro.per === 'semana'){ var ini = new Date(h); ini.setHours(0,0,0,0); ini.setDate(ini.getDate() - ((ini.getDay()+6)%7)); return d >= ini; }
+    return true;
+  }
+  function filtrados(){
+    var q = norm(filtro.q);
+    return lista().filter(function(x){ return noPeriodo(x) && (!filtro.pessoa || x.por === filtro.pessoa) && (!filtro.tipo || x.tipo === filtro.tipo) && (!q || norm(x.indicado + ' ' + x.indicador + ' ' + (x.cidade||'')).indexOf(q) >= 0); });
+  }
+  function slaAtrasado(x){ return x.etapa === 'enviada' && x.enviadoEm && horas(x.enviadoEm) > SLA_H; }
+  function render(){
+    ouvir();
+    document.querySelectorAll('.ind-adm').forEach(function(b){ b.style.display = adm() ? '' : 'none'; });
+    var bar = document.getElementById('ind_bar'); if (!bar) return;
+    bar.innerHTML = [['semana','Semana'],['mes','Mês'],['tudo','Tudo']].map(function(p){ return '<button type="button" class="ind-chip'+(filtro.per===p[0]?' on':'')+'" onclick="window.IND.f(\'per\',\''+p[0]+'\')">'+p[1]+'</button>'; }).join('') +
+      '<span style="width:8px"></span>' + [['','Quente e fria'],['quente','🔥 Quentes'],['fria','❄️ Frias']].map(function(p){ return '<button type="button" class="ind-chip'+(filtro.tipo===p[0]?' on':'')+'" onclick="window.IND.f(\'tipo\',\''+p[0]+'\')">'+p[1]+'</button>'; }).join('') +
+      (adm() ? '<select onchange="window.IND.f(\'pessoa\',this.value)"><option value="">Todo o time</option>' + PES.map(function(n){ return '<option'+(filtro.pessoa===n?' selected':'')+'>'+esc(n)+'</option>'; }).join('') + '</select>' : '') +
+      '<input type="search" placeholder="Buscar nome ou cidade" value="'+esc(filtro.q)+'" oninput="window.IND.f(\'q\',this.value,1)">';
+    var L = filtrados(), n = L.length, q = L.filter(function(x){ return x.tipo==='quente'; }).length, v = L.filter(function(x){ return x.etapa==='venda'; }).length;
+    var and = L.filter(function(x){ return ['venda','perdida'].indexOf(x.etapa) < 0; }).length, sla = L.filter(slaAtrasado).length;
+    var valor = L.filter(function(x){ return x.etapa==='venda'; }).reduce(function(s,x){ return s + (+x.valor||0); }, 0);
+    document.getElementById('ind_kpis').innerHTML =
+      k(n, 'indicações no período') + k(n ? Math.round(q/n*100)+'%' : '—', '🔥 quentes') + k(and, 'em andamento no SDR') +
+      k(sla, 'sem contato há +'+SLA_H+'h', sla ? '#ff6b6b' : null) + k(v, 'vendas geradas', v ? '#3ee39a' : null) +
+      k(n ? Math.round(v/n*100)+'%' : '—', 'conversão em venda') + (valor ? k('R$ '+valor.toLocaleString('pt-BR'), 'vendido por indicação', '#3ee39a') : '');
+    document.getElementById('ind_funis').innerHTML = funil('🔥 Quente', L.filter(function(x){ return x.tipo==='quente'; }), '#ff6b3d') + funil('❄️ Fria', L.filter(function(x){ return x.tipo==='fria'; }), '#3b82f6');
+    var porP = {}; L.forEach(function(x){ var p = x.por || '—'; porP[p] = porP[p] || {t:0, q:0, v:0}; porP[p].t++; if (x.tipo==='quente') porP[p].q++; if (x.etapa==='venda') porP[p].v++; });
+    var ord = Object.keys(porP).sort(function(a,b){ return porP[b].t - porP[a].t; }), max = ord.length ? porP[ord[0]].t : 1;
+    document.getElementById('ind_pes').innerHTML = ord.length ? ord.map(function(p){ var o = porP[p];
+      return '<div class="ind-pr"><b>'+esc(p)+'</b><div class="tr" title="'+o.q+' quentes · '+(o.t-o.q)+' frias"><i style="width:'+(o.q/max*100)+'%;background:#ff6b3d"></i><i style="width:'+((o.t-o.q)/max*100)+'%;background:#3b82f6"></i></div><span>'+o.t+(o.v?' · '+o.v+'🎉':'')+'</span></div>'; }).join('') + '<div style="font-size:11px;color:var(--muted);margin-top:4px">laranja = quente · azul = fria · 🎉 = vendas</div>' : '<div class="ind-vazio" style="padding:14px">Nenhuma indicação no período.</div>';
+    var B = document.getElementById('ind_board');
+    if (!lista().length){ B.innerHTML = '<div class="ind-vazio" style="grid-column:1/-1">Nenhuma indicação ainda. Clique em <b>+ Nova indicação</b> para registrar a primeira.</div>'; return; }
+    B.innerHTML = ETAPAS.map(function(e){ var cs = L.filter(function(x){ return (x.etapa||'enviada') === e.id; }).sort(function(a,b){ return (b.atualizadoEm||b.criadoEm||0) - (a.atualizadoEm||a.criadoEm||0); });
+      return '<div class="ind-col"><h5><span style="color:'+e.c+'">● </span>'+e.n+'<small>'+cs.length+'</small></h5><div class="ind-cards">'+cs.map(card).join('')+'</div></div>'; }).join('');
+  }
+  function k(v, t, c){ return '<div class="ind-k"><b'+(c?' style="color:'+c+'"':'')+'>'+v+'</b><span>'+t+'</span></div>'; }
+  function funil(tit, L, cor){
+    var niveis = [['Indicações', L.length]].concat(ETAPAS.slice(1,6).map(function(e){ return [e.n.replace(' 🎉',''), L.filter(function(x){ return idx(x.etapa) >= idx(e.id) && x.etapa !== 'perdida' || (x.etapa === 'perdida' && (x.chegou||0) >= idx(e.id)); }).length]; }));
+    var tot = L.length || 1;
+    return '<div class="ind-fn"><h5>'+tit+' <span style="color:var(--muted);font-weight:600">· '+L.length+'</span></h5>' + niveis.map(function(nv, i){
+      var w = 100 - i * 11, last = i === niveis.length - 1;
+      return '<div class="lv" style="width:'+w+'%;background:'+(last ? '#FD7400' : cor)+';opacity:'+(last ? 1 : (1 - i*0.1))+'">'+nv[0]+' <span>'+nv[1]+'</span>'+(i ? '<small>'+Math.round(nv[1]/tot*100)+'%</small>' : '')+'</div>'; }).join('') + '</div>';
+  }
+  function card(x){
+    var h = horas(x.enviadoEm || x.criadoEm), sla = slaAtrasado(x);
+    return '<div class="ind-c '+(x.tipo||'')+'" onclick="window.IND.abrir(\''+x.id+'\')"><b>'+esc(x.indicado)+'</b>'+
+      '<div class="m">Indicado por <b style="display:inline;font-size:inherit">'+esc(x.indicador||'—')+'</b>'+(x.cidade?' · '+esc(x.cidade):'')+'</div>'+
+      '<div class="m">'+esc(x.interesse||'')+(adm() ? ' · por '+esc(x.por||'') : '')+'</div>'+
+      '<span class="ind-tg '+(x.tipo==='quente'?'q':'f')+'">'+(x.tipo==='quente'?'🔥 Quente':'❄️ Fria')+'</span>'+
+      (x.etapa==='enviada' ? (x.enviadoEm ? '<span class="ind-tg '+(sla?'sla':'n')+'">'+(sla?'⚠️ ':'')+'enviada há '+(h<24?Math.round(h)+'h':Math.floor(h/24)+'d')+'</span>' : '<span class="ind-tg sla">📲 falta enviar ao SDR</span>') : '')+
+      (x.etapa==='venda' && x.valor ? '<span class="ind-tg ok">R$ '+(+x.valor).toLocaleString('pt-BR')+'</span>' : '')+
+      (x.etapa==='venda' ? '<span class="ind-tg '+(x.premiado?'ok':'n')+'">'+(x.premiado?'🎁 indicador premiado':'🎁 premiar indicador')+'</span>' : '')+'</div>';
+  }
+  function f(k, v, semRender){ filtro[k] = v; if (semRender){ clearTimeout(f.t); f.t = setTimeout(render, 250); } else render(); }
+
+  /* ---------- modal ---------- */
+  function abrirModal(tit, body, foot){ document.getElementById('ind_m_tit').textContent = tit; document.getElementById('ind_m_body').innerHTML = body; document.getElementById('ind_m_foot').innerHTML = foot; document.getElementById('indModal').classList.add('open'); }
+  function fechar(){ document.getElementById('indModal').classList.remove('open'); edit = null; render(); }
+  function campo(l, id, v, ph, tipo){ return '<div class="tr-field"><label>'+l+'</label><input class="tr-text-input" id="'+id+'" type="'+(tipo||'text')+'" value="'+esc(v||'')+'" placeholder="'+esc(ph||'')+'"></div>'; }
+  function formHTML(x){
+    x = x || {};
+    var tq = x.tipo || 'quente';
+    return '<div class="tr-field"><label>Temperatura da indicação</label><div class="ind-tipo">'+
+        '<label class="'+(tq==='quente'?'on':'')+'" onclick="window.IND.tp(this,\'quente\')"><input type="radio" name="ind_t" value="quente"'+(tq==='quente'?' checked':'')+'><strong class="t">🔥 Quente</strong>O indicado <b>já tem interesse</b>. Ex.: a amiga do cliente quer energia solar.</label>'+
+        '<label class="'+(tq==='fria'?'on':'')+'" onclick="window.IND.tp(this,\'fria\')"><input type="radio" name="ind_t" value="fria"'+(tq==='fria'?' checked':'')+'><strong class="t">❄️ Fria</strong>Contatos que o cliente passou, <b>sem interesse confirmado</b>. Dá para colar vários de uma vez.</label></div></div>'+
+      '<div class="ind-g2">'+campo('Nome do indicado *','ind_nome',x.indicado,'Quem foi indicado')+campo('WhatsApp do indicado *','ind_tel',x.tel,'(47) 9 9999-9999','tel')+'</div>'+
+      '<div class="ind-g2">'+campo('Cidade','ind_cid',x.cidade,'Itajaí')+'<div class="tr-field"><label>Interesse</label><select class="tr-text-input" id="ind_int">'+INTERESSE.map(function(i){ return '<option'+((x.interesse||'Ainda não sabe')===i?' selected':'')+'>'+i+'</option>'; }).join('')+'</select></div></div>'+
+      '<div class="ind-g2">'+campo('Quem indicou (cliente) *','ind_ind',x.indicador,'Nome do cliente da Ello')+campo('Relação','ind_rel',x.relacao,'Vizinho, irmão, sócio…')+'</div>'+
+      '<div class="tr-field"><label>Observação para o SDR</label><textarea class="tr-text-input" id="ind_obs" rows="2" placeholder="Melhor horário, conta de luz, o que já conversaram…">'+esc(x.obs||'')+'</textarea></div>';
+  }
+  function tp(el, v){ el.parentNode.querySelectorAll('label').forEach(function(l){ l.classList.remove('on'); }); el.classList.add('on'); el.querySelector('input').checked = true; }
+  function lerForm(){
+    var g = function(id){ var e = document.getElementById(id); return e ? e.value.trim() : ''; };
+    var t = document.querySelector('#indModal input[name=ind_t]:checked');
+    return { tipo: t ? t.value : 'quente', indicado: g('ind_nome'), tel: g('ind_tel'), cidade: g('ind_cid'), interesse: g('ind_int'), indicador: g('ind_ind'), relacao: g('ind_rel'), obs: g('ind_obs') };
+  }
+  function nova(){
+    if (!U()){ alert('Entre com seu login.'); return; } edit = 'novo';
+    abrirModal('Nova indicação', formHTML({}) + '<details class="tr-field" id="ind_lote_box"><summary style="cursor:pointer;font-weight:800">❄️ Várias indicações frias de uma vez</summary><div style="font-size:12px;color:var(--muted);margin:6px 0">Um contato por linha: <b>nome – telefone</b>. Usa o mesmo "quem indicou", cidade e observação acima.</div><textarea class="tr-text-input" id="ind_lote" rows="5" placeholder="Maria – 47 99999-1111&#10;João – 47 98888-2222"></textarea></details>', '<button class="btn" onclick="window.IND.fechar()">Cancelar</button><button class="btn" onclick="window.IND.criar(false)">Só salvar</button><button class="btn btn-amber" onclick="window.IND.criar(true)">💾 Salvar e enviar ao SDR</button>');
+  }
+  function criar(enviar){
+    var o = lerForm(), lt = document.getElementById('ind_lote'), linhas = lt ? lt.value.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean) : [];
+    if (linhas.length){
+      if (!o.indicador){ alert('Preencha quem indicou.'); return; }
+      var lote = linhas.map(function(l){ var m = l.match(/^(.*?)[\s\-–—:;,]+(\+?[\d\s().-]{8,})$/); return m ? {indicado:m[1].trim()||'Sem nome', tel:m[2].trim()} : {indicado:l.replace(/[\d\s().+-]+$/,'').trim()||'Sem nome', tel:(l.match(/[\d\s().+-]{8,}/)||[''])[0].trim()}; }).filter(function(c){ return c.tel; });
+      if (o.indicado && o.tel) lote.unshift({indicado:o.indicado, tel:o.tel});
+      var ps = lote.map(function(c, i){ var id = 'i' + Date.now().toString(36) + i + Math.random().toString(36).slice(2,4);
+        var x = Object.assign({}, o, c, { tipo:'fria', etapa:'enviada', por:eu(), criadoEm:Date.now(), atualizadoEm:Date.now(), hist:[{em:Date.now(), por:eu(), txt:'Indicação registrada (fria, em lote)'}] });
+        dados[id] = x; return salvar(id, x).then(function(){ return id; }); });
+      Promise.all(ps).then(function(ids){ if (enviar) enviarLote(ids); fechar(); alert('✅ ' + ids.length + ' indicações frias registradas.'); });
+      return;
+    }
+    if (!o.indicado || !o.tel || !o.indicador){ alert('Preencha nome e WhatsApp do indicado e quem indicou.'); return; }
+    var id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    Object.assign(o, { etapa:'enviada', por: eu(), criadoEm: Date.now(), atualizadoEm: Date.now(), hist:[{em:Date.now(), por:eu(), txt:'Indicação registrada ('+o.tipo+')'}] });
+    dados[id] = o; salvar(id, o).then(function(){ if (enviar) enviarSdr(id); fechar(); });
+  }
+  function abrir(id){
+    var x = dados[id]; if (!x) return; edit = id;
+    var etp = '<div class="tr-field"><label>Onde está no SDR</label><div class="ind-etp">'+ETAPAS.map(function(e){ var on = (x.etapa||'enviada')===e.id; return '<button type="button" class="'+(on?'on':'')+'" style="'+(on?'background:'+e.c:'')+'" onclick="window.IND.mover(\''+id+'\',\''+e.id+'\')" title="'+esc(e.s)+'">'+e.n+'</button>'; }).join('')+'</div></div>';
+    var venda = x.etapa === 'venda' ? '<div class="ind-g2">'+campo('Valor da venda (R$)','ind_val',x.valor,'0','number')+'<div class="tr-field"><label>Indicador</label><label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="ind_prem"'+(x.premiado?' checked':'')+' style="width:auto"> 🎁 Cliente que indicou já foi premiado</label></div></div>' : '';
+    var motivo = x.etapa === 'perdida' ? campo('Motivo','ind_mot',x.motivo,'Sem interesse, sem retorno, já tem…') : '';
+    var hist = '<div class="ind-hist">'+(x.hist||[]).slice().reverse().map(function(h){ return '<div>'+dBR(h.em)+' · '+esc(h.por||'')+': '+esc(h.txt)+'</div>'; }).join('')+'</div>';
+    abrirModal(x.indicado, etp + venda + motivo + formHTML(x) + (x.enviadoEm ? '<div style="font-size:12px;color:var(--muted)">📲 Enviada ao SDR em '+new Date(x.enviadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</div>' : '') + hist,
+      (adm() || x.por === eu() ? '<button class="tr-btn-delete" onclick="window.IND.apagar(\''+id+'\')">🗑️</button>' : '') +
+      '<button class="btn" onclick="window.IND.enviarSdr(\''+id+'\')">📲 '+(x.enviadoEm?'Reenviar':'Enviar')+' ao SDR</button><button class="btn btn-amber" onclick="window.IND.gravar(\''+id+'\')">💾 Salvar</button>');
+  }
+  function gravar(id){
+    var x = dados[id]; if (!x) return; var o = lerForm(); if (!o.indicado || !o.tel || !o.indicador){ alert('Preencha nome e WhatsApp do indicado e quem indicou.'); return; }
+    var v = document.getElementById('ind_val'), p = document.getElementById('ind_prem'), m = document.getElementById('ind_mot');
+    if (v) o.valor = +v.value || 0; if (p) o.premiado = p.checked; if (m) o.motivo = m.value.trim();
+    o.atualizadoEm = Date.now(); Object.assign(dados[id], o); salvar(id, o).then(fechar);
+  }
+  function mover(id, etapa){
+    var x = dados[id]; if (!x || x.etapa === etapa) return;
+    var o = { etapa: etapa, atualizadoEm: Date.now(), chegou: Math.max(x.chegou||0, etapa === 'perdida' ? idx(x.etapa||'enviada') : idx(etapa)), hist: (x.hist||[]).concat([{em:Date.now(), por:eu(), txt:'Moveu para '+et(etapa).n}]) };
+    Object.assign(dados[id], o); salvar(id, o).then(function(){ abrir(id); });
+  }
+  function apagar(id){ if (!confirm('Apagar esta indicação?')) return; dados[id] = {_apagado:true}; salvar(id, {_apagado:true, apagadoEm:Date.now(), apagadoPor:eu()}).then(fechar); }
+  function telSdr(){ var t = String(cfgSdr.tel||'').replace(/\D/g,''); return t ? (t.length <= 11 ? '55'+t : t) : ''; }
+  function enviarSdr(id){
+    var x = dados[id]; if (!x) return;
+    var msg = (x.tipo==='quente' ? '🔥 *INDICAÇÃO QUENTE*' : '❄️ *INDICAÇÃO FRIA*') + ' – Pós-venda Ello\n\n' +
+      '👤 *' + x.indicado + '*\n📱 ' + x.tel + (x.cidade ? '\n📍 ' + x.cidade : '') + '\n💡 Interesse: ' + (x.interesse||'—') + '\n\n' +
+      '🤝 Indicado por: *' + x.indicador + '*' + (x.relacao ? ' (' + x.relacao + ')' : '') + '\n' +
+      (x.tipo==='quente' ? '✅ Já tem interesse. Prioridade no contato!\n' : 'ℹ️ Contato indicado, sem interesse confirmado. Cite o nome de quem indicou.\n') +
+      (x.obs ? '\n📝 ' + x.obs + '\n' : '') + '\nRegistrado por ' + (x.por||eu()) + '. Me avisa quando fizer o 1º contato? 🙏';
+    var t = telSdr();
+    var o = { enviadoEm: Date.now(), atualizadoEm: Date.now(), hist: (x.hist||[]).concat([{em:Date.now(), por:eu(), txt:'Enviada ao SDR'+(cfgSdr.nome?' ('+cfgSdr.nome+')':'')}]) };
+    Object.assign(dados[id], o); salvar(id, o);
+    if (t) window.open('https://wa.me/' + t + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    else { if (navigator.clipboard) navigator.clipboard.writeText(msg); alert((adm() ? 'Cadastre o WhatsApp do SDR em ⚙️ SDR.' : 'A Ana ainda não cadastrou o WhatsApp do SDR.') + '\n\nA mensagem foi copiada: é só colar na conversa com o SDR.'); }
+    if (edit === id) abrir(id);
+  }
+  function enviarLote(ids){
+    var xs = ids.map(function(id){ return dados[id]; }).filter(Boolean); if (!xs.length) return;
+    var msg = '❄️ *INDICAÇÕES FRIAS* – Pós-venda Ello\n\n🤝 Indicadas por: *' + xs[0].indicador + '*' + (xs[0].cidade ? '\n📍 ' + xs[0].cidade : '') + '\n\n' +
+      xs.map(function(x, i){ return (i+1) + '. ' + x.indicado + ' – ' + x.tel; }).join('\n') +
+      (xs[0].obs ? '\n\n📝 ' + xs[0].obs : '') + '\n\nSem interesse confirmado: cite o nome de quem indicou. Registrado por ' + (xs[0].por||eu()) + '.';
+    ids.forEach(function(id){ var o = { enviadoEm: Date.now(), hist: (dados[id].hist||[]).concat([{em:Date.now(), por:eu(), txt:'Enviada ao SDR (lote)'}]) }; Object.assign(dados[id], o); salvar(id, o); });
+    var t = telSdr(); if (t) window.open('https://wa.me/' + t + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    else { if (navigator.clipboard) navigator.clipboard.writeText(msg); alert('WhatsApp do SDR não cadastrado. A mensagem foi copiada: é só colar na conversa com o SDR.'); }
+  }
+  function config(){
+    if (!adm()) return; edit = 'cfg';
+    abrirModal('Contato do pré-vendas (SDR)', campo('Nome (pessoa ou grupo do SDR)','ind_sn',cfgSdr.nome,'Ex.: Pré-vendas Ello') + campo('WhatsApp do SDR','ind_st',cfgSdr.tel,'(47) 9 9999-9999','tel') + '<div style="font-size:12px;color:var(--muted)">É para esse número que o botão "Enviar ao SDR" abre a conversa, com a indicação já formatada.</div>',
+      '<button class="btn" onclick="window.IND.fechar()">Cancelar</button><button class="btn btn-amber" onclick="window.IND.salvarCfg()">💾 Salvar</button>');
+  }
+  function salvarCfg(){ cfgSdr = { nome: document.getElementById('ind_sn').value.trim(), tel: document.getElementById('ind_st').value.trim() }; window.fb.setDoc(ref('indicacoes_cfg'), cfgSdr).then(fechar); }
+  window.addEventListener('userAuthed', function(){ ouvir(); });
+  return { render:render, f:f, nova:nova, criar:criar, abrir:abrir, gravar:gravar, mover:mover, apagar:apagar, enviarSdr:enviarSdr, config:config, salvarCfg:salvarCfg, fechar:fechar, tp:tp };
+})();
+</script>
 
 <div class="tool-view tool-mensagens" id="view_mensagens">
   <div class="tool-subbar"><span class="sb-title">📲 Central de Mensagens</span></div>
@@ -3481,8 +3756,8 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', agenda:'view_agenda', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily', mensagens:'view_mensagens' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', agenda:'Agenda do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily', mensagens:'Central de Mensagens' };
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', agenda:'view_agenda', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily', mensagens:'view_mensagens', indicacoes:'view_indicacoes' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', agenda:'Agenda do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily', mensagens:'Central de Mensagens', indicacoes:'Indicações' };
   var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl','mensagens'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
@@ -3499,6 +3774,7 @@ function mostrarTool(nome) {
   fecharDrawer();
   try { localStorage.setItem('ello_tool_ativa', nome); } catch(e) {}
   if (nome === 'mensagens' && window.MSG) window.MSG.render();
+  if (nome === 'indicacoes' && window.IND) window.IND.render();
   if (nome === 'treinamentos' && window.TR) window.TR.render();
   if (nome === 'roleplay' && window.RP) window.RP.render();
   if (nome === 'pop' && window.POP) window.POP.render();
@@ -13586,7 +13862,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['agenda','campanha','chat','checklist','mensagens','podio','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['agenda','campanha','chat','checklist','indicacoes','mensagens','podio','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
