@@ -1777,7 +1777,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 16h50</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 21h30</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -2955,6 +2955,8 @@ window.APPAUTH = window.APPAUTH || {};
           <div class="dly-wa-r">
             <select class="tr-text-input" id="dly_wa_p" onchange="window.DAILY.waPrevia()"></select>
             <select class="tr-text-input" id="dly_wa_t" onchange="window.DAILY.waPrevia()">
+              <option value="rdia">📈 Resultado do dia (para preencher)</option>
+              <option value="rsem">📈 Resultado da semana (para preencher)</option>
               <option value="res">📊 Cobrar resultados</option>
               <option value="comb">✅ Combinados da daily</option>
               <option value="falta">🚫 Falta na daily</option>
@@ -12937,6 +12939,14 @@ function waMontar(n, tipo){
   const d5 = dataBR(data).slice(0,5);
   const abertas = listaTar().filter(t => t.responsavel === n && t.status !== 'feita').sort((x,y) => (x.prazo||'9999').localeCompare(y.prazo||'9999'));
   const linhaT = t => '• '+t.texto+(t.prazo ? ' — até '+dataBR(t.prazo).slice(0,5) : '')+(statusPrazo(t)==='venc' ? ' ⚠️ *ATRASADA*' : statusPrazo(t)==='hoje' ? ' ⏰ *vence hoje*' : '');
+  if(tipo === 'rdia' || tipo === 'rsem'){
+    const sem = tipo === 'rsem', per = sem ? 'da semana' : 'de hoje';
+    return '📈 *Resultado '+per+' – Ello Solar*\n\nOi, '+n+'! Me manda seu resultado '+per+' rapidinho 👇\n_É só copiar, preencher os números e me responder._\n\n'+
+      '*📞 CONTATOS*\nClientes na base para chamar: \nChamei: \nNão chamei (por quê?): \nTentativas sem retorno: \n\n'+
+      '*💼 COMERCIAL*\nNegócios em andamento: \nPropostas enviadas: \nVendas fechadas: \n_(qual serviço e valor)_\n\n'+
+      '*⭐ RELACIONAMENTO*\nAvaliações Google: \nIndicações: \n\n'+
+      '*🚧 Travou em algo?* \n\nValeu! Cada número conta 💪\nAna';
+  }
   if(tipo === 'res'){
     let m = '📊 *Cobrança de resultados – Ello Solar*\n\nOlá, '+n+'! Preciso do seu retorno sobre os resultados.\n\n';
     if(abertas.length) m += '*Seus combinados em aberto:*\n'+abertas.map(linhaT).join('\n')+'\n\n';
