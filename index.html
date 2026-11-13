@@ -8296,13 +8296,24 @@ function linkWhats(nome, n) {
 }
 window.FEED.textoAlertaWhats = textoAlertaWhats;
 window.FEED.qtdAlertas = n => alertasDe(n).length;
+function etapaDisciplinar(nome) {
+  const adv = advertenciasDe(nome);
+  if (!adv.length) return 'Sem advertência registrada · sugerido: <b>' + NIVEIS[0].nome + '</b>';
+  const idx = Math.max.apply(null, adv.map(f => nivelIdx(f.nivel)));
+  if (idx === NIVEIS.length - 1) return '🚫 Já na <b>' + NIVEIS[idx].nome + '</b> · próximo passo: <b>desligamento</b>';
+  return 'Etapa atual: <b>' + NIVEIS[idx].nome + '</b> · sugerido: <b>' + NIVEIS[idx + 1].nome + '</b>';
+}
 function faixaAlertaAdmin() {
   const pessoas = MEMBROS.map(n => ({ n, q: alertasDe(n).length })).filter(x => x.q >= AL_LIMITE).sort((a, b) => b.q - a.q);
   if (!pessoas.length) return '';
   return `<div class="al-faixa"><h3>🚨 Alerta: reincidência</h3>
-    <div>${pessoas.length === 1 ? 'Esta pessoa está' : 'Estas pessoas estão'} com <b>${AL_LIMITE} ou mais pontos de melhoria</b> nos últimos ${AL_DIAS} dias. Hora de uma conversa séria e, se for o caso, de uma advertência.</div>
+    <div>${pessoas.length === 1 ? 'Esta pessoa está' : 'Estas pessoas estão'} com <b>${AL_LIMITE} ou mais pontos de melhoria</b> nos últimos ${AL_DIAS} dias. O feedback é o registro da advertência: abaixo está a etapa de cada um na medida disciplinar (<b>1 verbal → 3 escritas → desligamento</b>). Hora de uma conversa séria e de registrar a próxima advertência.</div>
     <div class="al-l">${pessoas.map(x => { const w = linkWhats(x.n, x.q);
-      return `<span class="al-p">${escapeHTML(x.n)} · ${x.q}${w ? `<a class="al-wa" href="${w}" target="_blank" rel="noopener">📲 WhatsApp</a>` : `<button type="button" class="al-wa off" onclick="window.EQUIPE.abrirAdmin()" title="Cadastre o WhatsApp da pessoa em Equipe">📲 sem número</button>`}</span>`; }).join('')}</div></div>`;
+      const nm = escapeHTML(x.n).replace(/'/g, '&#39;');
+      return `<span class="al-p" style="flex-wrap:wrap;">${escapeHTML(x.n)} · ${x.q}
+        <span style="flex-basis:100%;font-weight:600;font-size:12px;opacity:.95;">${etapaDisciplinar(x.n)}</span>
+        <button type="button" class="al-wa admin-only" style="background:#fff;color:#8a0b0b!important;" onclick="window.FEED.registrarAdvertencia('${nm}')">⚠️ Registrar advertência</button>
+        ${w ? `<a class="al-wa" href="${w}" target="_blank" rel="noopener">📲 WhatsApp</a>` : `<button type="button" class="al-wa off" onclick="window.EQUIPE.abrirAdmin()" title="Cadastre o WhatsApp da pessoa em Equipe">📲 sem número</button>`}</span>`; }).join('')}</div></div>`;
 }
 let alertaMostrado = false;
 function telaAlertaLiderado(nome) {
@@ -8519,6 +8530,12 @@ function renderThread(containerId, f) {
 
 function filtrarPessoa(p) { pessoaFiltro = p; render(); }
 
+function registrarAdvertencia(nome) {
+  novoFeedback();
+  document.getElementById('feed_liderado').value = nome;
+  document.getElementById('feed_tipo').value = 'advertencia';
+  atualizarCampoNivel(true);
+}
 function novoFeedback() {
   modalId = null;
   document.getElementById('feed_liderado').innerHTML = MEMBROS.map(m => `<option value="${m}">${m}</option>`).join('');
@@ -8696,6 +8713,7 @@ window.FEED.render = render;
 window.FEED.carregar = carregar;
 window.FEED.filtrarPessoa = filtrarPessoa;
 window.FEED.novoFeedback = novoFeedback;
+window.FEED.registrarAdvertencia = registrarAdvertencia;
 window.FEED.abrirModal = abrirModal;
 window.FEED.fecharModal = fecharModal;
 window.FEED.salvarFeedback = salvarFeedback;
