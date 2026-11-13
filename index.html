@@ -1736,6 +1736,9 @@ window.APPAUTH = window.APPAUTH || {};
   <button class="drawer-item" id="di_podio" onclick="mostrarTool('podio')">
     <span class="di-icon">🏅</span> Pódio
   </button>
+  <button class="drawer-item admin-only" id="di_mensagens" onclick="mostrarTool('mensagens')">
+    <span class="di-icon">📲</span> Central de Mensagens
+  </button>
   <button class="drawer-item" id="di_agenda" onclick="mostrarTool('agenda')">
     <span class="di-icon">📆</span> Agenda
   </button>
@@ -1777,7 +1780,7 @@ window.APPAUTH = window.APPAUTH || {};
   </button>
   </div>
   <div class="drawer-foot">
-    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 21h30</div>
+    <div style="font-size:10px;color:var(--muted2);margin-bottom:6px;">Versão 12/11 · 21h50</div>
     <div id="drawerUserInfo" style="margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:12px;"></div>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.EQUIPE.abrirAdmin()" title="Quem está no time em todas as abas">👥 Equipe</button>
     <button class="tr-btn-delete admin-only" style="width:100%; justify-content:center; display:none; margin-bottom:8px;" onclick="window.ELLO_BACKUP()" title="Baixa um arquivo com todos os dados da plataforma">⬇️ Baixar backup</button>
@@ -1867,6 +1870,12 @@ window.APPAUTH = window.APPAUTH || {};
         <div class="hc-title">Pódio</div>
         <div class="hc-desc">Competição do time: ligações, agendamentos e fechados num pódio, com alerta na hora de cada agendamento.</div>
         <div class="hc-cta">Abrir pódio →</div>
+      </button>
+      <button class="home-card c-chat admin-only" onclick="mostrarTool('mensagens')">
+        <div class="hc-icon">📲</div>
+        <div class="hc-title">Central de Mensagens</div>
+        <div class="hc-desc">Mensagens prontas de WhatsApp para o time: resultado do dia, cobrança, combinados, falta e alerta de feedback.</div>
+        <div class="hc-cta">Abrir central →</div>
       </button>
       <button class="home-card c-checklist" onclick="mostrarTool('agenda')">
         <div class="hc-icon">📆</div>
@@ -2128,6 +2137,19 @@ window.APPAUTH = window.APPAUTH || {};
     <div id="podio_podio"></div>
     <div id="podio_reg"></div>
     <div id="podio_listas"></div>
+  </div>
+</div>
+
+<div class="tool-view tool-mensagens" id="view_mensagens">
+  <div class="tool-subbar"><span class="sb-title">📲 Central de Mensagens</span></div>
+  <div class="wrap" style="max-width:1000px;">
+    <p class="msg-sub">Escolha a mensagem e as pessoas. O texto já vem pronto para cada um — dá para editar antes — e o botão abre o WhatsApp da pessoa.</p>
+    <div class="msg-step">1 · Qual mensagem?</div>
+    <div class="msg-tipos" id="msg_tipos"></div>
+    <div class="msg-step">2 · Para quem? <button type="button" class="msg-mini" onclick="window.MSG.todos()">Selecionar todos</button><button type="button" class="msg-mini" onclick="window.MSG.nenhum()">Limpar</button></div>
+    <div class="msg-pes" id="msg_pes"></div>
+    <div class="msg-step">3 · Conferir e enviar</div>
+    <div id="msg_cards" class="msg-cards"></div>
   </div>
 </div>
 
@@ -2950,22 +2972,6 @@ window.APPAUTH = window.APPAUTH || {};
       <div class="tr-field">
         <label>Por pessoa (o que cada um falou)</label>
         <div id="dly_pp" class="dly-pp"></div>
-        <div class="dly-wa">
-          <div class="dly-wa-h">📲 Mandar no WhatsApp</div>
-          <div class="dly-wa-r">
-            <select class="tr-text-input" id="dly_wa_p" onchange="window.DAILY.waPrevia()"></select>
-            <select class="tr-text-input" id="dly_wa_t" onchange="window.DAILY.waPrevia()">
-              <option value="rdia">📈 Resultado do dia (para preencher)</option>
-              <option value="rsem">📈 Resultado da semana (para preencher)</option>
-              <option value="res">📊 Cobrar resultados</option>
-              <option value="comb">✅ Combinados da daily</option>
-              <option value="falta">🚫 Falta na daily</option>
-              <option value="fb">🚨 Alerta de feedback (3+ pontos)</option>
-            </select>
-          </div>
-          <textarea class="tr-text-input" id="dly_wa_txt" rows="9"></textarea>
-          <div class="dly-wa-r"><span id="dly_wa_info" class="dly-wa-i"></span><button type="button" class="btn dly-wa-b" onclick="window.DAILY.waEnviar()">📲 Abrir no WhatsApp</button></div>
-        </div>
       </div>
     </div>
     <div class="tr-modal-foot">
@@ -3475,9 +3481,9 @@ function fecharDrawer() {
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 function mostrarTool(nome) {
-  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', agenda:'view_agenda', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily' };
-  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', agenda:'Agenda do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily' };
-  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl'];
+  var views = { home:'view_home', reuniao:'view_reuniao', oneone:'view_oneone', treinamentos:'view_treinamentos', roleplay:'view_roleplay', pop:'view_pop', pauta:'view_pauta', rco:'view_rco', campanha:'view_campanha', checklist:'view_checklist', chat:'view_chat', podio:'view_podio', agenda:'view_agenda', feedback:'view_feedback', contratos:'view_contratos', cargos:'view_cargos', desafioreuniao:'view_desafioreuniao', provas:'view_provas', dashboard:'view_dashboard', atualizacoes:'view_atualizacoes', pdl:'view_pdl', posvendas:'view_posvendas', daily:'view_daily', mensagens:'view_mensagens' };
+  var crumbs = { home:'Menu Principal', reuniao:'Reunião Semanal', oneone:'One-on-One', treinamentos:'Treinamentos', roleplay:'Role Play', pop:'POP', pauta:'Pauta da Reunião', rco:'Comercial + Operacional', campanha:'Campanha', checklist:'Checklist', chat:'Chat do time', podio:'Pódio · Competição', agenda:'Agenda do time', feedback:'Feedback', contratos:'Contratos', cargos:'Cargos', desafioreuniao:'Desafio Reunião', provas:'Provas', dashboard:'Dashboard de Provas', atualizacoes:'Atualizações', pdl:'Escolha de Líder', posvendas:'Comercial Pós-vendas', daily:'Daily', mensagens:'Central de Mensagens' };
+  var adminOnly = ['reuniao','oneone','rco','dashboard','atualizacoes','pdl','mensagens'];
   var user = window.APPAUTH && window.APPAUTH.usuarioAtual;
   if (user && user.role === 'liderado' && adminOnly.indexOf(nome) > -1) {
     nome = 'home';
@@ -3492,6 +3498,7 @@ function mostrarTool(nome) {
   document.getElementById('headerCrumb').textContent = crumbs[nome] || '';
   fecharDrawer();
   try { localStorage.setItem('ello_tool_ativa', nome); } catch(e) {}
+  if (nome === 'mensagens' && window.MSG) window.MSG.render();
   if (nome === 'treinamentos' && window.TR) window.TR.render();
   if (nome === 'roleplay' && window.RP) window.RP.render();
   if (nome === 'pop' && window.POP) window.POP.render();
@@ -8410,6 +8417,7 @@ document.getElementById('feed_tipo').addEventListener('change', () => atualizarC
 document.getElementById('feed_liderado').addEventListener('change', () => atualizarCampoNivel(true));
 document.getElementById('feed_nivel').addEventListener('change', () => atualizarCampoNivel(false));
 window.FEED.render = render;
+window.FEED.carregar = carregar;
 window.FEED.filtrarPessoa = filtrarPessoa;
 window.FEED.novoFeedback = novoFeedback;
 window.FEED.abrirModal = abrirModal;
@@ -12934,8 +12942,10 @@ function importar(){
 }
 /* ===== WhatsApp a partir da daily ===== */
 function waTel(n){ const t = String(window.EQUIPE && window.EQUIPE.tel ? window.EQUIPE.tel(n) : '').replace(/\D/g,''); return t ? (t.length <= 11 ? '55'+t : t) : ''; }
-function waMontar(n, tipo){
-  const data = (document.getElementById('dly_data')||{}).value || hoje(), hora = (document.getElementById('dly_hora')||{}).value || '08:30';
+function ultimaDaily(){ return lista().slice().sort((x,y) => String(y.data).localeCompare(String(x.data)))[0] || null; }
+function waMontar(n, tipo, ctx){
+  ctx = ctx || {}; const ult = ultimaDaily() || {};
+  const data = ctx.data || ult.data || hoje(), hora = ctx.hora || ult.hora || '08:30';
   const d5 = dataBR(data).slice(0,5);
   const abertas = listaTar().filter(t => t.responsavel === n && t.status !== 'feita').sort((x,y) => (x.prazo||'9999').localeCompare(y.prazo||'9999'));
   const linhaT = t => '• '+t.texto+(t.prazo ? ' — até '+dataBR(t.prazo).slice(0,5) : '')+(statusPrazo(t)==='venc' ? ' ⚠️ *ATRASADA*' : statusPrazo(t)==='hoje' ? ' ⏰ *vence hoje*' : '');
@@ -12954,11 +12964,12 @@ function waMontar(n, tipo){
     return m;
   }
   if(tipo === 'comb'){
-    const meus = String((document.getElementById('dly_comb')||{}).value||'').split(/\n+/).map(l => l.replace(/^[\s•\-\*]+/,'').trim()).filter(l => { const m = l.match(/^\[([^\]]+)\]/); return m && (acharPessoa(m[1]) === n || /^(todos|time|equipe)$/i.test(m[1].trim())); }).map(l => '• '+l.replace(/^\[[^\]]+\]\s*/,''));
+    const meus = String(ctx.comb != null ? ctx.comb : (ult.combinados||'')).split(/\n+/).map(l => l.replace(/^[\s•\-\*]+/,'').trim()).filter(l => { const m = l.match(/^\[([^\]]+)\]/); return m && (acharPessoa(m[1]) === n || /^(todos|time|equipe)$/i.test(m[1].trim())); }).map(l => '• '+l.replace(/^\[[^\]]+\]\s*/,''));
     const lst = meus.length ? meus : abertas.map(linhaT);
     return '✅ *Combinados da daily – '+d5+'*\n\nOi, '+n+'! Ficou combinado com você:\n\n'+(lst.length ? lst.join('\n') : '• (nenhum combinado registrado)')+'\n\nQualquer trava, me avisa antes do prazo. Bora! 🚀\nAna';
   }
-  if(tipo === 'falta') return '🚫 *Daily – '+d5+' às '+hora+'*\n\nOi, '+n+'. Você não participou da daily de hoje e não houve justificativa.\n\nA daily é o nosso momento de alinhar prioridades e combinados do dia. A falta foi registrada na plataforma como ponto de melhoria.\n\nMe responda aqui o que aconteceu e já se atualize com o time sobre os combinados.\nAna';
+  if(tipo === 'livre') return 'Oi, '+n+'! ';
+  if(tipo === 'falta') return '🚫 *Daily – '+d5+' às '+hora+'*\n\nOi, '+n+'. Você não participou da daily '+(data===hoje()?'de hoje':'de '+d5)+' e não houve justificativa.\n\nA daily é o nosso momento de alinhar prioridades e combinados do dia. A falta foi registrada na plataforma como ponto de melhoria.\n\nMe responda aqui o que aconteceu e já se atualize com o time sobre os combinados.\nAna';
   if(tipo === 'fb'){ if(!(window.FEED && window.FEED.textoAlertaWhats)) return ''; const q = window.FEED.qtdAlertas(n); return q ? window.FEED.textoAlertaWhats(n) : ''; }
   return '';
 }
@@ -13079,7 +13090,7 @@ function imprimir(){
   el.querySelectorAll('table').forEach(t=>{ t.style.width='100%'; t.style.borderCollapse='collapse'; t.querySelectorAll('th,td').forEach(c=>{ c.style.border='1px solid #ccc'; c.style.padding='6px 8px'; c.style.color='#111'; }); });
   window.print(); setTimeout(()=>{ el.innerHTML=''; }, 500);
 }
-Object.assign(window.DAILY, { waPrevia, waEnviar, render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar, periodo, navegar, filtrarTar, alternarTarefa, excluirTarefa, novaTarefa, checkTarefas });
+Object.assign(window.DAILY, { waPrevia, waEnviar, waMontar, waTel, carregar: ouvir, ultimaDaily, render, novo, abrir, fechar, salvar, excluir, trocar, todos, aba, imprimir, importar, periodo, navegar, filtrarTar, alternarTarefa, excluirTarefa, novaTarefa, checkTarefas });
 })();
 </script>
 <!-- ===== TEMA ELLO (visual do Dashboard Pós-vendas em toda a plataforma) ===== -->
@@ -13575,7 +13586,7 @@ textarea.q-input:focus, .tr-modal input:focus, .tr-modal select:focus, .tr-modal
   var SECOES = [
     { id:'pessoas',     nome:'Gestão de Pessoas',   itens:['atualizacoes','cargos','contratos','pdl','feedback'] },
     { id:'reunioes',    nome:'Reuniões',            itens:['rco','daily','desafioreuniao','oneone','pauta','reuniao'] },
-    { id:'rotina',      nome:'Rotina e Resultados', itens:['agenda','campanha','chat','checklist','podio','posvendas'] },
+    { id:'rotina',      nome:'Rotina e Resultados', itens:['agenda','campanha','chat','checklist','mensagens','podio','posvendas'] },
     { id:'treinamento', nome:'Treinamento',         itens:['dashboard','pop','provas','roleplay','treinamentos'] }
   ];
   var ROTULO = { dashboard:'Dashboard de Provas' };
@@ -14711,6 +14722,74 @@ window.PODIO.agendamentos=function(){ return lista().filter(function(r){ return 
 })();
 </script>
 
+
+<style>
+.msg-sub{color:var(--muted);margin:2px 0 14px;font-size:14px}
+.msg-step{font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--laranja,#FD7400);margin:18px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.msg-mini{border:1px solid var(--border2);background:transparent;color:var(--text);border-radius:99px;padding:3px 10px;font-size:11.5px;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:700}
+.msg-tipos{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.msg-tipo{text-align:left;border:1px solid var(--border);background:var(--card,rgba(255,255,255,.05));color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit}
+.msg-tipo b{display:block;font-size:14.5px;margin-bottom:3px}.msg-tipo span{font-size:12px;color:var(--muted);line-height:1.4}
+.msg-tipo.on{border-color:#25D366;background:rgba(37,211,102,.12);box-shadow:0 0 0 1px #25D366 inset}
+.msg-pes{display:flex;flex-wrap:wrap;gap:8px}
+.msg-p{border:1px solid var(--border2);background:var(--card,rgba(255,255,255,.05));color:var(--text);border-radius:99px;padding:8px 14px;cursor:pointer;font:inherit;font-weight:700;font-size:13.5px}
+.msg-p.on{background:#25D366;border-color:#25D366;color:#062b14}.msg-p small{font-weight:600;opacity:.7;margin-left:4px}
+.msg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.msg-card{border:1px solid var(--border);border-radius:14px;background:var(--card,rgba(255,255,255,.05));padding:12px;display:flex;flex-direction:column;gap:8px;color:var(--text)}
+.msg-card.ok{border-color:#25D366}.msg-card h4{margin:0;display:flex;justify-content:space-between;align-items:center;font-size:15px}
+.msg-card h4 small{font-size:11.5px;font-weight:700;color:var(--muted)}.msg-card.ok h4 small{color:#3ddc84}
+.msg-card textarea{width:100%;min-height:230px;resize:vertical;border-radius:10px;border:1px solid var(--border2);background:rgba(0,0,0,.25);color:var(--text);padding:10px;font:13px/1.45 inherit;font-family:inherit}
+.msg-card .bt{display:flex;gap:8px}.msg-card .bt button{flex:1;border:0;border-radius:10px;padding:10px;font:inherit;font-weight:900;cursor:pointer}
+.msg-env{background:#25D366;color:#062b14}.msg-cop{background:rgba(255,255,255,.12);color:var(--text)}
+.msg-sem{font-size:12px;color:#ffb4b4}.msg-sem a{color:#3ddc84}
+@media(max-width:600px){.msg-tipos{grid-template-columns:1fr 1fr;gap:8px}.msg-tipo{padding:10px}.msg-tipo span{display:none}.msg-tipo b{font-size:13.5px;margin:0}.msg-cards{grid-template-columns:1fr}}
+.msg-vazio{grid-column:1/-1;padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:14px}
+</style>
+<script>
+window.MSG = (function(){
+  var TIPOS = [
+    ['rdia','📈 Resultado do dia','Formulário para preencher: contatos, negócios, propostas, vendas, avaliações e indicações.'],
+    ['rsem','📈 Resultado da semana','O mesmo formulário, com os números da semana.'],
+    ['res','📊 Cobrar resultados','Lista os combinados em aberto (com atrasados) e pede retorno até as 17h.'],
+    ['comb','✅ Combinados da daily','O que ficou combinado com a pessoa na última daily.'],
+    ['falta','🚫 Falta na daily','Aviso de falta sem justificativa na última daily.'],
+    ['fb','🚨 Alerta de feedback','Pontos de melhoria dos últimos 90 dias, com aceitos e pendentes.'],
+    ['livre','✍️ Mensagem livre','Começa só com "Oi, [nome]!" para você escrever.']
+  ];
+  var PES = [], tipo = 'rdia', sel = {}, enviados = {}, editados = {};
+  try { window.EQUIPE.vincular(PES, 'nomes', function(){ if (ativa()) render(); }); } catch(e) {}
+  function ativa(){ var v = document.getElementById('view_mensagens'); return v && v.classList.contains('active'); }
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function tel(n){ try { return window.DAILY.waTel(n); } catch(e) { return ''; } }
+  function texto(n){ var k = tipo+'|'+n; if (editados[k] != null) return editados[k]; try { return window.DAILY.waMontar(n, tipo) || ''; } catch(e) { return ''; } }
+  function render(){
+    try { window.DAILY.carregar(); } catch(e) {} try { window.FEED.carregar(); } catch(e) {}
+    var T = document.getElementById('msg_tipos'); if (!T) return;
+    T.innerHTML = TIPOS.map(function(t){ return '<button type="button" class="msg-tipo'+(t[0]===tipo?' on':'')+'" onclick="window.MSG.tipo(\''+t[0]+'\')"><b>'+t[1]+'</b><span>'+esc(t[2])+'</span></button>'; }).join('');
+    document.getElementById('msg_pes').innerHTML = PES.map(function(n){ return '<button type="button" class="msg-p'+(sel[n]?' on':'')+'" onclick="window.MSG.pessoa(\''+esc(n)+'\')">'+esc(n)+(tel(n)?'':'<small>sem nº</small>')+'</button>'; }).join('');
+    var ps = PES.filter(function(n){ return sel[n]; }), C = document.getElementById('msg_cards');
+    if (!ps.length){ C.innerHTML = '<div class="msg-vazio">Selecione uma ou mais pessoas acima para ver as mensagens prontas.</div>'; return; }
+    C.innerHTML = ps.map(function(n){ var tx = texto(n), k = tipo+'|'+n, ok = enviados[k], tl = tel(n);
+      var vazio = !tx && tipo === 'fb';
+      return '<div class="msg-card'+(ok?' ok':'')+'"><h4>'+esc(n)+'<small>'+(ok?'✓ aberto no WhatsApp':(tl?'+'+tl:''))+'</small></h4>'+
+        (vazio ? '<div class="msg-sem">'+esc(n)+' não tem pontos de melhoria nos últimos 90 dias.</div>' :
+        '<textarea data-n="'+esc(n)+'" oninput="window.MSG.editar(this)">'+esc(tx)+'</textarea>'+
+        (tl ? '' : '<div class="msg-sem">⚠️ Sem WhatsApp cadastrado. <a href="#" onclick="window.EQUIPE.abrirAdmin();return false">Cadastrar em Equipe</a></div>')+
+        '<div class="bt"><button type="button" class="msg-cop" onclick="window.MSG.copiar(\''+esc(n)+'\',this)">📋 Copiar</button><button type="button" class="msg-env" onclick="window.MSG.enviar(\''+esc(n)+'\')">📲 Abrir no WhatsApp</button></div>')+'</div>'; }).join('');
+  }
+  function setTipo(t){ tipo = t; render(); }
+  function pessoa(n){ sel[n] = !sel[n]; render(); }
+  function todos(){ PES.forEach(function(n){ sel[n] = true; }); render(); }
+  function nenhum(){ sel = {}; render(); }
+  function editar(el){ editados[tipo+'|'+el.getAttribute('data-n')] = el.value; }
+  function atual(n){ var el = document.querySelector('#msg_cards textarea[data-n="'+n.replace(/"/g,'')+'"]'); return el ? el.value.trim() : texto(n).trim(); }
+  function enviar(n){ var t = tel(n), tx = atual(n); if (!t){ alert(n+' ainda não tem WhatsApp cadastrado. Abra 👥 Equipe e coloque o número.'); return; } if (!tx){ alert('A mensagem está vazia.'); return; }
+    window.open('https://wa.me/'+t+'?text='+encodeURIComponent(tx), '_blank', 'noopener'); enviados[tipo+'|'+n] = true; render(); }
+  function copiar(n, b){ var tx = atual(n); var ok = function(){ b.textContent = '✓ Copiado'; setTimeout(function(){ b.textContent = '📋 Copiar'; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(tx).then(ok, function(){ prompt('Copie:', tx); }); else prompt('Copie:', tx); }
+  return { render: render, tipo: setTipo, pessoa: pessoa, todos: todos, nenhum: nenhum, editar: editar, enviar: enviar, copiar: copiar };
+})();
+</script>
 <!-- ===== JS: Agenda do time ===== -->
 <style>
 .ag-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0 12px}.ag-top b{font-size:18px;color:var(--text);min-width:170px;text-align:center;text-transform:capitalize}.ag-top button,.ag-top select{padding:7px 12px;border-radius:10px;border:1px solid var(--border2);background:var(--card2,rgba(255,255,255,.06));color:var(--text);cursor:pointer;font:inherit;font-size:13px}.ag-top select{margin-left:auto}
